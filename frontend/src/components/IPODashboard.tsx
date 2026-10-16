@@ -21,6 +21,7 @@ import {
 import type { IPOData, IPOSummaryMetrics } from '../types';
 import { IPODetailModal } from './IPODetailModal';
 import { IPOCompareModal } from './IPOCompareModal';
+import { API_BASE_URL } from '../config';
 
 export const IPODashboard: React.FC = () => {
   const [ipos, setIpos] = useState<IPOData[]>([]);
@@ -54,8 +55,8 @@ export const IPODashboard: React.FC = () => {
 
     try {
       const [listRes, sumRes] = await Promise.all([
-        fetch(`/api/ipo/list?status=${statusFilter}&type=${typeFilter}&refresh=${forceRefresh}`),
-        fetch('/api/ipo/summary'),
+        fetch(`${API_BASE_URL}/api/ipo/list?status=${statusFilter}&type=${typeFilter}&refresh=${forceRefresh}`),
+        fetch(`${API_BASE_URL}/api/ipo/summary`),
       ]);
 
       if (listRes.ok) {

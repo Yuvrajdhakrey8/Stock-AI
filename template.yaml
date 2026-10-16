@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: DhakreyStock AI - Serverless Backend (AWS Lambda + HTTP API Gateway with Free SSL)
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Environment:
+      Variables:
+        STAGE: prod
+
+Resources:
+  DhakreyStockHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: DhakreyStock-AI-API
+      CorsConfiguration:
+        AllowOrigins:
+          - '*'
+        AllowHeaders:
+          - '*'
+        AllowMethods:
+          - '*'
+
+  DhakreyStockBackendFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      Events:
+        ProxyRoute:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref DhakreyStockHttpApi
+            Path: /{proxy+}
+            Method: ANY
+        RootRoute:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref DhakreyStockHttpApi
+            Path: /
+            Method: ANY
+    Metadata:
+      Dockerfile: Dockerfile.lambda
+      DockerContext: ./backend
+      DockerTag: latest
+
+Outputs:
+  ApiEndpoint:
+    Description: "HTTP API Gateway URL (Free Managed HTTPS with AWS SSL Certificate)"
+    Value: !Sub "https://${DhakreyStockHttpApi}.execute-api.${AWS::Region}.amazonaws.com"

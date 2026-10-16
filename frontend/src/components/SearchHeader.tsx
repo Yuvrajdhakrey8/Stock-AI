@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Building2, ChevronRight, Sparkles, Loader2, X } from 'lucide-react';
 import type { StockSearchResult } from '../types';
+import { API_BASE_URL } from '../config';
 
 interface SearchHeaderProps {
   onSelectStock: (symbol: string) => void;
@@ -36,7 +37,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(query)}`);
         if (res.ok) {
           const data = await res.json();
           setResults(data.results || []);

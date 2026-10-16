@@ -11,6 +11,7 @@ import { WatchlistDrawer } from './components/WatchlistDrawer';
 import type { WatchlistEntry } from './components/WatchlistDrawer';
 import type { StockAnalysisResponse, MarketIndex } from './types';
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { API_BASE_URL } from './config';
 
 export function App() {
   const [currentSymbol, setCurrentSymbol] = useState<string>('RELIANCE.NS');
@@ -43,7 +44,7 @@ export function App() {
   useEffect(() => {
     const fetchIndices = async () => {
       try {
-        const res = await fetch('/api/indices');
+        const res = await fetch(`${API_BASE_URL}/api/indices`);
         if (res.ok) {
           const data = await res.json();
           setIndices(data.indices || []);
@@ -64,7 +65,7 @@ export function App() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/stock/${encodeURIComponent(symbol)}`);
+      const res = await fetch(`${API_BASE_URL}/api/stock/${encodeURIComponent(symbol)}`);
       if (!res.ok) {
         const errData = await res.json().catch(() => ({ detail: 'Failed to fetch stock analysis.' }));
         throw new Error(errData.detail || `Unable to load data for ${symbol}`);

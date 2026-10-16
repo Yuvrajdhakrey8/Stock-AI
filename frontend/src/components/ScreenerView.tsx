@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Filter, ArrowUpDown, ChevronRight, Loader2, Sparkles, ShieldCheck, AlertTriangle } from 'lucide-react';
 import type { ScreenerItem } from '../types';
+import { API_BASE_URL } from '../config';
 
 interface ScreenerViewProps {
   onSelectStock: (symbol: string) => void;
@@ -21,7 +22,7 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({ onSelectStock }) => 
   const fetchScreener = async (cat: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/screener?category=${cat}`);
+      const res = await fetch(`${API_BASE_URL}/api/screener?category=${cat}`);
       if (res.ok) {
         const data = await res.json();
         setStocks(data.stocks || []);

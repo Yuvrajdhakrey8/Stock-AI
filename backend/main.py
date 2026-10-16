@@ -172,6 +172,15 @@ def get_ipo_detail(ipo_id: str):
     return ipo
 
 
+# AWS Lambda serverless handler for API Gateway integration
+try:
+    from mangum import Mangum
+    handler = Mangum(app, lifespan="off")
+except ImportError:
+    handler = None
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+
