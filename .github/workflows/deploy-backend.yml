@@ -45,3 +45,20 @@ jobs:
             --resolve-s3 \
             --resolve-image-repos \
             --capabilities CAPABILITY_IAM
+
+      - name: Output API Gateway HTTPS Endpoint
+        run: |
+          API_URL=$(aws cloudformation describe-stacks \
+            --stack-name dhakreystock-backend \
+            --region ${{ secrets.AWS_REGION || 'ap-south-1' }} \
+            --query "Stacks[0].Outputs[?OutputKey=='ApiEndpoint'].OutputValue" \
+            --output text)
+          echo "=========================================================="
+          echo "🚀 Your Live API Gateway URL is: $API_URL"
+          echo "=========================================================="
+          echo "### 🚀 Backend Deployed Successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "**Live HTTPS API Gateway URL:**" >> $GITHUB_STEP_SUMMARY
+          echo "\`$API_URL\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "👉 Copy this URL and paste it into AWS Amplify as \`VITE_API_BASE_URL\`." >> $GITHUB_STEP_SUMMARY
+
