@@ -38,20 +38,20 @@ export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onC
   }[rec?.verdict || 'Apply with Caution'];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-6 overflow-y-auto">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal Dialog */}
-      <div className="relative w-full max-w-4xl bg-slate-900 border border-slate-700/80 rounded-3xl shadow-2xl z-10 max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="relative w-full max-w-4xl bg-slate-900 border border-slate-700/80 rounded-2xl sm:rounded-3xl shadow-2xl z-10 max-h-[92vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="p-6 bg-slate-950/80 border-b border-slate-800 flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+        <div className="p-4 sm:p-6 bg-slate-950/80 border-b border-slate-800 flex items-start justify-between gap-3 sm:gap-4">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2.5 flex-wrap">
+              <h2 className="text-lg sm:text-2xl font-bold text-white tracking-tight truncate">
                 {ipo.name}
               </h2>
-              <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+              <span className={`px-2 py-0.2 rounded-full text-[10px] sm:text-xs font-bold border ${
                 ipo.status === 'Open'
                   ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50 animate-pulse'
                   : ipo.status === 'Upcoming'
@@ -62,21 +62,21 @@ export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onC
               }`}>
                 {ipo.status}
               </span>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+              <span className="text-[10px] sm:text-xs font-semibold px-2 py-0.2 rounded bg-slate-800 text-slate-300 border border-slate-700">
                 {ipo.ipo_type} IPO
               </span>
               {ipo.symbol && (
-                <span className="font-mono text-xs text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                <span className="font-mono text-[10px] sm:text-xs text-slate-400 bg-slate-950 px-1.5 py-0.2 rounded border border-slate-800">
                   {ipo.symbol}
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-3 text-xs text-slate-400 mt-1.5 flex-wrap">
-              <span>{ipo.sector}</span>
+            <div className="flex items-center gap-2 sm:gap-3 text-[11px] sm:text-xs text-slate-400 mt-1 flex-wrap">
+              <span className="truncate">{ipo.sector}</span>
               <span>•</span>
               <span className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-slate-500" />
-                Issue: <strong className="text-slate-200">{ipo.open_date}</strong> to <strong className="text-slate-200">{ipo.close_date}</strong>
+                <Calendar className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                Issue: <strong className="text-slate-200">{ipo.open_date}</strong> - <strong className="text-slate-200">{ipo.close_date}</strong>
               </span>
               {ipo.listing_date && (
                 <>
@@ -89,16 +89,17 @@ export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onC
 
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors"
+            className="p-1.5 sm:p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors shrink-0"
+            title="Close"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 text-xs text-slate-300">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 text-xs text-slate-300">
           {/* Key Issue Specs Banner */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-950/60 p-4 rounded-2xl border border-slate-800">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 bg-slate-950/60 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-800">
             <div>
               <div className="text-slate-500">Price Band</div>
               <div className="text-base font-bold text-white mt-0.5">{ipo.price_band}</div>

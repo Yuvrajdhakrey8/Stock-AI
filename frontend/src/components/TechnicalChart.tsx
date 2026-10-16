@@ -52,45 +52,45 @@ export const TechnicalChart: React.FC<TechnicalChartProps> = ({
   const maxPrice = Math.ceil(Math.max(...prices) * 1.04);
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
+    <div className="bg-slate-900/90 border border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl space-y-4 sm:space-y-6">
       {/* Chart Controls & Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <Activity className="w-4 h-4 text-emerald-400" />
+            <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+              <Activity className="w-4 h-4 text-emerald-400 shrink-0" />
               <span>Price Trend & Moving Average Timing</span>
             </h3>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
             Compare live price with 50 DMA and 200 DMA institutional support levels
           </p>
         </div>
 
         {/* Toggles & Timeframe selector */}
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-between sm:justify-start">
           {/* DMA Toggles */}
-          <div className="flex items-center gap-2 text-xs">
+          <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs">
             <button
               onClick={() => setShowSMA50(!showSMA50)}
-              className={`px-2.5 py-1 rounded-lg border flex items-center gap-1.5 transition-all ${
+              className={`px-2 sm:px-2.5 py-1 rounded-lg border flex items-center gap-1.5 transition-all ${
                 showSMA50
                   ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 font-semibold'
                   : 'bg-slate-800/60 text-slate-500 border-slate-700/60'
               }`}
             >
-              <span className="w-2 h-2 rounded-full bg-amber-400" />
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-400" />
               <span>50 DMA</span>
             </button>
             <button
               onClick={() => setShowSMA200(!showSMA200)}
-              className={`px-2.5 py-1 rounded-lg border flex items-center gap-1.5 transition-all ${
+              className={`px-2 sm:px-2.5 py-1 rounded-lg border flex items-center gap-1.5 transition-all ${
                 showSMA200
                   ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/50 font-semibold'
                   : 'bg-slate-800/60 text-slate-500 border-slate-700/60'
               }`}
             >
-              <span className="w-2 h-2 rounded-full bg-indigo-400" />
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-indigo-400" />
               <span>200 DMA</span>
             </button>
           </div>
@@ -101,7 +101,7 @@ export const TechnicalChart: React.FC<TechnicalChartProps> = ({
               <button
                 key={tf}
                 onClick={() => setTimeframe(tf)}
-                className={`px-3 py-1 rounded-lg font-medium transition-all ${
+                className={`px-2.5 sm:px-3 py-1 rounded-lg font-medium transition-all text-[11px] sm:text-xs ${
                   timeframe === tf
                     ? 'bg-emerald-500 text-slate-950 font-bold'
                     : 'text-slate-400 hover:text-white'
@@ -115,9 +115,9 @@ export const TechnicalChart: React.FC<TechnicalChartProps> = ({
       </div>
 
       {/* Primary Price & Moving Averages Chart */}
-      <div className="h-72 w-full">
+      <div className="h-64 sm:h-72 w-full -ml-2 sm:ml-0">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={filteredData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <AreaChart data={filteredData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
             <defs>
               <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#10b981" stopOpacity={0.35} />
@@ -215,47 +215,47 @@ export const TechnicalChart: React.FC<TechnicalChartProps> = ({
       </div>
 
       {/* Technical Summary Pills */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-slate-800/80 text-xs">
-        <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-          <div className="text-slate-400">RSI (14-period)</div>
-          <div className="text-base font-bold text-white mt-0.5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 pt-2 border-t border-slate-800/80 text-xs">
+        <div className="bg-slate-950/60 p-2.5 sm:p-3 rounded-xl border border-slate-800">
+          <div className="text-[11px] sm:text-xs text-slate-400">RSI (14-period)</div>
+          <div className="text-sm sm:text-base font-bold text-white mt-0.5">
             {valuation.rsi !== null && valuation.rsi !== undefined ? valuation.rsi : 'N/A'}
           </div>
-          <div className="text-[11px] font-medium text-slate-500 mt-0.5">
+          <div className="text-[10px] sm:text-[11px] font-medium text-slate-500 mt-0.5 truncate">
             {valuation.rsi && valuation.rsi < 35
-              ? '🟢 Oversold / Rebound zone'
+              ? '🟢 Oversold'
               : valuation.rsi && valuation.rsi > 70
-              ? '🔴 Overbought / High risk'
-              : '🟡 Neutral momentum'}
+              ? '🔴 Overbought'
+              : '🟡 Neutral'}
           </div>
         </div>
 
-        <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-          <div className="text-slate-400">50 DMA Level</div>
-          <div className="text-base font-bold text-amber-400 mt-0.5">
+        <div className="bg-slate-950/60 p-2.5 sm:p-3 rounded-xl border border-slate-800">
+          <div className="text-[11px] sm:text-xs text-slate-400">50 DMA Level</div>
+          <div className="text-sm sm:text-base font-bold text-amber-400 mt-0.5">
             {valuation.dma_50 ? `₹${valuation.dma_50.toFixed(2)}` : 'N/A'}
           </div>
-          <div className="text-[11px] font-medium text-slate-500 mt-0.5">
-            {valuation.dma_50 && currentPrice >= valuation.dma_50 ? 'Above 50 DMA (Bullish)' : 'Below 50 DMA'}
+          <div className="text-[10px] sm:text-[11px] font-medium text-slate-500 mt-0.5 truncate">
+            {valuation.dma_50 && currentPrice >= valuation.dma_50 ? 'Above 50 DMA' : 'Below 50 DMA'}
           </div>
         </div>
 
-        <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-          <div className="text-slate-400">200 DMA (Long-term)</div>
-          <div className="text-base font-bold text-indigo-400 mt-0.5">
+        <div className="bg-slate-950/60 p-2.5 sm:p-3 rounded-xl border border-slate-800">
+          <div className="text-[11px] sm:text-xs text-slate-400">200 DMA</div>
+          <div className="text-sm sm:text-base font-bold text-indigo-400 mt-0.5">
             {valuation.dma_200 ? `₹${valuation.dma_200.toFixed(2)}` : 'N/A'}
           </div>
-          <div className="text-[11px] font-medium text-slate-500 mt-0.5">
-            {valuation.dma_200 && currentPrice >= valuation.dma_200 ? 'Primary Bull Trend' : 'Consolidation / Discount'}
+          <div className="text-[10px] sm:text-[11px] font-medium text-slate-500 mt-0.5 truncate">
+            {valuation.dma_200 && currentPrice >= valuation.dma_200 ? 'Bull Trend' : 'Consolidation'}
           </div>
         </div>
 
-        <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-          <div className="text-slate-400">Technical Timing Score</div>
-          <div className="text-base font-bold text-teal-400 mt-0.5">
+        <div className="bg-slate-950/60 p-2.5 sm:p-3 rounded-xl border border-slate-800">
+          <div className="text-[11px] sm:text-xs text-slate-400">Timing Score</div>
+          <div className="text-sm sm:text-base font-bold text-teal-400 mt-0.5">
             {valuation.technical_score}/100
           </div>
-          <div className="text-[11px] font-medium text-slate-500 mt-0.5">
+          <div className="text-[10px] sm:text-[11px] font-medium text-slate-500 mt-0.5 truncate">
             {valuation.technical_score >= 60 ? 'Optimal Timing' : valuation.technical_score <= 40 ? 'Cautious Timing' : 'Fair Timing'}
           </div>
         </div>

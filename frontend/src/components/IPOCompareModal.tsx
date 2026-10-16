@@ -18,28 +18,29 @@ export const IPOCompareModal: React.FC<IPOCompareModalProps> = ({
   if (!isOpen || ipos.length === 0) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-6 overflow-y-auto">
       <div className="fixed inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative w-full max-w-5xl bg-slate-900 border border-slate-700/80 rounded-3xl shadow-2xl z-10 max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="relative w-full max-w-5xl bg-slate-900 border border-slate-700/80 rounded-2xl sm:rounded-3xl shadow-2xl z-10 max-h-[92vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="p-6 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between">
+        <div className="p-4 sm:p-6 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-bold text-white">Side-by-Side IPO Comparison</h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <h2 className="text-lg sm:text-xl font-bold text-white">Side-by-Side IPO Comparison</h2>
+            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
               Comparing {ipos.length} IPOs across valuation, demand, grey market, and retail profit
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors"
+            className="p-1.5 sm:p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors shrink-0"
+            title="Close"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Comparison Table */}
-        <div className="flex-1 overflow-x-auto p-6 text-xs">
+        <div className="flex-1 overflow-x-auto p-3 sm:p-6 text-xs">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-800">

@@ -127,31 +127,31 @@ export const IPODashboard: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-emerald-400" />
-              <span>Indian IPO Research & Valuation Advisory</span>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400 shrink-0" />
+              <span>Indian IPO Research & Advisory</span>
             </h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-[11px] sm:text-xs text-slate-400 mt-1">
             Complete analysis of Mainboard and SME IPOs with closing-day GMP, subscription progression, 1-lot retail profit, and missed opportunity retrospectives.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+        <div className="flex items-center gap-2 self-stretch sm:self-auto flex-wrap">
           <button
             onClick={() => fetchIPOData(true)}
             disabled={isRefreshing}
-            className="flex items-center gap-1.5 text-xs text-slate-200 bg-slate-900 hover:bg-slate-800 border border-slate-700/80 px-3 py-1.5 rounded-xl font-medium transition-colors shadow-sm disabled:opacity-50"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 text-xs text-slate-200 bg-slate-900 hover:bg-slate-800 border border-slate-700/80 px-3 py-2 sm:py-1.5 rounded-xl font-medium transition-colors shadow-sm disabled:opacity-50 active:scale-95"
             title="Fetch latest real-time Grey Market Premium and Subscription rates"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-emerald-400 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>{isRefreshing ? 'Fetching Live...' : 'Refresh Live Market'}</span>
+            <RefreshCw className={`w-3.5 h-3.5 text-emerald-400 shrink-0 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>{isRefreshing ? 'Fetching Live...' : 'Refresh Live'}</span>
           </button>
 
           {summary?.last_updated && (
-            <div className="flex items-center gap-1.5 text-xs text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl">
-              <Clock className="w-3.5 h-3.5 text-emerald-400" />
-              <span>{summary.last_updated}</span>
+            <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-400 bg-slate-900 border border-slate-800 px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-xl">
+              <Clock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span className="truncate">{summary.last_updated}</span>
             </div>
           )}
         </div>
@@ -159,61 +159,61 @@ export const IPODashboard: React.FC = () => {
 
       {/* KPI Summary Cards Bar */}
       {summary && (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
           {/* Card 1: Open IPOs */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm">
-            <div className="flex items-center justify-between text-slate-400 text-xs">
-              <span>Currently Open</span>
+          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-sm">
+            <div className="flex items-center justify-between text-slate-400 text-[11px] sm:text-xs">
+              <span>Open</span>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             </div>
-            <div className="text-2xl font-bold text-white mt-1.5">
-              {summary.open_count} <span className="text-xs text-emerald-400 font-medium">Accepting Bids</span>
+            <div className="text-xl sm:text-2xl font-bold text-white mt-1">
+              {summary.open_count} <span className="text-[10px] sm:text-xs text-emerald-400 font-medium">Bidding</span>
             </div>
-            <div className="text-[11px] text-slate-500 mt-0.5">Live IPOs closing soon</div>
+            <div className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 truncate">Accepting Bids</div>
           </div>
 
           {/* Card 2: Upcoming */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm">
-            <div className="text-slate-400 text-xs">Upcoming IPOs</div>
-            <div className="text-2xl font-bold text-sky-400 mt-1.5">
-              {summary.upcoming_count} <span className="text-xs text-slate-400 font-normal">Issues</span>
+          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-sm">
+            <div className="text-slate-400 text-[11px] sm:text-xs">Upcoming</div>
+            <div className="text-xl sm:text-2xl font-bold text-sky-400 mt-1">
+              {summary.upcoming_count} <span className="text-[10px] sm:text-xs text-slate-400 font-normal">Issues</span>
             </div>
-            <div className="text-[11px] text-slate-500 mt-0.5">DRHP filed / Dates announced</div>
+            <div className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 truncate">Announced / DRHP</div>
           </div>
 
           {/* Card 3: Avg Listing Gain */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-sm">
-            <div className="text-slate-400 text-xs">Avg Listing Day Pop</div>
-            <div className="text-2xl font-bold text-emerald-400 mt-1.5">
+          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-sm">
+            <div className="text-slate-400 text-[11px] sm:text-xs truncate">Avg Listing Pop</div>
+            <div className="text-xl sm:text-2xl font-bold text-emerald-400 mt-1">
               +{summary.average_listing_gain_percent}%
             </div>
-            <div className="text-[11px] text-slate-500 mt-0.5">Across {summary.total_listed_tracked} tracked IPOs</div>
+            <div className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 truncate">{summary.total_listed_tracked} IPOs tracked</div>
           </div>
 
           {/* Card 4: Best Performer */}
-          <div className="bg-slate-900/90 border border-emerald-900/30 rounded-2xl p-4 shadow-sm">
-            <div className="text-slate-400 text-xs flex items-center justify-between">
-              <span>Best Listing Gain</span>
-              <span className="text-[10px] text-emerald-400 font-bold">Record</span>
+          <div className="bg-slate-900/90 border border-emerald-900/30 rounded-2xl p-3 sm:p-4 shadow-sm">
+            <div className="text-slate-400 text-[11px] sm:text-xs flex items-center justify-between">
+              <span className="truncate">Top Listing</span>
+              <span className="text-[9px] sm:text-[10px] text-emerald-400 font-bold">Record</span>
             </div>
-            <div className="text-lg font-bold text-white mt-1.5 truncate">
+            <div className="text-base sm:text-lg font-bold text-white mt-1 truncate">
               {summary.best_performer?.name.split(' ')[0]}
             </div>
-            <div className="text-xs font-bold text-emerald-400 mt-0.5">
-              +{summary.best_performer?.gain_percent}% (+₹{summary.best_performer?.profit_per_lot.toLocaleString('en-IN')}/lot)
+            <div className="text-[11px] sm:text-xs font-bold text-emerald-400 mt-0.5 truncate">
+              +{summary.best_performer?.gain_percent}% (+₹{summary.best_performer?.profit_per_lot.toLocaleString('en-IN')})
             </div>
           </div>
 
           {/* Card 5: Worst / Loss Maker */}
-          <div className="bg-slate-900/90 border border-rose-900/30 rounded-2xl p-4 shadow-sm">
-            <div className="text-slate-400 text-xs flex items-center justify-between">
-              <span>Weakest Listing</span>
-              <span className="text-[10px] text-rose-400 font-bold">Cautionary</span>
+          <div className="col-span-2 sm:col-span-1 bg-slate-900/90 border border-rose-900/30 rounded-2xl p-3 sm:p-4 shadow-sm">
+            <div className="text-slate-400 text-[11px] sm:text-xs flex items-center justify-between">
+              <span className="truncate">Weakest Listing</span>
+              <span className="text-[9px] sm:text-[10px] text-rose-400 font-bold">Caution</span>
             </div>
-            <div className="text-lg font-bold text-white mt-1.5 truncate">
+            <div className="text-base sm:text-lg font-bold text-white mt-1 truncate">
               {summary.worst_performer?.name.split(' ')[0]}
             </div>
-            <div className="text-xs font-bold text-rose-400 mt-0.5">
+            <div className="text-[11px] sm:text-xs font-bold text-rose-400 mt-0.5 truncate">
               {summary.worst_performer?.gain_percent}% ({summary.worst_performer?.profit_per_lot} ₹/lot)
             </div>
           </div>
@@ -221,28 +221,28 @@ export const IPODashboard: React.FC = () => {
       )}
 
       {/* Toolbar: Search, Filters, Sort, Compare Action */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
         {/* Search */}
-        <div className="relative flex-1 max-w-md">
+        <div className="relative w-full md:max-w-md">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search IPO by company name or sector (e.g. Bajaj, Waaree, Hyundai, Defense)..."
+            placeholder="Search IPO by company name or sector..."
             className="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
           />
         </div>
 
         {/* Filters Group */}
-        <div className="flex items-center gap-3 flex-wrap text-xs">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap text-xs">
           {/* Status Pills */}
-          <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1">
+          <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1 overflow-x-auto scrollbar-none">
             {['all', 'open', 'upcoming', 'listed'].map((st) => (
               <button
                 key={st}
                 onClick={() => setStatusFilter(st)}
-                className={`px-2.5 py-1 rounded-lg font-medium transition-all uppercase text-[10px] tracking-wider ${
+                className={`px-2 sm:px-2.5 py-1 rounded-lg font-medium transition-all uppercase text-[9px] sm:text-[10px] tracking-wider shrink-0 ${
                   statusFilter === st
                     ? 'bg-emerald-500 text-slate-950 font-bold'
                     : 'text-slate-400 hover:text-white'
@@ -254,12 +254,12 @@ export const IPODashboard: React.FC = () => {
           </div>
 
           {/* Type Filter */}
-          <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1">
+          <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1 overflow-x-auto scrollbar-none">
             {['all', 'mainboard', 'sme'].map((tp) => (
               <button
                 key={tp}
                 onClick={() => setTypeFilter(tp)}
-                className={`px-2.5 py-1 rounded-lg font-medium transition-all uppercase text-[10px] tracking-wider ${
+                className={`px-2 sm:px-2.5 py-1 rounded-lg font-medium transition-all uppercase text-[9px] sm:text-[10px] tracking-wider shrink-0 ${
                   typeFilter === tp
                     ? 'bg-emerald-500 text-slate-950 font-bold'
                     : 'text-slate-400 hover:text-white'
@@ -272,14 +272,14 @@ export const IPODashboard: React.FC = () => {
 
           {/* Sort selector */}
           <div className="flex items-center gap-1.5 text-slate-400">
-            <ArrowUpDown className="w-3.5 h-3.5" />
+            <ArrowUpDown className="w-3.5 h-3.5 shrink-0" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1 text-slate-200 text-xs focus:outline-none"
+              className="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-slate-200 text-xs focus:outline-none"
             >
-              <option value="gmp">Sort by Closing GMP %</option>
-              <option value="listing_gain">Sort by Actual Listing Gain</option>
+              <option value="gmp">Sort by GMP %</option>
+              <option value="listing_gain">Sort by Actual Gain</option>
               <option value="issue_size">Sort by Issue Size</option>
               <option value="date">Sort by Recent Date</option>
             </select>
@@ -289,7 +289,7 @@ export const IPODashboard: React.FC = () => {
           {compareIds.length > 0 && (
             <button
               onClick={() => setIsCompareOpen(true)}
-              className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-lg shadow-indigo-600/20 transition-all animate-bounce"
+              className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-lg shadow-indigo-600/20 transition-all animate-bounce shrink-0"
             >
               <Scale className="w-3.5 h-3.5" />
               <span>Compare ({compareIds.length})</span>
@@ -321,7 +321,7 @@ export const IPODashboard: React.FC = () => {
               <div
                 key={ipo.id}
                 onClick={() => handleOpenDetail(ipo)}
-                className={`bg-slate-900/90 border rounded-3xl p-5 shadow-xl hover:border-slate-700 transition-all cursor-pointer flex flex-col justify-between group relative overflow-hidden ${
+                className={`bg-slate-900/90 border rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl hover:border-slate-700 transition-all cursor-pointer flex flex-col justify-between group relative overflow-hidden active:scale-[0.99] ${
                   isSelectedForCompare ? 'ring-2 ring-indigo-500 border-indigo-500/50' : 'border-slate-800'
                 }`}
               >

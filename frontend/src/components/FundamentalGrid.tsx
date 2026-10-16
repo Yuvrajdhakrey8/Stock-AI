@@ -73,13 +73,13 @@ export const FundamentalGrid: React.FC<FundamentalGridProps> = ({ stock }) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-bold text-white flex items-center gap-2">
+        <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
           <span>Fundamental Valuation & Solvency Matrix</span>
         </h3>
-        <span className="text-xs text-slate-400">Audited Financial Ratios</span>
+        <span className="text-[11px] sm:text-xs text-slate-400">Audited Financial Ratios</span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
         {cards.map((card, idx) => {
           const isPos = card.highlight === 'positive';
           const isNeg = card.highlight === 'negative';
@@ -87,7 +87,7 @@ export const FundamentalGrid: React.FC<FundamentalGridProps> = ({ stock }) => {
           return (
             <div
               key={idx}
-              className={`p-4 rounded-2xl border transition-all ${
+              className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border transition-all ${
                 isPos
                   ? 'bg-slate-900/90 border-emerald-500/30 shadow-sm shadow-emerald-500/5'
                   : isNeg
@@ -96,19 +96,19 @@ export const FundamentalGrid: React.FC<FundamentalGridProps> = ({ stock }) => {
               }`}
             >
               <div className="flex justify-between items-start">
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-800/80 text-slate-400 border border-slate-700/60">
+                <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-1.5 sm:px-2 py-0.5 rounded bg-slate-800/80 text-slate-400 border border-slate-700/60 truncate">
                   {card.badge}
                 </span>
-                {isPos && <span className="w-2 h-2 rounded-full bg-emerald-400" />}
-                {isNeg && <span className="w-2 h-2 rounded-full bg-rose-400" />}
+                {isPos && <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 shrink-0 ml-1" />}
+                {isNeg && <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-rose-400 shrink-0 ml-1" />}
               </div>
 
-              <div className="mt-3">
-                <div className="text-xs text-slate-400 font-medium">{card.title}</div>
-                <div className={`text-xl font-bold mt-0.5 ${isPos ? 'text-emerald-400' : isNeg ? 'text-rose-400' : 'text-slate-100'}`}>
+              <div className="mt-2.5 sm:mt-3">
+                <div className="text-[11px] sm:text-xs text-slate-400 font-medium truncate">{card.title}</div>
+                <div className={`text-lg sm:text-xl font-bold mt-0.5 ${isPos ? 'text-emerald-400' : isNeg ? 'text-rose-400' : 'text-slate-100'}`}>
                   {card.value}
                 </div>
-                <div className="text-[11px] text-slate-500 mt-1 line-clamp-1">{card.desc}</div>
+                <div className="text-[10px] sm:text-[11px] text-slate-500 mt-1 line-clamp-1">{card.desc}</div>
               </div>
             </div>
           );

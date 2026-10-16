@@ -58,25 +58,25 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({ onSelectStock }) => 
   return (
     <div className="space-y-6">
       {/* Screener Controls Header */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl">
+      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-emerald-400" />
+            <h2 className="text-lg sm:text-xl font-extrabold text-white flex items-center gap-2">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 shrink-0" />
               <span>NSE & BSE Valuation Screener</span>
             </h2>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-[11px] sm:text-xs text-slate-400 mt-1">
               Screen and rank Indian companies by margin of safety, intrinsic valuation, and technical timing
             </p>
           </div>
 
           {/* Verdict Filter Buttons */}
-          <div className="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800 text-xs">
+          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-2xl border border-slate-800 text-[11px] sm:text-xs overflow-x-auto scrollbar-none max-w-full">
             {['ALL', 'BEST BUY', 'AT FAIR PRICE', 'CURRENTLY EXPENSIVE'].map((v) => (
               <button
                 key={v}
                 onClick={() => setVerdictFilter(v)}
-                className={`px-3 py-1.5 rounded-xl font-medium transition-all ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-medium transition-all whitespace-nowrap shrink-0 ${
                   verdictFilter === v
                     ? v === 'BEST BUY'
                       ? 'bg-emerald-500 text-slate-950 font-bold'
@@ -93,10 +93,10 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({ onSelectStock }) => 
         </div>
 
         {/* Category Pills */}
-        <div className="flex items-center gap-2 mt-5 pt-4 border-t border-slate-800/80 overflow-x-auto scrollbar-none text-xs">
-          <span className="text-slate-500 font-medium">Index / Sector:</span>
+        <div className="flex items-center gap-1.5 sm:gap-2 mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-slate-800/80 overflow-x-auto scrollbar-none text-xs -mx-1 px-1">
+          <span className="text-slate-500 font-medium whitespace-nowrap shrink-0 text-[11px] sm:text-xs">Index / Sector:</span>
           {[
-            { id: 'nifty50', label: 'Nifty 50 Bluechips' },
+            { id: 'nifty50', label: 'Nifty 50' },
             { id: 'next50', label: 'Nifty Next 50' },
             { id: 'midcap', label: 'Midcap Growth' },
             { id: 'tech', label: 'IT & Software' },
@@ -106,7 +106,7 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({ onSelectStock }) => 
             <button
               key={cat.id}
               onClick={() => setCategory(cat.id)}
-              className={`px-3 py-1.5 rounded-xl whitespace-nowrap transition-all font-medium ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-xl whitespace-nowrap transition-all font-medium text-[11px] sm:text-xs shrink-0 ${
                 category === cat.id
                   ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 font-semibold'
                   : 'bg-slate-800/60 text-slate-400 border border-slate-700/60 hover:text-white'
@@ -119,16 +119,19 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({ onSelectStock }) => 
       </div>
 
       {/* Table Results */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl">
+        <div className="sm:hidden px-4 py-2 bg-slate-950/60 border-b border-slate-800 text-[10px] text-slate-400 text-center flex items-center justify-center gap-1">
+          <span>Swipe horizontally to view full metrics →</span>
+        </div>
         {loading ? (
           <div className="p-16 text-center space-y-3">
             <Loader2 className="w-8 h-8 text-emerald-400 animate-spin mx-auto" />
-            <p className="text-sm text-slate-400">
+            <p className="text-xs sm:text-sm text-slate-400">
               Running hybrid valuation algorithms for {category} equities...
             </p>
           </div>
         ) : sortedStocks.length === 0 ? (
-          <div className="p-16 text-center text-slate-500">
+          <div className="p-16 text-center text-slate-500 text-xs sm:text-sm">
             No stocks found matching the selected verdict filter.
           </div>
         ) : (
