@@ -15,6 +15,8 @@ import {
   HelpCircle,
   Sparkles,
   Zap,
+  Share2,
+  Check,
 } from 'lucide-react';
 import type { IPOData } from '../types';
 
@@ -26,6 +28,7 @@ interface IPODetailModalProps {
 
 export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onClose }) => {
   const [familyAccounts, setFamilyAccounts] = useState<number>(3);
+  const [copied, setCopied] = useState<boolean>(false);
   if (!isOpen || !ipo) return null;
 
   const isListed = ipo.status === 'Listed';
@@ -33,6 +36,37 @@ export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onC
   const listing = ipo.listing;
   const missed = ipo.missed_opportunity_analysis;
   const sub = ipo.subscription;
+
+  const handleShare = async () => {
+    const gmpText = ipo.gmp_closing_day ? `₹${ipo.gmp_closing_day} (${ipo.gmp_closing_percent.toFixed(1)}%)` : 'Live';
+    const shareText = `🚀 *${ipo.name} (${ipo.ipo_type} IPO)* on DhakreyStock AI:\n` +
+      `• Price Band: ${ipo.price_band}\n` +
+      `• Closing GMP: ${gmpText}\n` +
+      `• Est. Listing: ₹${ipo.gmp_estimated_listing}\n` +
+      `• Recommendation: *${rec?.verdict || 'Track'}*\n\n` +
+      `Check live IPO GMP, subscriptions & retail allotment strategies:`;
+    const shareUrl = `https://main.d2x1z9kgh5o58m.amplifyapp.com/?tab=ipo`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${ipo.name} - IPO Analysis`,
+          text: shareText,
+          url: shareUrl,
+        });
+      } catch {
+        // User cancelled share dialog
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2500);
+      } catch {
+        // Fallback
+      }
+    }
+  };
 
   const recBadge = {
     Apply: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
@@ -92,13 +126,37 @@ export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onC
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-1.5 sm:p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors shrink-0"
-            title="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={handleShare}
+              className={`p-1.5 sm:p-2 rounded-xl transition-all flex items-center gap-1 text-xs font-semibold ${
+                copied
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+              title="Share live IPO analysis"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-400" />
+                  <span className="text-[11px] text-emerald-400">Copied</span>
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-4 h-4 text-slate-400" />
+                  <span className="hidden xs:inline text-[11px]">Share</span>
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={onClose}
+              className="p-1.5 sm:p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors"
+              title="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Scrollable Content */}

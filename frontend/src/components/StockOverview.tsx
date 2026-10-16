@@ -1,5 +1,5 @@
-import React from 'react';
-import { Bookmark, BookmarkCheck, ExternalLink, Activity, BarChart2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bookmark, BookmarkCheck, ExternalLink, Activity, BarChart2, Share2, Check } from 'lucide-react';
 import type { StockAnalysisResponse } from '../types';
 
 interface StockOverviewProps {
@@ -17,11 +17,47 @@ export const StockOverview: React.FC<StockOverviewProps> = ({
   const low52 = stock.high_52 && stock.low_52 ? stock.low_52 : stock.current_price * 0.8;
   const high52 = stock.high_52 && stock.low_52 ? stock.high_52 : stock.current_price * 1.2;
   
+  const [copied, setCopied] = useState<boolean>(false);
+
   // Calculate percentage within 52w range
   const rangeSpan = high52 - low52;
   const positionPercent = rangeSpan > 0 
     ? Math.min(Math.max(((stock.current_price - low52) / rangeSpan) * 100, 0), 100) 
     : 50;
+
+  const handleShare = async () => {
+    const verdict = stock.valuation?.verdict || 'ANALYZE';
+    const mos = stock.valuation?.margin_of_safety_percent ?? 0;
+    const fairVal = stock.valuation?.dcf_intrinsic_value ?? stock.valuation?.graham_number ?? stock.current_price;
+
+    const shareText = `📊 *${stock.name} (${stock.display_symbol})* on DhakreyStock AI:\n` +
+      `• CMP: ₹${stock.current_price.toFixed(2)}\n` +
+      `• Intrinsic Fair Value: ₹${fairVal.toFixed(2)}\n` +
+      `• Verdict: *${verdict}* (Margin of Safety: ${mos > 0 ? '+' : ''}${mos.toFixed(1)}%)\n\n` +
+      `Calculate DCF Intrinsic Value & Live IPOs on DhakreyStock AI:`;
+    
+    const shareUrl = `https://main.d2x1z9kgh5o58m.amplifyapp.com/?stock=${encodeURIComponent(stock.symbol)}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${stock.name} - DhakreyStock AI Valuation`,
+          text: shareText,
+          url: shareUrl,
+        });
+      } catch {
+        // User cancelled share dialog
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2500);
+      } catch {
+        // Fallback
+      }
+    }
+  };
 
   return (
     <div className="bg-slate-900/90 border border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl">
@@ -68,27 +104,52 @@ export const StockOverview: React.FC<StockOverviewProps> = ({
             </div>
           </div>
 
-          <button
-            onClick={onToggleWatchlist}
-            className={`p-2.5 sm:p-3 rounded-2xl border transition-all flex items-center gap-1.5 sm:gap-2 text-xs font-semibold shrink-0 active:scale-95 ${
-              isWatchlisted
-                ? 'bg-amber-500/20 text-amber-400 border-amber-500/50 shadow-lg shadow-amber-500/10'
-                : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-800 hover:text-white'
-            }`}
-            title={isWatchlisted ? 'Remove from Watchlist' : 'Save to Watchlist'}
-          >
-            {isWatchlisted ? (
-              <>
-                <BookmarkCheck className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
-                <span className="inline">Saved</span>
-              </>
-            ) : (
-              <>
-                <Bookmark className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
-                <span className="inline">Watchlist</span>
-              </>
-            )}
-          </button>
+          {/* Action CTAs: Share & Watchlist */}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={handleShare}
+              className={`p-2.5 sm:p-3 rounded-2xl border transition-all flex items-center gap-1.5 sm:gap-2 text-xs font-semibold shrink-0 active:scale-95 ${
+                copied
+                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50 shadow-lg shadow-emerald-500/10'
+                  : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-800 hover:text-white'
+              }`}
+              title="Share stock valuation analysis"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
+                  <span className="inline">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
+                  <span className="hidden xs:inline sm:inline">Share</span>
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={onToggleWatchlist}
+              className={`p-2.5 sm:p-3 rounded-2xl border transition-all flex items-center gap-1.5 sm:gap-2 text-xs font-semibold shrink-0 active:scale-95 ${
+                isWatchlisted
+                  ? 'bg-amber-500/20 text-amber-400 border-amber-500/50 shadow-lg shadow-amber-500/10'
+                  : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-800 hover:text-white'
+              }`}
+              title={isWatchlisted ? 'Remove from Watchlist' : 'Save to Watchlist'}
+            >
+              {isWatchlisted ? (
+                <>
+                  <BookmarkCheck className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+                  <span className="inline">Saved</span>
+                </>
+              ) : (
+                <>
+                  <Bookmark className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
+                  <span className="inline">Watchlist</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
