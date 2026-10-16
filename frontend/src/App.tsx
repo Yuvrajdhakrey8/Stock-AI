@@ -296,8 +296,25 @@ export function App() {
           DhakreyStock AI • Quantitative Stock & IPO Valuation Engine (NSE & BSE)
         </p>
         <p className="text-[11px] text-slate-600 mt-1">
-          Designed for long-term fundamental, swing, and IPO analysis. Financial data powered by yfinance & public registries.
+          Designed for educational, fundamental, and IPO analysis. Financial data powered by yfinance & public registries.
         </p>
+        <div className="mt-3 flex items-center justify-center gap-4 text-[11px] text-slate-500">
+          <a
+            href="/privacy-policy.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-emerald-400 transition-colors underline"
+          >
+            Privacy Policy
+          </a>
+          <span>•</span>
+          <button
+            onClick={() => setIsDownloadModalOpen(true)}
+            className="hover:text-emerald-400 transition-colors"
+          >
+            Download Mobile App
+          </button>
+        </div>
       </footer>
     </div>
   );
