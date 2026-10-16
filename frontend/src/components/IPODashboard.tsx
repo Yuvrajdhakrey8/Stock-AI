@@ -28,9 +28,27 @@ export const IPODashboard: React.FC = () => {
   const [summary, setSummary] = useState<IPOSummaryMetrics | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'gmp' | 'listing_gain' | 'issue_size' | 'date'>('gmp');
+  const [statusFilter, setStatusFilter] = useState<string>(() => {
+    try {
+      return localStorage.getItem('dhakreystock_ipo_status') || 'all';
+    } catch {
+      return 'all';
+    }
+  });
+  const [typeFilter, setTypeFilter] = useState<string>(() => {
+    try {
+      return localStorage.getItem('dhakreystock_ipo_type') || 'all';
+    } catch {
+      return 'all';
+    }
+  });
+  const [sortBy, setSortBy] = useState<'gmp' | 'listing_gain' | 'issue_size' | 'date'>(() => {
+    try {
+      return (localStorage.getItem('dhakreystock_ipo_sort') as any) || 'gmp';
+    } catch {
+      return 'gmp';
+    }
+  });
 
   // Selected IPO for detail modal
   const [selectedIPO, setSelectedIPO] = useState<IPOData | null>(null);
@@ -43,8 +61,30 @@ export const IPODashboard: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   useEffect(() => {
+    try {
+      localStorage.setItem('dhakreystock_ipo_status', statusFilter);
+    } catch (e) {
+      console.error(e);
+    }
     fetchIPOData(false);
-  }, [statusFilter, typeFilter]);
+  }, [statusFilter]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('dhakreystock_ipo_type', typeFilter);
+    } catch (e) {
+      console.error(e);
+    }
+    fetchIPOData(false);
+  }, [typeFilter]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('dhakreystock_ipo_sort', sortBy);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [sortBy]);
 
   const fetchIPOData = async (forceRefresh: boolean = false) => {
     if (forceRefresh) {

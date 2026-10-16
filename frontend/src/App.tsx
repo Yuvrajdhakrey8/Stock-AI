@@ -13,14 +13,80 @@ import type { StockAnalysisResponse, MarketIndex } from './types';
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { API_BASE_URL } from './config';
 
+// Helper to read initial state from URL parameters or localStorage
+const getInitialNavState = (): { activeTab: 'analyzer' | 'screener' | 'ipo'; currentSymbol: string } => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const urlTab = params.get('tab') as 'analyzer' | 'screener' | 'ipo' | null;
+    const urlStock = params.get('stock');
+
+    const validTabs: ('analyzer' | 'screener' | 'ipo')[] = ['analyzer', 'screener', 'ipo'];
+    const savedTab = localStorage.getItem('dhakreystock_active_tab') as 'analyzer' | 'screener' | 'ipo' | null;
+    const savedStock = localStorage.getItem('dhakreystock_current_symbol');
+
+    const activeTab: 'analyzer' | 'screener' | 'ipo' = (urlTab && validTabs.includes(urlTab))
+      ? urlTab
+      : (savedTab && validTabs.includes(savedTab))
+      ? savedTab
+      : 'analyzer';
+
+    const currentSymbol = urlStock && urlStock.trim()
+      ? urlStock.trim().toUpperCase()
+      : savedStock && savedStock.trim()
+      ? savedStock.trim().toUpperCase()
+      : 'RELIANCE.NS';
+
+    return { activeTab, currentSymbol };
+  } catch {
+    return { activeTab: 'analyzer', currentSymbol: 'RELIANCE.NS' };
+  }
+};
+
 export function App() {
-  const [currentSymbol, setCurrentSymbol] = useState<string>('RELIANCE.NS');
+  const [navState] = useState(getInitialNavState);
+  const [currentSymbol, setCurrentSymbol] = useState<string>(navState.currentSymbol);
   const [stock, setStock] = useState<StockAnalysisResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'analyzer' | 'screener' | 'ipo'>('analyzer');
+  const [activeTab, setActiveTab] = useState<'analyzer' | 'screener' | 'ipo'>(navState.activeTab);
   const [indices, setIndices] = useState<MarketIndex[]>([]);
   const [isWatchlistOpen, setIsWatchlistOpen] = useState<boolean>(false);
+
+  // Synchronize state with localStorage and URL query parameters
+  useEffect(() => {
+    try {
+      localStorage.setItem('dhakreystock_current_symbol', currentSymbol);
+      localStorage.setItem('dhakreystock_active_tab', activeTab);
+
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', activeTab);
+      if (activeTab === 'analyzer' && currentSymbol) {
+        url.searchParams.set('stock', currentSymbol);
+      } else {
+        url.searchParams.delete('stock');
+      }
+      window.history.replaceState(null, '', url.toString());
+    } catch (e) {
+      console.error('Failed to persist navigation state', e);
+    }
+  }, [currentSymbol, activeTab]);
+
+  // Handle browser back and forward button navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab') as 'analyzer' | 'screener' | 'ipo' | null;
+      const stockParam = params.get('stock');
+      if (tab && ['analyzer', 'screener', 'ipo'].includes(tab)) {
+        setActiveTab(tab);
+      }
+      if (stockParam) {
+        setCurrentSymbol(stockParam.toUpperCase());
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Watchlist persisted in localStorage
   const [watchlist, setWatchlist] = useState<WatchlistEntry[]>(() => {

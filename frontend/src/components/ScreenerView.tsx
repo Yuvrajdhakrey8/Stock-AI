@@ -8,16 +8,41 @@ interface ScreenerViewProps {
 }
 
 export const ScreenerView: React.FC<ScreenerViewProps> = ({ onSelectStock }) => {
-  const [category, setCategory] = useState<string>('nifty50');
-  const [verdictFilter, setVerdictFilter] = useState<string>('ALL');
+  const [category, setCategory] = useState<string>(() => {
+    try {
+      return localStorage.getItem('dhakreystock_screener_cat') || 'nifty50';
+    } catch {
+      return 'nifty50';
+    }
+  });
+  const [verdictFilter, setVerdictFilter] = useState<string>(() => {
+    try {
+      return localStorage.getItem('dhakreystock_screener_verdict') || 'ALL';
+    } catch {
+      return 'ALL';
+    }
+  });
   const [stocks, setStocks] = useState<ScreenerItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [sortBy, setSortBy] = useState<'margin_of_safety' | 'composite_score' | 'current_price'>('margin_of_safety');
   const [sortAsc, setSortAsc] = useState<boolean>(false);
 
   useEffect(() => {
+    try {
+      localStorage.setItem('dhakreystock_screener_cat', category);
+    } catch (e) {
+      console.error(e);
+    }
     fetchScreener(category);
   }, [category]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('dhakreystock_screener_verdict', verdictFilter);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [verdictFilter]);
 
   const fetchScreener = async (cat: string) => {
     setLoading(true);
