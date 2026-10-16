@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   X,
   TrendingUp,
@@ -13,6 +13,8 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   HelpCircle,
+  Sparkles,
+  Zap,
 } from 'lucide-react';
 import type { IPOData } from '../types';
 
@@ -23,6 +25,7 @@ interface IPODetailModalProps {
 }
 
 export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onClose }) => {
+  const [familyAccounts, setFamilyAccounts] = useState<number>(3);
   if (!isOpen || !ipo) return null;
 
   const isListed = ipo.status === 'Listed';
@@ -372,6 +375,101 @@ export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onC
               </div>
             </div>
           )}
+
+          {/* 6. IPO Allotment Strategy & Probability Maximizer */}
+          <div className="bg-gradient-to-br from-indigo-950/40 via-slate-950/90 to-slate-900/90 p-5 rounded-2xl border border-indigo-500/30 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-indigo-400" />
+                  <span>IPO Allotment Probability & Maximizer Strategy</span>
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  SEBI rules state retail allotment is done by computerized lottery. Maximize your odds mathematically.
+                </p>
+              </div>
+
+              {/* Family Accounts Selector */}
+              <div className="flex items-center gap-1.5 bg-slate-900 border border-indigo-500/30 px-2.5 py-1.5 rounded-xl self-start sm:self-auto">
+                <span className="text-[10px] text-slate-400 font-medium">Family PANs:</span>
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <button
+                    key={num}
+                    onClick={() => setFamilyAccounts(num)}
+                    className={`w-6 h-6 rounded-lg text-[11px] font-bold transition-all ${
+                      familyAccounts === num
+                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    }`}
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Probability Comparison Cards */}
+            {(() => {
+              const rawSub = ipo.subscription.final_day?.retail ?? ipo.subscription.day2?.retail ?? ipo.subscription.day1?.retail ?? 1.0;
+              const retailSub = Math.max(0.1, rawSub);
+              const singleChance = retailSub <= 1.0 ? 100 : Math.min(100, Math.round((1 / retailSub) * 1000) / 10);
+              const multiChance = retailSub <= 1.0 ? 100 : Math.min(99.9, Math.round((1 - Math.pow(1 - (singleChance / 100), familyAccounts)) * 1000) / 10);
+              const multiplier = (multiChance / singleChance).toFixed(1);
+
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                    <div className="text-[10px] text-slate-400">Current Retail Demand</div>
+                    <div className="text-lg font-bold text-white mt-0.5">{retailSub.toFixed(1)}x Overbooked</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">
+                      {retailSub <= 1.0 ? 'Guaranteed 100% 1-Lot Allotment' : `1 in every ${Math.round(retailSub)} applications wins`}
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                    <div className="text-[10px] text-slate-400">1 Demat Account (1 Lot)</div>
+                    <div className="text-lg font-bold text-amber-400 mt-0.5">{singleChance}% Chance</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Baseline single lottery odds</div>
+                  </div>
+
+                  <div className="bg-indigo-950/40 p-3 rounded-xl border border-indigo-500/40">
+                    <div className="text-[10px] text-indigo-300 font-semibold flex items-center justify-between">
+                      <span>{familyAccounts} Family Demat Accounts</span>
+                      <span className="text-[9px] px-1.5 py-0.2 bg-indigo-500 text-white rounded font-bold">+{multiplier}x Higher</span>
+                    </div>
+                    <div className="text-lg font-extrabold text-emerald-400 mt-0.5">{multiChance}% Win Chance</div>
+                    <div className="text-[10px] text-indigo-200 mt-0.5">Compound probability of ≥1 lot</div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Strategic Checklist */}
+            <div className="bg-slate-950/70 p-3.5 rounded-xl border border-slate-800/80 space-y-2">
+              <div className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-amber-400" />
+                <span>5 Golden Rules to Maximize IPO Allotment:</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-300">
+                <div className="flex items-start gap-1.5">
+                  <span className="text-emerald-400 font-bold shrink-0">1.</span>
+                  <span><strong>Different PANs Rule:</strong> Ek hi PAN se 5 lot lagane se chance nahi badhta. 3 family members ke alag PAN se 1-1 lot lagayein.</span>
+                </div>
+                <div className="flex items-start gap-1.5">
+                  <span className="text-emerald-400 font-bold shrink-0">2.</span>
+                  <span><strong>Always Bid Cut-Off Price:</strong> Lower band select karne par issue cut-off price par hote hi bid sidha reject ho jati hai.</span>
+                </div>
+                <div className="flex items-start gap-1.5">
+                  <span className="text-emerald-400 font-bold shrink-0">3.</span>
+                  <span><strong>Shareholder Quota (Double Dip):</strong> Agar parent company listed hai, to 1 share hold karke Shareholder + Retail dono me apply karein.</span>
+                </div>
+                <div className="flex items-start gap-1.5">
+                  <span className="text-emerald-400 font-bold shrink-0">4.</span>
+                  <span><strong>NetBanking ASBA Preference:</strong> UPI mandate delay ya bank server rejection se bachne ke liye NetBanking ASBA sabse safe hai.</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Footer Actions */}
