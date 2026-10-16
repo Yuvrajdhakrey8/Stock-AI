@@ -201,17 +201,25 @@ export const IPODashboard: React.FC = () => {
       {/* KPI Summary Cards Bar */}
       {summary && (
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
-          {/* Card 1: Open IPOs */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-sm">
-            <div className="flex items-center justify-between text-slate-400 text-[11px] sm:text-xs">
-              <span>Open</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            {/* Card 1: Open IPOs */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-sm">
+              <div className="flex items-center justify-between text-slate-400 text-[11px] sm:text-xs">
+                <span>Open</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              </div>
+              <div className="text-xl sm:text-2xl font-bold text-white mt-1">
+                {summary.open_count} <span className="text-[10px] sm:text-xs text-emerald-400 font-medium">Bidding</span>
+              </div>
+              <div className="text-[10px] sm:text-[11px] mt-0.5 truncate">
+                {summary.closes_today_count && summary.closes_today_count > 0 ? (
+                  <span className="text-amber-400 font-semibold flex items-center gap-1">
+                    <Clock className="w-3 h-3 shrink-0" /> {summary.closes_today_count} Closes Today!
+                  </span>
+                ) : (
+                  <span className="text-slate-500">Accepting Bids</span>
+                )}
+              </div>
             </div>
-            <div className="text-xl sm:text-2xl font-bold text-white mt-1">
-              {summary.open_count} <span className="text-[10px] sm:text-xs text-emerald-400 font-medium">Bidding</span>
-            </div>
-            <div className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 truncate">Accepting Bids</div>
-          </div>
 
           {/* Card 2: Upcoming */}
           <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-sm">
@@ -370,15 +378,21 @@ export const IPODashboard: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-3">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                        ipo.status === 'Open'
-                          ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 animate-pulse'
-                          : ipo.status === 'Upcoming'
-                          ? 'bg-sky-500/20 text-sky-400 border-sky-500/40'
-                          : 'bg-slate-800 text-slate-400 border-slate-700'
-                      }`}>
-                        {ipo.status}
-                      </span>
+                      {ipo.closes_today ? (
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> Closes Today
+                        </span>
+                      ) : (
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                          ipo.status === 'Open'
+                            ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 animate-pulse'
+                            : ipo.status === 'Upcoming'
+                            ? 'bg-sky-500/20 text-sky-400 border-sky-500/40'
+                            : 'bg-slate-800 text-slate-400 border-slate-700'
+                        }`}>
+                          {ipo.status}
+                        </span>
+                      )}
                       <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800/80 text-slate-300 font-semibold border border-slate-700/60">
                         {ipo.ipo_type}
                       </span>
@@ -426,8 +440,8 @@ export const IPODashboard: React.FC = () => {
                     <div>
                       <div className="text-[10px] text-slate-500">Issue Size</div>
                       <div className="font-bold text-white mt-0.5">₹{ipo.issue_size_cr.toLocaleString('en-IN')} Cr</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">
-                        {ipo.close_date ? `Closes: ${ipo.close_date}` : 'Dates TBA'}
+                      <div className={`text-[10px] mt-0.5 ${ipo.closes_today ? 'text-amber-400 font-bold' : 'text-slate-400'}`}>
+                        {ipo.closes_today ? '⚡ Closes Today!' : (ipo.close_date ? `Closes: ${ipo.close_date}` : 'Dates TBA')}
                       </div>
                     </div>
                   </div>

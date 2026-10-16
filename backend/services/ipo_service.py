@@ -12,7 +12,7 @@ from typing import List, Dict, Any, Optional
 import requests
 from bs4 import BeautifulSoup
 import re
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from cachetools import TTLCache
 import logging
 
@@ -21,6 +21,19 @@ logger = logging.getLogger(__name__)
 # Cache live IPO results for 15 minutes to balance real-time freshness and fast response
 live_ipo_cache = TTLCache(maxsize=10, ttl=900)
 CACHE_KEY = "live_indian_ipos"
+
+
+def extract_clean_date(text: str) -> str:
+    """Extract clean date string e.g. '16-Oct' from strings containing GMP or extra digits."""
+    if not text:
+        return ""
+    m = re.search(r'(\d{1,2}-[A-Za-z]{3}(?:-\d{2,4})?)', text)
+    if m:
+        return m.group(1)
+    m2 = re.search(r'(\d{1,2}\s+[A-Za-z]{3})', text)
+    if m2:
+        return m2.group(1)
+    return text.replace('GMP:', '').strip()
 
 
 def decode_cloudflare_email(cf_hex: str) -> str:
@@ -79,12 +92,32 @@ class IPOService:
                         is_sme = ('SME' in td0_text) or ('BSE SME' in td0_text) or ('NSE SME' in td0_text)
                         ipo_type = "SME" if is_sme else "Mainboard"
 
+                        # Clean Dates
+                        open_d = extract_clean_date(tds[7].get_text(strip=True))
+                        close_d = extract_clean_date(tds[8].get_text(strip=True))
+                        listing_d = extract_clean_date(tds[10].get_text(strip=True))
+
+                        # Determine if closing today in IST (UTC+5:30)
+                        ist_now = datetime.now(timezone(timedelta(hours=5, minutes=30)))
+                        today_ist = ist_now.strftime('%d-%b').lower()
+                        today_alt = f"{ist_now.day}-{ist_now.strftime('%b').lower()}"
+                        close_d_lower = close_d.lower()
+
+                        is_closing_today = (
+                            ('IPOCT' in td0_text) or ('SMECT' in td0_text) or
+                            ('IPO CT' in td0_text) or ('SME CT' in td0_text) or
+                            (close_d_lower in (today_ist, today_alt))
+                        )
+
                         # Status identification
                         if 'IPOU' in td0_text or 'SMEU' in td0_text:
                             status = "Upcoming"
+                        elif is_closing_today:
+                            # Closes Today is an actively bidding IPO on its final day
+                            status = "Open"
                         elif 'IPOO' in td0_text or 'SMEO' in td0_text:
                             status = "Open"
-                        elif 'IPOC' in td0_text or 'SMEC' in td0_text or 'IPOCT' in td0_text or 'SMECT' in td0_text:
+                        elif 'IPOC' in td0_text or 'SMEC' in td0_text:
                             status = "Closed"
                         else:
                             status = "Listed"
@@ -105,11 +138,6 @@ class IPOService:
                         size_str = tds[5].get_text(strip=True).replace(',', '')
                         size_match = re.search(r'([0-9]+(?:\.[0-9]+)?)', size_str)
                         issue_size_cr = float(size_match.group(1)) if size_match else (50.0 if is_sme else 1000.0)
-
-                        # Dates
-                        open_d = tds[7].get_text(strip=True).replace('GMP:', '').strip()
-                        close_d = tds[8].get_text(strip=True).replace('GMP:', '').strip()
-                        listing_d = tds[10].get_text(strip=True).replace('GMP:', '').strip()
 
                         # GMP
                         gmp_text = tds[1].get_text(strip=True)
@@ -149,6 +177,7 @@ class IPOService:
                         # If listed or has listing price
                         if status == "Listed" or actual_list_price is not None:
                             status = "Listed"
+                            is_closing_today = False
                             if not actual_list_price:
                                 actual_list_price = round(issue_price * (1 + gmp_closing_percent / 100.0), 2)
 
@@ -272,6 +301,7 @@ class IPOService:
                             "symbol": f"{clean_name.upper().replace(' ', '')[:8]}.NS",
                             "ipo_type": ipo_type,
                             "status": status,
+                            "closes_today": is_closing_today,
                             "sector": f"{ipo_type} Equities",
                             "open_date": open_d,
                             "close_date": close_d,
@@ -312,7 +342,16 @@ class IPOService:
         ipos = cls.fetch_live_ipos(force_refresh=refresh)
 
         if status_filter != "all":
-            ipos = [item for item in ipos if item["status"].lower() == status_filter.lower()]
+            sf = status_filter.lower()
+            if sf == "open":
+                # Open includes currently open IPOs AND IPOs closing today
+                ipos = [item for item in ipos if item["status"].lower() == "open"]
+            elif sf in ("closes_today", "closing_today"):
+                ipos = [item for item in ipos if item.get("closes_today")]
+            elif sf == "closed":
+                ipos = [item for item in ipos if item["status"].lower() == "closed" and not item.get("closes_today")]
+            else:
+                ipos = [item for item in ipos if item["status"].lower() == sf]
 
         if type_filter != "all":
             ipos = [item for item in ipos if item["ipo_type"].lower() == type_filter.lower()]
@@ -333,7 +372,9 @@ class IPOService:
         """Calculates dashboard summary metrics for the IPO market based on live data."""
         ipos = cls.fetch_live_ipos()
 
-        open_count = len([i for i in ipos if i["status"] == "Open"])
+        open_ipos = [i for i in ipos if i["status"] == "Open"]
+        open_count = len(open_ipos)
+        closes_today_count = len([i for i in open_ipos if i.get("closes_today")])
         upcoming_count = len([i for i in ipos if i["status"] == "Upcoming"])
         listed_ipos = [i for i in ipos if i["status"] == "Listed" and i.get("listing")]
 
@@ -344,8 +385,10 @@ class IPOService:
         worst = min(listed_ipos, key=lambda x: x["listing"]["listing_gain_percent"]) if listed_ipos else None
         total_profit = sum(i["listing"]["profit_per_lot"] for i in listed_ipos if i.get("listing"))
 
+        ist_now = datetime.now(timezone(timedelta(hours=5, minutes=30)))
         return {
             "open_count": open_count,
+            "closes_today_count": closes_today_count,
             "upcoming_count": upcoming_count,
             "total_listed_tracked": len(listed_ipos),
             "average_listing_gain_percent": avg_gain,
@@ -360,7 +403,7 @@ class IPOService:
                 "profit_per_lot": worst["listing"]["profit_per_lot"],
             } if worst else None,
             "total_1_lot_profit_sum": total_profit,
-            "last_updated": datetime.now().strftime("%d %b %Y, %I:%M %p IST")
+            "last_updated": ist_now.strftime("%d %b %Y, %I:%M %p IST")
         }
 
     @classmethod

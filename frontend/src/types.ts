@@ -169,6 +169,7 @@ export interface IPOData {
   symbol: string;
   ipo_type: "Mainboard" | "SME";
   status: "Upcoming" | "Open" | "Closed" | "Listed";
+  closes_today?: boolean;
   sector: string;
   open_date: string;
   close_date: string;
@@ -195,6 +196,7 @@ export interface IPOData {
 
 export interface IPOSummaryMetrics {
   open_count: number;
+  closes_today_count?: number;
   upcoming_count: number;
   total_listed_tracked: number;
   average_listing_gain_percent: number;

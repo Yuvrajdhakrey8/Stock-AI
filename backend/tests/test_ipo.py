@@ -54,3 +54,11 @@ def test_api_ipo_endpoints():
         res_cmp = client.get(f"/api/ipo/compare?ids={id1},{id2}")
         assert res_cmp.status_code == 200
         assert res_cmp.json()["count"] == 2
+
+
+def test_ipo_closes_today():
+    """Verify that IPOs closing today are included in Open list and have closes_today attribute."""
+    open_ipos = IPOService.get_all_ipos(status_filter="open")
+    assert all("closes_today" in i for i in open_ipos)
+    summary = IPOService.get_summary_metrics()
+    assert "closes_today_count" in summary

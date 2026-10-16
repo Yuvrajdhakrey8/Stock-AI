@@ -52,7 +52,9 @@ export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onC
                 {ipo.name}
               </h2>
               <span className={`px-2 py-0.2 rounded-full text-[10px] sm:text-xs font-bold border ${
-                ipo.status === 'Open'
+                ipo.closes_today
+                  ? 'bg-amber-500/20 text-amber-400 border-amber-500/50 animate-pulse'
+                  : ipo.status === 'Open'
                   ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50 animate-pulse'
                   : ipo.status === 'Upcoming'
                   ? 'bg-sky-500/20 text-sky-400 border-sky-500/50'
@@ -60,7 +62,7 @@ export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onC
                   ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/50'
                   : 'bg-slate-800 text-slate-400 border-slate-700'
               }`}>
-                {ipo.status}
+                {ipo.closes_today ? 'CLOSES TODAY' : ipo.status}
               </span>
               <span className="text-[10px] sm:text-xs font-semibold px-2 py-0.2 rounded bg-slate-800 text-slate-300 border border-slate-700">
                 {ipo.ipo_type} IPO
