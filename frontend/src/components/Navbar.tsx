@@ -119,10 +119,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             {onOpenDownloadApp && (
               <button
                 onClick={onOpenDownloadApp}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-indigo-500/20 border border-emerald-500/40 hover:border-emerald-400 text-emerald-300 hover:text-white text-xs font-semibold transition-all shadow-sm shrink-0"
+                className="relative group flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-emerald-500/25 via-teal-500/20 to-indigo-500/25 hover:from-emerald-500/35 hover:to-indigo-500/35 border border-emerald-500/50 hover:border-emerald-400 text-emerald-300 hover:text-white text-xs font-semibold transition-all duration-300 hover:scale-105 active:scale-95 shadow-sm shadow-emerald-500/10 shrink-0"
                 title="Download Android Mobile App"
               >
-                <Smartphone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                {/* Subtle beacon pulse on top right corner */}
+                <span className="absolute -top-1 -right-1 flex h-2 w-2 pointer-events-none">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+
+                <Smartphone className="w-3.5 h-3.5 text-emerald-400 shrink-0 group-hover:-rotate-12 transition-transform duration-300" />
                 <span className="hidden sm:inline">Get App</span>
               </button>
             )}

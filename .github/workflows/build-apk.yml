@@ -1,0 +1,71 @@
+name: Build Android APK (CI/CD)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build Web App & Sync Capacitor
+        working-directory: frontend
+        run: |
+          npm run build
+          npx cap sync android
+
+      - name: Make Gradle Wrapper Executable
+        working-directory: frontend/android
+        run: chmod +x gradlew
+
+      - name: Build Android Debug APK
+        working-directory: frontend/android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Rename APK
+        run: |
+          cp frontend/android/app/build/outputs/apk/debug/app-debug.apk DhakreyStock-AI.apk
+
+      - name: Upload APK as Workflow Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DhakreyStock-AI-APK
+          path: DhakreyStock-AI.apk
+          retention-days: 30
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/heads/main')
+        with:
+          tag_name: mobile-latest
+          name: "DhakreyStock AI Mobile APK"
+          body: "Latest compiled Android APK for DhakreyStock AI. Download and install on Android phone."
+          draft: false
+          prerelease: false
+          files: DhakreyStock-AI.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
