@@ -8,6 +8,8 @@ import { TechnicalChart } from './components/TechnicalChart';
 import { ScreenerView } from './components/ScreenerView';
 import { IPODashboard } from './components/IPODashboard';
 import { WatchlistDrawer } from './components/WatchlistDrawer';
+import { DownloadAppModal } from './components/DownloadAppModal';
+import { adService } from './services/adService';
 import type { WatchlistEntry } from './components/WatchlistDrawer';
 import type { StockAnalysisResponse, MarketIndex } from './types';
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
@@ -51,6 +53,12 @@ export function App() {
   const [activeTab, setActiveTab] = useState<'analyzer' | 'screener' | 'ipo'>(navState.activeTab);
   const [indices, setIndices] = useState<MarketIndex[]>([]);
   const [isWatchlistOpen, setIsWatchlistOpen] = useState<boolean>(false);
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState<boolean>(false);
+
+  // Initialize Native Mobile AdMob ads if running on Android/iOS
+  useEffect(() => {
+    adService.initialize();
+  }, []);
 
   // Synchronize state with localStorage and URL query parameters
   useEffect(() => {
@@ -181,6 +189,7 @@ export function App() {
         indices={indices}
         watchlistCount={watchlist.length}
         onOpenWatchlist={() => setIsWatchlistOpen(true)}
+        onOpenDownloadApp={() => setIsDownloadModalOpen(true)}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
@@ -273,6 +282,12 @@ export function App() {
         watchlist={watchlist}
         onSelectStock={handleSelectStock}
         onRemoveFromWatchlist={handleRemoveFromWatchlist}
+      />
+
+      {/* Download App Modal & Smart Banner */}
+      <DownloadAppModal
+        forceOpen={isDownloadModalOpen}
+        onClose={() => setIsDownloadModalOpen(false)}
       />
 
       {/* Footer */}

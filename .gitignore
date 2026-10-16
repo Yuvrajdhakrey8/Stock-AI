@@ -34,3 +34,14 @@ Thumbs.db
 .env
 *.env
 .env.*
+
+# Android Gradle
+frontend/android/.gradle/
+frontend/android/build/
+frontend/android/app/build/
+frontend/android/.idea/
+frontend/android/*.iml
+frontend/android/app/*.iml
+frontend/android/local.properties
+frontend/android/captures/
+frontend/android/.externalNativeBuild/
