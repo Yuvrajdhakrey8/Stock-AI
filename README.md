@@ -123,3 +123,15 @@ $env:PYTHONPATH="backend"
 .\backend\venv\Scripts\pytest.exe backend\tests -v
 ```
 All tests verify Graham number, DCF calculations, RSI edge cases, verdict classifications, and API routes.
+
+---
+
+## 📱 Mobile App (Android APK & Google Play Store)
+
+DhakreyStock AI is packaged as a high-performance native Android app powered by Capacitor:
+- **Direct Sideload APK**: Downloadable directly from [GitHub Releases](https://github.com/Yuvrajdhakrey8/Stock-AI/releases/tag/mobile-latest) (`DhakreyStock-AI.apk`).
+- **Google Play Store Bundle**: Official production-ready Android App Bundle (`DhakreyStock-AI.aab`).
+- **Google AdMob Monetization**: Integrated with banner and interstitial ads for passive revenue.
+- **Privacy Policy Compliance**: Public legal disclosure hosted at `/privacy-policy.html`.
+- **Viral 1-Click Sharing**: Share live DCF valuations, margin of safety, and IPO GMP analysis directly via WhatsApp and social apps.
+- **Automated CI/CD**: Cloud compilation via GitHub Actions (`.github/workflows/build-apk.yml`) on every push to `main`.
