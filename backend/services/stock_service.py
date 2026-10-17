@@ -9,12 +9,15 @@ from cachetools import TTLCache
 from .ticker_catalog import normalize_ticker, STOCKS_DATABASE
 from .valuation_engine import ValuationEngine
 import logging
+import concurrent.futures
+from .screener_snapshot import get_category_snapshot
 
 logger = logging.getLogger(__name__)
 
 # Cache for 10 minutes to deliver lightning-fast responses & protect against rate limits
 stock_cache = TTLCache(maxsize=300, ttl=600)
 history_cache = TTLCache(maxsize=300, ttl=600)
+screener_cache = TTLCache(maxsize=50, ttl=1800)
 
 
 class StockService:
@@ -151,43 +154,90 @@ class StockService:
             return None
 
     @classmethod
-    def get_screener_results(cls, category: str = "nifty50", limit: int = 30) -> List[Dict[str, Any]]:
+    def get_screener_results(cls, category: str = "nifty50", limit: int = 25) -> List[Dict[str, Any]]:
         """
         Produces screener data for top stocks with their valuation verdicts.
+        Uses screener_cache, pre-computed snapshots, and parallel worker threads
+        to ensure sub-second response times and zero Lambda timeouts.
         """
-        # Select list of tickers
+        cache_key = f"{category.lower()}_{limit}"
+        if cache_key in screener_cache:
+            return screener_cache[cache_key]
+
+        # 1. Start with verified baseline snapshot
+        base_items = get_category_snapshot(category, limit)
+        items_by_sym = {it["symbol"]: it for it in base_items}
+
+        # 2. Select candidates
         from .ticker_catalog import get_screener_stocks
         candidates = get_screener_stocks(category)[:limit]
 
-        screener_items = []
-        for stock_meta in candidates:
-            sym = stock_meta["symbol"]
-            try:
-                # If in cache, use cached; else fetch
-                data = cls.get_stock_data(sym)
-                if data:
-                    screener_items.append({
-                        "symbol": data["symbol"],
-                        "display_symbol": data["display_symbol"],
-                        "name": data["name"],
-                        "exchange": data["exchange"],
-                        "sector": data["sector"],
-                        "current_price": data["current_price"],
-                        "change_percent": data["change_percent"],
-                        "fair_value": data["valuation"]["fair_value"],
-                        "margin_of_safety": data["valuation"]["margin_of_safety_percent"],
-                        "composite_score": data["valuation"]["composite_score"],
-                        "verdict": data["valuation"]["verdict"],
-                        "verdict_badge": data["valuation"]["verdict_badge"],
-                        "pe_ratio": data["ratios"]["pe_ratio"],
-                        "roe": data["ratios"]["roe"],
-                        "rsi": data["valuation"]["rsi"],
-                    })
-            except Exception as ex:
-                logger.warning(f"Failed to screen {sym}: {ex}")
-                continue
+        # 3. Check what is already in stock_cache
+        uncached_syms = []
+        for c in candidates:
+            sym = c["symbol"]
+            if sym in stock_cache:
+                data = stock_cache[sym]
+                items_by_sym[sym] = {
+                    "symbol": data["symbol"],
+                    "display_symbol": data["display_symbol"],
+                    "name": data["name"],
+                    "exchange": data["exchange"],
+                    "sector": data["sector"],
+                    "current_price": data["current_price"],
+                    "change_percent": data["change_percent"],
+                    "fair_value": data["valuation"]["fair_value"],
+                    "margin_of_safety": data["valuation"]["margin_of_safety_percent"],
+                    "composite_score": data["valuation"]["composite_score"],
+                    "verdict": data["valuation"]["verdict"],
+                    "verdict_badge": data["valuation"]["verdict_badge"],
+                    "pe_ratio": data["ratios"]["pe_ratio"],
+                    "roe": data["ratios"]["roe"],
+                    "rsi": data["valuation"]["rsi"],
+                }
+            else:
+                uncached_syms.append(sym)
 
-        return screener_items
+        # 4. If there are uncached stocks, refresh them concurrently with a strict 4.5s ceiling
+        if uncached_syms:
+            def fetch_single(sym: str):
+                try:
+                    return sym, cls.get_stock_data(sym)
+                except Exception as ex:
+                    logger.debug(f"Live fetch skipped for {sym}: {ex}")
+                    return sym, None
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(uncached_syms), 8)) as executor:
+                future_to_sym = {executor.submit(fetch_single, sym): sym for sym in uncached_syms}
+                done, _ = concurrent.futures.wait(future_to_sym.keys(), timeout=4.5)
+                for f in done:
+                    try:
+                        sym, data = f.result()
+                        if data:
+                            items_by_sym[sym] = {
+                                "symbol": data["symbol"],
+                                "display_symbol": data["display_symbol"],
+                                "name": data["name"],
+                                "exchange": data["exchange"],
+                                "sector": data["sector"],
+                                "current_price": data["current_price"],
+                                "change_percent": data["change_percent"],
+                                "fair_value": data["valuation"]["fair_value"],
+                                "margin_of_safety": data["valuation"]["margin_of_safety_percent"],
+                                "composite_score": data["valuation"]["composite_score"],
+                                "verdict": data["valuation"]["verdict"],
+                                "verdict_badge": data["valuation"]["verdict_badge"],
+                                "pe_ratio": data["ratios"]["pe_ratio"],
+                                "roe": data["ratios"]["roe"],
+                                "rsi": data["valuation"]["rsi"],
+                            }
+                    except Exception as ex:
+                        logger.debug(f"Future extraction failed: {ex}")
+
+        # Assemble final ordered list
+        results = [items_by_sym[c["symbol"]] for c in candidates if c["symbol"] in items_by_sym]
+        screener_cache[cache_key] = results
+        return results
 
     @staticmethod
     def _format_inr_crores(amount: Optional[int]) -> str:

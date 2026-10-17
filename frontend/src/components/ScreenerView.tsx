@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Filter, ArrowUpDown, ChevronRight, Loader2, Sparkles, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Filter, ArrowUpDown, ChevronRight, Loader2, Sparkles, ShieldCheck, AlertTriangle, RefreshCw, AlertCircle } from 'lucide-react';
 import type { ScreenerItem } from '../types';
 import { API_BASE_URL } from '../config';
 
@@ -22,8 +22,27 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({ onSelectStock }) => 
       return 'ALL';
     }
   });
-  const [stocks, setStocks] = useState<ScreenerItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+
+  // Client-side cache: load instantly if available
+  const [stocks, setStocks] = useState<ScreenerItem[]>(() => {
+    try {
+      const cached = sessionStorage.getItem(`dhakreystock_screener_${category}`);
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [loading, setLoading] = useState<boolean>(() => {
+    try {
+      return !sessionStorage.getItem(`dhakreystock_screener_${category}`);
+    } catch {
+      return true;
+    }
+  });
+
+  const [isBackgroundRefreshing, setIsBackgroundRefreshing] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'margin_of_safety' | 'composite_score' | 'current_price'>('margin_of_safety');
   const [sortAsc, setSortAsc] = useState<boolean>(false);
 
@@ -33,6 +52,20 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({ onSelectStock }) => 
     } catch (e) {
       console.error(e);
     }
+
+    // Check if we already have this category cached
+    try {
+      const cached = sessionStorage.getItem(`dhakreystock_screener_${category}`);
+      if (cached) {
+        setStocks(JSON.parse(cached));
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+    } catch {
+      setLoading(true);
+    }
+
     fetchScreener(category);
   }, [category]);
 
@@ -45,17 +78,36 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({ onSelectStock }) => 
   }, [verdictFilter]);
 
   const fetchScreener = async (cat: string) => {
-    setLoading(true);
+    setError(null);
+    const hasCachedData = stocks.length > 0;
+    if (hasCachedData) {
+      setIsBackgroundRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/screener?category=${cat}`);
       if (res.ok) {
         const data = await res.json();
-        setStocks(data.stocks || []);
+        const items = data.stocks || [];
+        setStocks(items);
+        try {
+          sessionStorage.setItem(`dhakreystock_screener_${cat}`, JSON.stringify(items));
+        } catch {
+          // Ignore storage overflow
+        }
+      } else {
+        throw new Error(`Server returned HTTP ${res.status}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to fetch screener stocks:', err);
+      if (stocks.length === 0) {
+        setError(err.message || 'Error connecting to screener service.');
+      }
     } finally {
       setLoading(false);
+      setIsBackgroundRefreshing(false);
     }
   };
 
@@ -146,15 +198,35 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({ onSelectStock }) => 
 
       {/* Table Results */}
       <div className="bg-slate-900/90 border border-slate-800 rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl">
-        <div className="sm:hidden px-4 py-2 bg-slate-950/60 border-b border-slate-800 text-[10px] text-slate-400 text-center flex items-center justify-center gap-1">
-          <span>Swipe horizontally to view full metrics →</span>
+        <div className="px-4 py-2 bg-slate-950/60 border-b border-slate-800 text-[10px] text-slate-400 flex items-center justify-between">
+          <span className="sm:hidden">Swipe horizontally to view full metrics →</span>
+          <span className="hidden sm:inline">Ranked by quantitative margin of safety & composite score</span>
+          {isBackgroundRefreshing && (
+            <span className="inline-flex items-center gap-1.5 text-emerald-400 font-medium">
+              <Loader2 className="w-3 h-3 animate-spin" /> Updating live prices...
+            </span>
+          )}
         </div>
+
         {loading ? (
           <div className="p-16 text-center space-y-3">
             <Loader2 className="w-8 h-8 text-emerald-400 animate-spin mx-auto" />
             <p className="text-xs sm:text-sm text-slate-400">
               Running hybrid valuation algorithms for {category} equities...
             </p>
+          </div>
+        ) : error && sortedStocks.length === 0 ? (
+          <div className="p-12 text-center space-y-3">
+            <AlertCircle className="w-8 h-8 text-rose-400 mx-auto" />
+            <h4 className="text-sm font-bold text-white">Screener Data Unavailable</h4>
+            <p className="text-xs text-rose-300 max-w-sm mx-auto">{error}</p>
+            <button
+              onClick={() => fetchScreener(category)}
+              className="mt-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Retry</span>
+            </button>
           </div>
         ) : sortedStocks.length === 0 ? (
           <div className="p-16 text-center text-slate-500 text-xs sm:text-sm">

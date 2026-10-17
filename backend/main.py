@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger("stock_app")
 
 app = FastAPI(
-    title="DhakreyStock AI - Indian Stock & IPO Market Valuation API",
+    title="Stocks Suggestions - Dhakrey - Indian Stock & IPO Market Valuation API",
     description="Analyzes NSE and BSE listed stocks and live IPOs using a quantitative hybrid fundamental-technical valuation model to determine whether a stock is a Best Buy, At Fair Price, or Currently Expensive.",
     version="1.0.0"
 )
@@ -33,7 +33,7 @@ app.add_middleware(
 @app.get("/")
 def root():
     return {
-        "app": "DhakreyStock AI - Indian Stock & IPO Valuation Engine",
+        "app": "Stocks Suggestions - Dhakrey - Indian Stock & IPO Valuation Engine",
         "status": "online",
         "coverage": ["NSE", "BSE"],
         "docs_url": "/docs"

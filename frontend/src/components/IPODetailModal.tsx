@@ -39,7 +39,7 @@ export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onC
 
   const handleShare = async () => {
     const gmpText = ipo.gmp_closing_day ? `₹${ipo.gmp_closing_day} (${ipo.gmp_closing_percent.toFixed(1)}%)` : 'Live';
-    const shareText = `🚀 *${ipo.name} (${ipo.ipo_type} IPO)* on DhakreyStock AI:\n` +
+    const shareText = `🚀 *${ipo.name} (${ipo.ipo_type} IPO)* on Stocks Suggestions - Dhakrey:\n` +
       `• Price Band: ${ipo.price_band}\n` +
       `• Closing GMP: ${gmpText}\n` +
       `• Est. Listing: ₹${ipo.gmp_estimated_listing}\n` +

@@ -352,7 +352,7 @@ export function App() {
         Capacitor.isNativePlatform() ? 'pb-admob-buffer' : ''
       }`}>
         <p>
-          DhakreyStock AI • Quantitative Stock & IPO Valuation Engine (NSE & BSE)
+          Stocks Suggestions - Dhakrey • Quantitative Stock & IPO Valuation Engine (NSE & BSE)
         </p>
         <p className="text-[11px] text-slate-600 mt-1">
           Designed for educational, fundamental, and IPO analysis. Financial data powered by yfinance & public registries.

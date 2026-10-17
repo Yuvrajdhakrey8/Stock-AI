@@ -61,7 +61,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <span className="text-base sm:text-lg font-bold tracking-tight text-white truncate">
-                  Dhakrey<span className="text-emerald-400">Stock</span> AI
+                  Stocks Suggestions - <span className="text-emerald-400">Dhakrey</span>
                 </span>
                 <span className="text-[9px] sm:text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800/80 px-1.5 sm:px-2 py-0.2 rounded-full font-semibold uppercase tracking-wider shrink-0">
                   NSE & BSE

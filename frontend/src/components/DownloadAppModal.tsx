@@ -91,7 +91,7 @@ export const DownloadAppModal: React.FC<DownloadAppModalProps> = ({ forceOpen = 
               <Sparkles className="w-3 h-3" /> Android APK
             </div>
             <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
-              Download DhakreyStock AI Mobile App
+              Download Stocks Suggestions - Dhakrey App
             </h3>
           </div>
         </div>

@@ -30,18 +30,18 @@ export const StockOverview: React.FC<StockOverviewProps> = ({
     const mos = stock.valuation?.margin_of_safety_percent ?? 0;
     const fairVal = stock.valuation?.dcf_intrinsic_value ?? stock.valuation?.graham_number ?? stock.current_price;
 
-    const shareText = `📊 *${stock.name} (${stock.display_symbol})* on DhakreyStock AI:\n` +
+    const shareText = `📊 *${stock.name} (${stock.display_symbol})* on Stocks Suggestions - Dhakrey:\n` +
       `• CMP: ₹${stock.current_price.toFixed(2)}\n` +
       `• Intrinsic Fair Value: ₹${fairVal.toFixed(2)}\n` +
       `• Verdict: *${verdict}* (Margin of Safety: ${mos > 0 ? '+' : ''}${mos.toFixed(1)}%)\n\n` +
-      `Calculate DCF Intrinsic Value & Live IPOs on DhakreyStock AI:`;
+      `Calculate DCF Intrinsic Value & Live IPOs on Stocks Suggestions - Dhakrey:`;
     
     const shareUrl = `https://main.d2x1z9kgh5o58m.amplifyapp.com/?stock=${encodeURIComponent(stock.symbol)}`;
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${stock.name} - DhakreyStock AI Valuation`,
+          title: `${stock.name} - Stocks Suggestions - Dhakrey Valuation`,
           text: shareText,
           url: shareUrl,
         });
