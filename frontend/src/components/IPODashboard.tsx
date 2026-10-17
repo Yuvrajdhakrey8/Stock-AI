@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Sparkles,
   TrendingUp,
@@ -17,6 +17,7 @@ import {
   Loader2,
   Scale,
   RefreshCw,
+  Check,
 } from 'lucide-react';
 import type { IPOData, IPOSummaryMetrics } from '../types';
 import { IPODetailModal } from './IPODetailModal';
@@ -60,6 +61,31 @@ export const IPODashboard: React.FC = () => {
   const [isCompareOpen, setIsCompareOpen] = useState<boolean>(false);
 
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  const handleStatusCardClick = (status: 'open' | 'upcoming' | 'listed') => {
+    if (statusFilter === status && typeFilter === 'all') {
+      setStatusFilter('all');
+    } else {
+      setStatusFilter(status);
+      setTypeFilter('all');
+    }
+    setTimeout(() => {
+      listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 60);
+  };
+
+  const handleSmeCardClick = () => {
+    if (typeFilter === 'sme') {
+      setTypeFilter('all');
+    } else {
+      setTypeFilter('sme');
+      setStatusFilter('all');
+    }
+    setTimeout(() => {
+      listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 60);
+  };
 
   // Mobile Back Button Handler for IPODashboard Modals
   useEffect(() => {
@@ -215,79 +241,168 @@ export const IPODashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Summary Cards Bar */}
+      {/* Groww-style Interactive Category Cards */}
       {summary && (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
-            {/* Card 1: Open IPOs */}
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-sm">
-              <div className="flex items-center justify-between text-slate-400 text-[11px] sm:text-xs">
-                <span>Open</span>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              </div>
-              <div className="text-xl sm:text-2xl font-bold text-white mt-1">
-                {summary.open_count} <span className="text-[10px] sm:text-xs text-emerald-400 font-medium">Bidding</span>
-              </div>
-              <div className="text-[10px] sm:text-[11px] mt-0.5 truncate">
-                {summary.closes_today_count && summary.closes_today_count > 0 ? (
-                  <span className="text-amber-400 font-semibold flex items-center gap-1">
-                    <Clock className="w-3 h-3 shrink-0" /> {summary.closes_today_count} Closes Today!
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
+            {/* Card 1: Open for Bidding */}
+            <div
+              onClick={() => handleStatusCardClick('open')}
+              className={`rounded-2xl p-3.5 sm:p-4 transition-all cursor-pointer shadow-md group relative overflow-hidden active:scale-[0.98] ${
+                statusFilter === 'open' && typeFilter === 'all'
+                  ? 'bg-emerald-950/50 border-2 border-emerald-500 ring-2 ring-emerald-500/30'
+                  : 'bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 hover:bg-slate-850'
+              }`}
+            >
+              <div className="flex items-center justify-between text-slate-300 text-[11px] sm:text-xs">
+                <span className="font-semibold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  Open Now
+                </span>
+                {statusFilter === 'open' && typeFilter === 'all' ? (
+                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-900/50 px-2 py-0.5 rounded-full border border-emerald-500/40">
+                    Active
                   </span>
                 ) : (
-                  <span className="text-slate-500">Accepting Bids</span>
+                  <span className="text-[10px] text-slate-500 group-hover:text-emerald-400 font-medium">Filter</span>
                 )}
+              </div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-white mt-1.5 flex items-baseline gap-1.5">
+                <span>{summary.open_count}</span>
+                <span className="text-[11px] sm:text-xs text-emerald-400 font-medium">Bidding Live</span>
+              </div>
+              <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/60 text-[10px] sm:text-[11px]">
+                <span className={summary.closes_today_count && summary.closes_today_count > 0 ? 'text-amber-400 font-semibold' : 'text-slate-400'}>
+                  {summary.closes_today_count && summary.closes_today_count > 0 ? `⚡ ${summary.closes_today_count} Closes Today!` : 'Accepting Bids'}
+                </span>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
               </div>
             </div>
 
-          {/* Card 2: Upcoming */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-sm">
-            <div className="text-slate-400 text-[11px] sm:text-xs">Upcoming</div>
-            <div className="text-xl sm:text-2xl font-bold text-sky-400 mt-1">
-              {summary.upcoming_count} <span className="text-[10px] sm:text-xs text-slate-400 font-normal">Issues</span>
+            {/* Card 2: Upcoming Issues */}
+            <div
+              onClick={() => handleStatusCardClick('upcoming')}
+              className={`rounded-2xl p-3.5 sm:p-4 transition-all cursor-pointer shadow-md group relative overflow-hidden active:scale-[0.98] ${
+                statusFilter === 'upcoming' && typeFilter === 'all'
+                  ? 'bg-sky-950/50 border-2 border-sky-500 ring-2 ring-sky-500/30'
+                  : 'bg-slate-900/90 border border-slate-800 hover:border-sky-500/50 hover:bg-slate-850'
+              }`}
+            >
+              <div className="flex items-center justify-between text-slate-300 text-[11px] sm:text-xs">
+                <span className="font-semibold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-sky-400" />
+                  Upcoming
+                </span>
+                {statusFilter === 'upcoming' && typeFilter === 'all' ? (
+                  <span className="text-[10px] font-bold text-sky-400 bg-sky-900/50 px-2 py-0.5 rounded-full border border-sky-500/40">
+                    Active
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-slate-500 group-hover:text-sky-400 font-medium">Filter</span>
+                )}
+              </div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-sky-400 mt-1.5 flex items-baseline gap-1.5">
+                <span>{summary.upcoming_count}</span>
+                <span className="text-[11px] sm:text-xs text-slate-400 font-normal">Issues</span>
+              </div>
+              <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/60 text-[10px] sm:text-[11px] text-slate-400">
+                <span>Announced / DRHP</span>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all" />
+              </div>
             </div>
-            <div className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 truncate">Announced / DRHP</div>
+
+            {/* Card 3: Recently Listed */}
+            <div
+              onClick={() => handleStatusCardClick('listed')}
+              className={`rounded-2xl p-3.5 sm:p-4 transition-all cursor-pointer shadow-md group relative overflow-hidden active:scale-[0.98] ${
+                statusFilter === 'listed' && typeFilter === 'all'
+                  ? 'bg-indigo-950/50 border-2 border-indigo-500 ring-2 ring-indigo-500/30'
+                  : 'bg-slate-900/90 border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-850'
+              }`}
+            >
+              <div className="flex items-center justify-between text-slate-300 text-[11px] sm:text-xs">
+                <span className="font-semibold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-indigo-400" />
+                  Recently Listed
+                </span>
+                {statusFilter === 'listed' && typeFilter === 'all' ? (
+                  <span className="text-[10px] font-bold text-indigo-400 bg-indigo-900/50 px-2 py-0.5 rounded-full border border-indigo-500/40">
+                    Active
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-slate-500 group-hover:text-indigo-400 font-medium">Filter</span>
+                )}
+              </div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-indigo-300 mt-1.5 flex items-baseline gap-1.5">
+                <span>{summary.total_listed_tracked}</span>
+                <span className="text-[11px] sm:text-xs text-emerald-400 font-semibold">+{summary.average_listing_gain_percent}% Pop</span>
+              </div>
+              <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/60 text-[10px] sm:text-[11px] text-slate-400">
+                <span>Listing Day Profit</span>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all" />
+              </div>
+            </div>
+
+            {/* Card 4: SME Platform */}
+            <div
+              onClick={handleSmeCardClick}
+              className={`rounded-2xl p-3.5 sm:p-4 transition-all cursor-pointer shadow-md group relative overflow-hidden active:scale-[0.98] ${
+                typeFilter === 'sme'
+                  ? 'bg-amber-950/50 border-2 border-amber-500 ring-2 ring-amber-500/30'
+                  : 'bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 hover:bg-slate-850'
+              }`}
+            >
+              <div className="flex items-center justify-between text-slate-300 text-[11px] sm:text-xs">
+                <span className="font-semibold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                  SME Platform
+                </span>
+                {typeFilter === 'sme' ? (
+                  <span className="text-[10px] font-bold text-amber-400 bg-amber-900/50 px-2 py-0.5 rounded-full border border-amber-500/40">
+                    Active
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-slate-500 group-hover:text-amber-400 font-medium">Filter</span>
+                )}
+              </div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-amber-300 mt-1.5 flex items-baseline gap-1.5">
+                <span>SME</span>
+                <span className="text-[11px] sm:text-xs text-slate-400 font-normal">Issues</span>
+              </div>
+              <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/60 text-[10px] sm:text-[11px] text-slate-400">
+                <span>NSE Emerge & BSE SME</span>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all" />
+              </div>
+            </div>
           </div>
 
-          {/* Card 3: Avg Listing Gain */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-sm">
-            <div className="text-slate-400 text-[11px] sm:text-xs truncate">Avg Listing Pop</div>
-            <div className="text-xl sm:text-2xl font-bold text-emerald-400 mt-1">
-              +{summary.average_listing_gain_percent}%
+          {/* Quick Performance Records Ribbon */}
+          <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl px-3 py-2 text-xs flex items-center justify-between gap-3 overflow-x-auto scrollbar-none text-slate-400">
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[10px] uppercase font-bold text-slate-500">Track Record:</span>
+              <span className="text-white font-semibold">+{summary.average_listing_gain_percent}%</span>
+              <span>Avg Listing Gain</span>
             </div>
-            <div className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 truncate">{summary.total_listed_tracked} IPOs tracked</div>
-          </div>
-
-          {/* Card 4: Best Performer */}
-          <div className="bg-slate-900/90 border border-emerald-900/30 rounded-2xl p-3 sm:p-4 shadow-sm">
-            <div className="text-slate-400 text-[11px] sm:text-xs flex items-center justify-between">
-              <span className="truncate">Top Listing</span>
-              <span className="text-[9px] sm:text-[10px] text-emerald-400 font-bold">Record</span>
-            </div>
-            <div className="text-base sm:text-lg font-bold text-white mt-1 truncate">
-              {summary.best_performer?.name.split(' ')[0]}
-            </div>
-            <div className="text-[11px] sm:text-xs font-bold text-emerald-400 mt-0.5 truncate">
-              +{summary.best_performer?.gain_percent}% (+₹{summary.best_performer?.profit_per_lot.toLocaleString('en-IN')})
-            </div>
-          </div>
-
-          {/* Card 5: Worst / Loss Maker */}
-          <div className="col-span-2 sm:col-span-1 bg-slate-900/90 border border-rose-900/30 rounded-2xl p-3 sm:p-4 shadow-sm">
-            <div className="text-slate-400 text-[11px] sm:text-xs flex items-center justify-between">
-              <span className="truncate">Weakest Listing</span>
-              <span className="text-[9px] sm:text-[10px] text-rose-400 font-bold">Caution</span>
-            </div>
-            <div className="text-base sm:text-lg font-bold text-white mt-1 truncate">
-              {summary.worst_performer?.name.split(' ')[0]}
-            </div>
-            <div className="text-[11px] sm:text-xs font-bold text-rose-400 mt-0.5 truncate">
-              {summary.worst_performer?.gain_percent}% ({summary.worst_performer?.profit_per_lot} ₹/lot)
-            </div>
+            {summary.best_performer && (
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="text-emerald-400 font-bold">★ Top Winner:</span>
+                <span className="text-white font-medium">{summary.best_performer.name.split(' ')[0]}</span>
+                <span className="text-emerald-400 font-semibold">+{summary.best_performer.gain_percent}%</span>
+              </div>
+            )}
+            {summary.worst_performer && (
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="text-rose-400 font-bold">⚠ Weakest:</span>
+                <span className="text-white font-medium">{summary.worst_performer.name.split(' ')[0]}</span>
+                <span className="text-rose-400 font-semibold">{summary.worst_performer.gain_percent}%</span>
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {/* Toolbar: Search, Filters, Sort, Compare Action */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+      <div ref={listRef} className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
         {/* Search */}
         <div className="relative w-full md:max-w-md">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -363,6 +478,44 @@ export const IPODashboard: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Active Filter Banner (Groww style) */}
+      {(statusFilter !== 'all' || typeFilter !== 'all' || searchQuery.trim()) && (
+        <div className="flex items-center justify-between p-3 bg-slate-900/90 border border-emerald-500/30 rounded-2xl shadow-md animate-in fade-in duration-200">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-slate-400">Viewing:</span>
+            {statusFilter !== 'all' && (
+              <span className="text-xs font-bold text-emerald-400 bg-emerald-950 border border-emerald-500/40 px-2.5 py-0.5 rounded-lg uppercase tracking-wide flex items-center gap-1">
+                <Check className="w-3 h-3" />
+                {statusFilter} IPOs
+              </span>
+            )}
+            {typeFilter !== 'all' && (
+              <span className="text-xs font-bold text-amber-400 bg-amber-950 border border-amber-500/40 px-2.5 py-0.5 rounded-lg uppercase tracking-wide flex items-center gap-1">
+                <Check className="w-3 h-3" />
+                {typeFilter} Platform
+              </span>
+            )}
+            {searchQuery.trim() && (
+              <span className="text-xs text-slate-300 font-medium bg-slate-800 px-2 py-0.5 rounded-lg">
+                "{searchQuery.trim()}"
+              </span>
+            )}
+            <span className="text-xs text-slate-400 font-semibold">({sortedIPOs.length} results)</span>
+          </div>
+
+          <button
+            onClick={() => {
+              setStatusFilter('all');
+              setTypeFilter('all');
+              setSearchQuery('');
+            }}
+            className="text-xs font-semibold text-slate-300 hover:text-white px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors shrink-0"
+          >
+            Show All ✕
+          </button>
+        </div>
+      )}
 
       {/* IPO Cards Grid */}
       {loading ? (
