@@ -12,7 +12,7 @@ import { DownloadAppModal } from './components/DownloadAppModal';
 import { adService } from './services/adService';
 import type { WatchlistEntry } from './components/WatchlistDrawer';
 import type { StockAnalysisResponse, MarketIndex } from './types';
-import { Loader2, AlertCircle, RefreshCw, WifiOff } from 'lucide-react';
+import { Loader2, AlertCircle, RefreshCw, WifiOff, ArrowLeft } from 'lucide-react';
 import { API_BASE_URL } from './config';
 import { mobileService } from './services/mobileService';
 import { Capacitor } from '@capacitor/core';
@@ -32,7 +32,7 @@ const getInitialNavState = (): { activeTab: 'analyzer' | 'screener' | 'ipo'; cur
       ? urlTab
       : (savedTab && validTabs.includes(savedTab))
       ? savedTab
-      : 'analyzer';
+      : 'screener'; // Default to Screener for discovery & suggestions
 
     const currentSymbol = urlStock && urlStock.trim()
       ? urlStock.trim().toUpperCase()
@@ -42,7 +42,7 @@ const getInitialNavState = (): { activeTab: 'analyzer' | 'screener' | 'ipo'; cur
 
     return { activeTab, currentSymbol };
   } catch {
-    return { activeTab: 'analyzer', currentSymbol: 'RELIANCE.NS' };
+    return { activeTab: 'screener', currentSymbol: 'RELIANCE.NS' };
   }
 };
 
@@ -53,6 +53,7 @@ export function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'analyzer' | 'screener' | 'ipo'>(navState.activeTab);
+  const [previousTab, setPreviousTab] = useState<'screener' | 'ipo' | null>(null);
   const [indices, setIndices] = useState<MarketIndex[]>([]);
   const [isWatchlistOpen, setIsWatchlistOpen] = useState<boolean>(false);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState<boolean>(false);
@@ -75,15 +76,21 @@ export function App() {
         setIsDownloadModalOpen(false);
         return true;
       }
-      if (activeTab !== 'analyzer') {
-        setActiveTab('analyzer');
+      if (activeTab === 'analyzer' && previousTab) {
+        setActiveTab(previousTab);
+        setPreviousTab(null);
+        return true;
+      }
+      if (activeTab !== 'screener') {
+        setActiveTab('screener');
+        setPreviousTab(null);
         return true;
       }
       return false; // Let native app exit
     });
 
     return unregister;
-  }, [isWatchlistOpen, isDownloadModalOpen, activeTab]);
+  }, [isWatchlistOpen, isDownloadModalOpen, activeTab, previousTab]);
 
   const fetchIndices = async () => {
     try {
@@ -199,8 +206,26 @@ export function App() {
   };
 
   const handleSelectStock = (symbol: string) => {
+    if (activeTab === 'screener' || activeTab === 'ipo') {
+      setPreviousTab(activeTab);
+    }
     setCurrentSymbol(symbol);
     setActiveTab('analyzer');
+    try {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch {
+      // Fallback
+    }
+  };
+
+  const handleGoBack = () => {
+    if (previousTab) {
+      setActiveTab(previousTab);
+      setPreviousTab(null);
+    } else {
+      setActiveTab('screener');
+      setPreviousTab(null);
+    }
   };
 
   const isCurrentWatchlisted = Boolean(
@@ -251,83 +276,104 @@ export function App() {
       <main className={`flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6 ${
         Capacitor.isNativePlatform() ? 'pb-admob-buffer' : ''
       }`}>
-        {activeTab === 'screener' ? (
+        {/* Screener View - Kept mounted to preserve filter state and exact scroll position */}
+        <div className={activeTab === 'screener' ? 'block' : 'hidden'}>
           <ScreenerView onSelectStock={handleSelectStock} />
-        ) : activeTab === 'ipo' ? (
+        </div>
+
+        {/* IPO Dashboard - Kept mounted to preserve scroll position */}
+        <div className={activeTab === 'ipo' ? 'block' : 'hidden'}>
           <IPODashboard />
-        ) : (
-          <>
-            {/* Search Bar & Fast Ticker Chips */}
-            <SearchHeader
-              onSelectStock={handleSelectStock}
-              currentSymbol={currentSymbol}
-            />
+        </div>
 
-            {/* Loading State */}
-            {loading && (
-              <div className="py-24 text-center space-y-4">
-                <div className="relative w-16 h-16 mx-auto">
-                  <div className="w-16 h-16 rounded-full border-4 border-slate-800 border-t-emerald-400 animate-spin" />
-                  <Loader2 className="w-6 h-6 text-emerald-400 absolute inset-0 m-auto animate-pulse" />
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold text-white">
-                    Evaluating {currentSymbol}...
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Running DCF intrinsic cash flow, Graham multiples, RSI-14, and moving average cross algorithms
-                  </p>
-                </div>
+        {/* Stock Analyzer View */}
+        <div className={activeTab === 'analyzer' ? 'block space-y-4 sm:space-y-6' : 'hidden'}>
+          {/* Prominent Back to Screener / IPO button */}
+          {previousTab && (
+            <div className="flex items-center justify-between pb-1 animate-in fade-in duration-200">
+              <button
+                onClick={handleGoBack}
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700/90 text-slate-200 hover:text-white hover:bg-slate-800 text-xs sm:text-sm font-semibold transition-all shadow-md active:scale-95 group"
+              >
+                <ArrowLeft className="w-4 h-4 text-emerald-400 group-hover:-translate-x-1 transition-transform" />
+                <span>Back to {previousTab === 'screener' ? 'Screener' : 'IPO Research'}</span>
+              </button>
+              <span className="text-[11px] text-slate-400 hidden xs:inline">
+                Viewing analysis for <span className="text-white font-bold">{currentSymbol}</span>
+              </span>
+            </div>
+          )}
+
+          {/* Search Bar & Fast Ticker Chips */}
+          <SearchHeader
+            onSelectStock={handleSelectStock}
+            currentSymbol={currentSymbol}
+          />
+
+          {/* Loading State */}
+          {loading && (
+            <div className="py-24 text-center space-y-4">
+              <div className="relative w-16 h-16 mx-auto">
+                <div className="w-16 h-16 rounded-full border-4 border-slate-800 border-t-emerald-400 animate-spin" />
+                <Loader2 className="w-6 h-6 text-emerald-400 absolute inset-0 m-auto animate-pulse" />
               </div>
-            )}
-
-            {/* Error State */}
-            {!loading && error && (
-              <div className="bg-rose-950/40 border border-rose-800/80 rounded-3xl p-8 text-center space-y-3">
-                <AlertCircle className="w-10 h-10 text-rose-400 mx-auto" />
-                <h3 className="text-base font-bold text-white">Stock Analysis Unavailable</h3>
-                <p className="text-xs text-rose-300 max-w-md mx-auto">{error}</p>
-                <div className="pt-2">
-                  <button
-                    onClick={() => fetchStockAnalysis(currentSymbol)}
-                    className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    <span>Try Again</span>
-                  </button>
-                </div>
+              <div>
+                <h3 className="text-base font-semibold text-white">
+                  Evaluating {currentSymbol}...
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Running DCF intrinsic cash flow, Graham multiples, RSI-14, and moving average cross algorithms
+                </p>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Loaded Stock Content */}
-            {!loading && !error && stock && (
-              <div className="space-y-6 animate-in fade-in duration-300">
-                {/* 1. Quantitative Valuation Verdict Gauge */}
-                <ValuationMeter
-                  valuation={stock.valuation}
-                  currency={stock.currency}
-                />
-
-                {/* 2. Stock Overview: Price, Change, 52W Range */}
-                <StockOverview
-                  stock={stock}
-                  isWatchlisted={isCurrentWatchlisted}
-                  onToggleWatchlist={handleToggleWatchlist}
-                />
-
-                {/* 3. Price History & Technical Moving Averages Chart */}
-                <TechnicalChart
-                  chartData={stock.chart}
-                  valuation={stock.valuation}
-                  currentPrice={stock.current_price}
-                />
-
-                {/* 4. Fundamental Scorecards: DCF, Graham, P/E, PEG, ROE */}
-                <FundamentalGrid stock={stock} />
+          {/* Error State */}
+          {!loading && error && (
+            <div className="bg-rose-950/40 border border-rose-800/80 rounded-3xl p-8 text-center space-y-3">
+              <AlertCircle className="w-10 h-10 text-rose-400 mx-auto" />
+              <h3 className="text-base font-bold text-white">Stock Analysis Unavailable</h3>
+              <p className="text-xs text-rose-300 max-w-md mx-auto">{error}</p>
+              <div className="pt-2">
+                <button
+                  onClick={() => fetchStockAnalysis(currentSymbol)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Try Again</span>
+                </button>
               </div>
-            )}
-          </>
-        )}
+            </div>
+          )}
+
+          {/* Loaded Stock Content */}
+          {!loading && !error && stock && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              {/* 1. Quantitative Valuation Verdict Gauge */}
+              <ValuationMeter
+                valuation={stock.valuation}
+                currency={stock.currency}
+              />
+
+              {/* 2. Stock Overview: Price, Change, 52W Range */}
+              <StockOverview
+                stock={stock}
+                isWatchlisted={isCurrentWatchlisted}
+                onToggleWatchlist={handleToggleWatchlist}
+              />
+
+              {/* 3. Price History & Technical Moving Averages Chart */}
+              <TechnicalChart
+                chartData={stock.chart}
+                valuation={stock.valuation}
+                currentPrice={stock.current_price}
+              />
+
+              {/* 4. Fundamental Scorecards: DCF, Graham, P/E, PEG, ROE */}
+              <FundamentalGrid stock={stock} />
+            </div>
+          )}
+        </div>
       </main>
 
       {/* Watchlist Side Drawer */}

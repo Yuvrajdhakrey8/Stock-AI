@@ -445,78 +445,101 @@ export const IPODashboard: React.FC = () => {
                   </h3>
                   <p className="text-xs text-slate-400 mt-0.5 truncate">{ipo.sector}</p>
 
-                  {/* Issue Date & Price Band */}
-                  <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-800/80 text-xs">
-                    <div>
-                      <div className="text-[10px] text-slate-500">Price Band</div>
-                      <div className="font-bold text-white mt-0.5">{ipo.price_band}</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">
-                        Lot: {ipo.lot_size} (₹{ipo.min_investment.toLocaleString('en-IN')})
+                  {/* Mobile-Only Clean Card Summary (Prevents detail bombardment on mobile screens) */}
+                  <div className="block sm:hidden mt-3 pt-2.5 border-t border-slate-800/80 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <div>
+                        <span className="text-[10px] text-slate-500 block">Price Band</span>
+                        <span className="font-bold text-white text-xs">{ipo.price_band}</span>
                       </div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] text-slate-500">Issue Size</div>
-                      <div className="font-bold text-white mt-0.5">₹{ipo.issue_size_cr.toLocaleString('en-IN')} Cr</div>
-                      <div className={`text-[10px] mt-0.5 ${ipo.closes_today ? 'text-amber-400 font-bold' : 'text-slate-400'}`}>
-                        {ipo.closes_today ? '⚡ Closes Today!' : (ipo.close_date ? `Closes: ${ipo.close_date}` : 'Dates TBA')}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Closing GMP & Subscription Progress */}
-                  <div className="mt-3 p-3 rounded-2xl bg-slate-950/70 border border-slate-800 text-xs space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-slate-400">Closing-Day GMP</span>
-                      <span className={`font-bold ${ipo.gmp_closing_day >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                        {ipo.gmp_closing_day >= 0 ? '+' : ''}₹{ipo.gmp_closing_day} ({ipo.gmp_closing_percent.toFixed(1)}%)
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-slate-400">Subscription Total</span>
-                      <span className="font-bold text-slate-200">
-                        {ipo.subscription.final_day
-                          ? `${ipo.subscription.final_day.total}x`
-                          : ipo.subscription.day2
-                          ? `${ipo.subscription.day2.total}x (Day 2)`
-                          : 'Pending'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Outcome Box (If Listed) */}
-                  {isListed && listing && (
-                    <div className="mt-3 p-3 rounded-2xl bg-emerald-950/20 border border-emerald-900/40 text-xs space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] text-slate-400">Actual Listing Gain</span>
-                        <span className={`font-bold ${listing.listing_gain_percent >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                          {listing.listing_gain_percent >= 0 ? '+' : ''}{listing.listing_gain_percent.toFixed(1)}% (₹{listing.listing_gain_rs})
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] text-slate-400">Retail 1-Lot Profit</span>
-                        <span className={`font-bold text-sm ${listing.profit_per_lot >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                          {listing.profit_per_lot >= 0 ? '+' : ''}₹{listing.profit_per_lot.toLocaleString('en-IN')}
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate-500 block">Expected GMP</span>
+                        <span className={`font-extrabold text-xs ${ipo.gmp_closing_day >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {ipo.gmp_closing_day >= 0 ? '+' : ''}₹{ipo.gmp_closing_day} ({ipo.gmp_closing_percent.toFixed(0)}%)
                         </span>
                       </div>
                     </div>
-                  )}
-
-                  {/* Missed Opportunity Badge */}
-                  {missed && (
-                    <div className="mt-3 flex items-center justify-between text-[11px] px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800">
-                      <span className="text-slate-400">Skipping Decision:</span>
-                      <span className={`font-bold ${
-                        missed.is_missed_opp ? 'text-amber-400' : 'text-emerald-400'
-                      }`}>
-                        {missed.verdict}
-                      </span>
+                    <div className="pt-1 text-[10px] text-emerald-400/90 font-medium flex items-center justify-between">
+                      <span>Tap to view subscription, financials & GMP trend</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-emerald-400 transition-colors" />
                     </div>
-                  )}
+                  </div>
+
+                  {/* Desktop-Only Detailed Multi-Box Layout */}
+                  <div className="hidden sm:block">
+                    {/* Issue Date & Price Band */}
+                    <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-800/80 text-xs">
+                      <div>
+                        <div className="text-[10px] text-slate-500">Price Band</div>
+                        <div className="font-bold text-white mt-0.5">{ipo.price_band}</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">
+                          Lot: {ipo.lot_size} (₹{ipo.min_investment.toLocaleString('en-IN')})
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-slate-500">Issue Size</div>
+                        <div className="font-bold text-white mt-0.5">₹{ipo.issue_size_cr.toLocaleString('en-IN')} Cr</div>
+                        <div className={`text-[10px] mt-0.5 ${ipo.closes_today ? 'text-amber-400 font-bold' : 'text-slate-400'}`}>
+                          {ipo.closes_today ? '⚡ Closes Today!' : (ipo.close_date ? `Closes: ${ipo.close_date}` : 'Dates TBA')}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Closing GMP & Subscription Progress */}
+                    <div className="mt-3 p-3 rounded-2xl bg-slate-950/70 border border-slate-800 text-xs space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] text-slate-400">Closing-Day GMP</span>
+                        <span className={`font-bold ${ipo.gmp_closing_day >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {ipo.gmp_closing_day >= 0 ? '+' : ''}₹{ipo.gmp_closing_day} ({ipo.gmp_closing_percent.toFixed(1)}%)
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] text-slate-400">Subscription Total</span>
+                        <span className="font-bold text-slate-200">
+                          {ipo.subscription.final_day
+                            ? `${ipo.subscription.final_day.total}x`
+                            : ipo.subscription.day2
+                            ? `${ipo.subscription.day2.total}x (Day 2)`
+                            : 'Pending'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Outcome Box (If Listed) */}
+                    {isListed && listing && (
+                      <div className="mt-3 p-3 rounded-2xl bg-emerald-950/20 border border-emerald-900/40 text-xs space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] text-slate-400">Actual Listing Gain</span>
+                          <span className={`font-bold ${listing.listing_gain_percent >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            {listing.listing_gain_percent >= 0 ? '+' : ''}{listing.listing_gain_percent.toFixed(1)}% (₹{listing.listing_gain_rs})
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] text-slate-400">Retail 1-Lot Profit</span>
+                          <span className={`font-bold text-sm ${listing.profit_per_lot >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            {listing.profit_per_lot >= 0 ? '+' : ''}₹{listing.profit_per_lot.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Missed Opportunity Badge */}
+                    {missed && (
+                      <div className="mt-3 flex items-center justify-between text-[11px] px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800">
+                        <span className="text-slate-400">Skipping Decision:</span>
+                        <span className={`font-bold ${
+                          missed.is_missed_opp ? 'text-amber-400' : 'text-emerald-400'
+                        }`}>
+                          {missed.verdict}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {/* Bottom Action CTA */}
-                <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
+                {/* Bottom Action CTA (Desktop only) */}
+                <div className="hidden sm:flex mt-4 pt-3 border-t border-slate-800/80 items-center justify-between text-xs">
                   <span className="text-slate-500 font-medium">Click to see full analysis</span>
                   <div className="flex items-center gap-1 font-bold text-emerald-400 group-hover:translate-x-1 transition-all">
                     <span>Research Report</span>
