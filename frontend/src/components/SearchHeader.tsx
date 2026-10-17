@@ -25,30 +25,35 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
   const [results, setResults] = useState<StockSearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Debounced search
+  // Debounced search with snappier 150ms timeout
   useEffect(() => {
     if (!query.trim()) {
       setResults([]);
+      setIsOpen(false);
+      setSelectedIndex(-1);
       return;
     }
 
+    setIsOpen(true);
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(query.trim())}`);
         if (res.ok) {
           const data = await res.json();
           setResults(data.results || []);
-          setIsOpen(true);
+          setSelectedIndex(-1);
         }
       } catch (err) {
         console.error('Search error:', err);
       } finally {
         setLoading(false);
       }
-    }, 200);
+    }, 150);
 
     return () => clearTimeout(timer);
   }, [query]);
@@ -68,19 +73,56 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
     onSelectStock(symbol);
     setIsOpen(false);
     setQuery('');
+    setSelectedIndex(-1);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isOpen || results.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev < results.length - 1 ? prev + 1 : 0));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : results.length - 1));
+    } else if (e.key === 'Escape') {
+      setIsOpen(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (results.length > 0) {
-      handleSelect(results[0].symbol);
-    } else if (query.trim()) {
-      let sym = query.trim().toUpperCase();
-      if (!sym.includes('.')) {
-        sym = `${sym}.NS`;
-      }
-      handleSelect(sym);
+      const chosen = selectedIndex >= 0 && selectedIndex < results.length ? results[selectedIndex] : results[0];
+      handleSelect(chosen.symbol);
+      return;
     }
+
+    const cleanQ = query.trim();
+    if (!cleanQ) return;
+
+    // Fast-path resolution before falling back
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(cleanQ)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.results && data.results.length > 0) {
+          handleSelect(data.results[0].symbol);
+          return;
+        }
+      }
+    } catch {
+      // Fallback
+    } finally {
+      setLoading(false);
+    }
+
+    let sym = cleanQ.toUpperCase();
+    if (!sym.includes('.')) {
+      sym = `${sym}.NS`;
+    }
+    handleSelect(sym);
   };
 
   return (
@@ -95,6 +137,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
           )}
         </div>
         <input
+          ref={inputRef}
           type="search"
           enterKeyHint="search"
           autoCapitalize="characters"
@@ -102,10 +145,11 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
           spellCheck="false"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
           onFocus={() => {
-            if (results.length > 0) setIsOpen(true);
+            if (query.trim()) setIsOpen(true);
           }}
-          placeholder="Search Indian stocks (e.g. Tata Motors, RELIANCE, TCS, INFY)..."
+          placeholder="Search Indian stocks (e.g. Muthoot Finance, Tata Motors, RELIANCE, TCS)..."
           className="w-full pl-11 pr-10 py-3 sm:py-3.5 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all text-xs sm:text-sm shadow-inner shadow-black/20"
         />
         {query && (
@@ -114,6 +158,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
             onClick={() => {
               setQuery('');
               setResults([]);
+              setIsOpen(false);
             }}
             className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200"
           >
@@ -123,46 +168,61 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
       </form>
 
       {/* Autocomplete Dropdown */}
-      {isOpen && results.length > 0 && (
-        <div className="absolute left-0 right-0 mt-2 bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl z-50 overflow-hidden divide-y divide-slate-800 max-h-80 sm:max-h-96 overflow-y-auto">
-          <div className="px-3.5 py-2 bg-slate-950/60 text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex justify-between items-center">
-            <span>Matching Indian Equities (NSE & BSE)</span>
-            <span>{results.length} results</span>
-          </div>
-          {results.map((item) => (
-            <div
-              key={item.symbol}
-              onClick={() => handleSelect(item.symbol)}
-              className="px-3.5 sm:px-4 py-2.5 sm:py-3 hover:bg-slate-800/80 cursor-pointer flex items-center justify-between transition-colors group active:bg-slate-800"
-            >
-              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 font-bold text-xs shrink-0">
-                  <Building2 className="w-4 h-4 text-emerald-400" />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                    <span className="font-semibold text-slate-100 group-hover:text-emerald-400 transition-colors text-xs sm:text-sm truncate">
-                      {item.name}
-                    </span>
-                    <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 shrink-0">
-                      {item.exchange || 'NSE'}
-                    </span>
-                    {item.index && (
-                      <span className="text-[9px] sm:text-[10px] font-medium px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 shrink-0">
-                        {item.index}
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-[11px] sm:text-xs text-slate-400 flex items-center gap-1.5 sm:gap-2 mt-0.5">
-                    <span className="font-mono text-slate-300 font-medium">{item.symbol}</span>
-                    <span>•</span>
-                    <span className="truncate">{item.sector}</span>
-                  </div>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+      {isOpen && query.trim() && (
+        <div className="absolute left-0 right-0 mt-2 bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl z-[100] overflow-hidden divide-y divide-slate-800 max-h-80 sm:max-h-96 overflow-y-auto">
+          {loading && results.length === 0 ? (
+            <div className="p-4 text-center text-slate-400 text-xs sm:text-sm flex items-center justify-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+              <span>Searching listed Indian stocks across NSE & BSE...</span>
             </div>
-          ))}
+          ) : results.length > 0 ? (
+            <>
+              <div className="px-3.5 py-2 bg-slate-950/80 text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex justify-between items-center">
+                <span>Matching Indian Equities (NSE & BSE)</span>
+                <span>{results.length} results</span>
+              </div>
+              {results.map((item, idx) => (
+                <div
+                  key={item.symbol}
+                  onClick={() => handleSelect(item.symbol)}
+                  className={`px-3.5 sm:px-4 py-2.5 sm:py-3 cursor-pointer flex items-center justify-between transition-colors group active:bg-slate-800 ${
+                    selectedIndex === idx ? 'bg-slate-800 ring-1 ring-emerald-500/30' : 'hover:bg-slate-800/80'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 font-bold text-xs shrink-0">
+                      <Building2 className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                        <span className="font-semibold text-slate-100 group-hover:text-emerald-400 transition-colors text-xs sm:text-sm truncate">
+                          {item.name}
+                        </span>
+                        <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 shrink-0">
+                          {item.exchange || 'NSE'}
+                        </span>
+                        {item.index && (
+                          <span className="text-[9px] sm:text-[10px] font-medium px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 shrink-0">
+                            {item.index}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] sm:text-xs text-slate-400 flex items-center gap-1.5 sm:gap-2 mt-0.5">
+                        <span className="font-mono text-slate-300 font-medium">{item.symbol}</span>
+                        <span>•</span>
+                        <span className="truncate">{item.sector}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                </div>
+              ))}
+            </>
+          ) : (
+            <div className="p-4 text-center text-slate-400 text-xs sm:text-sm">
+              No matching stocks found for <span className="text-white font-semibold">"{query}"</span>. Press Enter to search on exchange.
+            </div>
+          )}
         </div>
       )}
 

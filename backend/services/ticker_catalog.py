@@ -4,12 +4,26 @@ Provides search, autocomplete, and curated indices (Nifty 50, Nifty Next 50, Sen
 """
 from typing import List, Dict, Optional
 import re
+import urllib.request
+import urllib.parse
+import json
+import logging
+from cachetools import TTLCache
+
+logger = logging.getLogger(__name__)
+
+# Search cache to make repeated searches instant
+search_cache = TTLCache(maxsize=1000, ttl=3600)
 
 # Mapping for prominent corporate rebranding and ticker symbol changes in Indian markets
 TICKER_ALIASES = {
     "ZOMATO": "ETERNAL",
     "ZOMATO.NS": "ETERNAL.NS",
     "ZOMATO.BO": "ETERNAL.BO",
+    "MUTHOOTHFINANCE": "MUTHOOTFIN.NS",
+    "MUTHOOTFINANCE": "MUTHOOTFIN.NS",
+    "MUTHOOTH": "MUTHOOTFIN.NS",
+    "MUTHOOT": "MUTHOOTFIN.NS",
     "543320": "ETERNAL.BO",
     "543320.BO": "ETERNAL.BO",
     "MOTHERSUMI": "MOTHERSON",
@@ -147,6 +161,12 @@ STOCKS_DATABASE: List[Dict[str, str]] = [
     {"symbol": "JSWINFRA.NS", "name": "JSW Infrastructure Ltd", "sector": "Ports & Infra", "exchange": "NSE", "bse_code": "543994.BO", "index": "Nifty Midcap"},
     {"symbol": "SWIGGY.NS", "name": "Swiggy Ltd", "sector": "Internet / Food & Grocery Delivery", "exchange": "NSE", "bse_code": "544285.BO", "index": "New Age"},
     {"symbol": "HYUNDAI.NS", "name": "Hyundai Motor India Ltd", "sector": "Automobile", "exchange": "NSE", "bse_code": "544274.BO", "index": "Large Cap"},
+    {"symbol": "MUTHOOTFIN.NS", "name": "Muthoot Finance Ltd", "sector": "Financial Services / Gold Loans", "exchange": "NSE", "bse_code": "MUTHOOTFIN.BO", "bse_scrip": "533398", "index": "Nifty Next 50"},
+    {"symbol": "MANAPPURAM.NS", "name": "Manappuram Finance Ltd", "sector": "Financial Services / Gold Loans", "exchange": "NSE", "bse_code": "MANAPPURAM.BO", "bse_scrip": "531213", "index": "Nifty Midcap"},
+    {"symbol": "YESBANK.NS", "name": "Yes Bank Ltd", "sector": "Financial Services / Banking", "exchange": "NSE", "bse_code": "YESBANK.BO", "bse_scrip": "532648", "index": "Nifty Midcap"},
+    {"symbol": "IDEA.NS", "name": "Vodafone Idea Ltd", "sector": "Telecommunication", "exchange": "NSE", "bse_code": "IDEA.BO", "bse_scrip": "532822", "index": "Nifty Midcap"},
+    {"symbol": "OLAELEC.NS", "name": "Ola Electric Mobility Ltd", "sector": "Automobile / EV", "exchange": "NSE", "bse_code": "OLAELEC.BO", "bse_scrip": "544226", "index": "Midcap"},
+    {"symbol": "IRCTC.NS", "name": "Indian Railway Catering and Tourism Corp", "sector": "Railways / Tourism", "exchange": "NSE", "bse_code": "IRCTC.BO", "bse_scrip": "542830", "index": "Nifty Next 50"},
 ]
 
 def normalize_ticker(query: str, default_exchange: str = "NS") -> str:
@@ -176,61 +196,103 @@ def normalize_ticker(query: str, default_exchange: str = "NS") -> str:
 
 def search_stocks(query: str, limit: int = 15) -> List[Dict[str, str]]:
     """
-    Search stocks by ticker symbol, company name, or sector.
-    Returns matched results. If not found in database, offers direct NSE and BSE ticker formats.
+    Search stocks across NSE and BSE (just like Zerodha & Groww).
+    Matches local curated catalog, resolves brand aliases, and queries live
+    Indian equities via Yahoo Finance Search API for all 4,000+ listed companies.
     """
     if not query or not query.strip():
-        # Return top Nifty 50 stocks by default
         return STOCKS_DATABASE[:limit]
 
-    q = query.strip().lower()
-    q_alphanumeric = re.sub(r'[^a-zA-Z0-9]', '', q)
+    q_clean = query.strip()
+    cache_key = q_clean.lower()
+    if cache_key in search_cache:
+        return search_cache[cache_key]
 
+    q = q_clean.lower()
     matches: List[Dict[str, str]] = []
-    
-    # Exact and prefix matches on symbol get highest priority
+    seen = set()
+
+    # 1. Check exact aliases (e.g. ZOMATO -> ETERNAL, MUTHOOTHFINANCE -> MUTHOOTFIN)
+    alias_key = re.sub(r'[^a-zA-Z0-9]', '', q_clean.upper().replace(".NS", "").replace(".BO", ""))
+    if alias_key in TICKER_ALIASES:
+        resolved_sym = TICKER_ALIASES[alias_key]
+        if not resolved_sym.endswith(".NS") and not resolved_sym.endswith(".BO"):
+            resolved_sym = f"{resolved_sym}.NS"
+        alias_item = next((s for s in STOCKS_DATABASE if s["symbol"] == resolved_sym), None)
+        if not alias_item:
+            alias_item = {
+                "symbol": resolved_sym,
+                "name": resolved_sym.replace(".NS", "").replace(".BO", ""),
+                "sector": "Indian Equities",
+                "exchange": "BSE" if resolved_sym.endswith(".BO") else "NSE",
+                "bse_code": resolved_sym.replace(".NS", ".BO"),
+                "index": "Listed Equity"
+            }
+        matches.append(alias_item)
+        seen.add(alias_item["symbol"])
+
+    # 2. Match against local curated STOCKS_DATABASE (Instant 0ms)
     for item in STOCKS_DATABASE:
-        sym = item["symbol"].lower().replace(".ns", "")
+        sym = item["symbol"].lower().replace(".ns", "").replace(".bo", "")
         bse = item.get("bse_code", "").lower().replace(".bo", "")
         name = item["name"].lower()
         sector = item.get("sector", "").lower()
 
-        # Score matching priority
         if sym == q or bse == q:
-            matches.insert(0, item)
+            if item["symbol"] not in seen:
+                matches.insert(0, item)
+                seen.add(item["symbol"])
         elif sym.startswith(q) or any(w.startswith(q) for w in name.split()):
-            matches.append(item)
+            if item["symbol"] not in seen:
+                matches.append(item)
+                seen.add(item["symbol"])
         elif q in name or q in sector:
-            matches.append(item)
+            if item["symbol"] not in seen:
+                matches.append(item)
+                seen.add(item["symbol"])
 
-    # Deduplicate while preserving order
-    seen = set()
-    deduped = []
-    for item in matches:
-        if item["symbol"] not in seen:
-            seen.add(item["symbol"])
-            deduped.append(item)
-            
-    # If the user typed an arbitrary ticker that isn't in our curated database,
-    # generate dynamic custom search entries for both NSE and BSE so they can analyze ANY listed stock!
-    clean_sym = re.sub(r'[^a-zA-Z0-9]', '', query.upper().replace(".NS", "").replace(".BO", ""))
-    if clean_sym:
-        # Check if already in top results
-        nse_sym = f"{clean_sym}.NS"
-        bse_sym = f"{clean_sym}.BO"
-        if not any(it["symbol"] == nse_sym for it in deduped):
-            custom_entry = {
-                "symbol": nse_sym,
-                "name": f"{clean_sym} (NSE Equity)",
-                "sector": "Indian Equities",
-                "exchange": "NSE",
-                "bse_code": bse_sym,
-                "index": "All Listed Equities"
-            }
-            # Put at end or beginning depending on query length
-            deduped.append(custom_entry)
+    # 3. Query Yahoo Finance Search API for real Indian equities across NSE & BSE
+    if len(matches) < limit:
+        # Build search variations (e.g. "muthoothfinance" -> "muthooth finance")
+        query_candidates = [q_clean]
+        m = re.match(r'^([a-zA-Z]+)(finance|bank|motors|steel|power|tech|ind|ltd)$', q_clean, re.I)
+        if m:
+            query_candidates.append(f"{m.group(1)} {m.group(2)}")
+            query_candidates.append(m.group(1))
 
-    return deduped[:limit]
+        for candidate_q in query_candidates:
+            if len(matches) >= limit:
+                break
+            try:
+                url = f"https://query2.finance.yahoo.com/v1/finance/search?q={urllib.parse.quote(candidate_q)}&quotesCount=15&newsCount=0"
+                req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
+                with urllib.request.urlopen(req, timeout=3.5) as resp:
+                    data = json.loads(resp.read().decode())
+                    for quote in data.get("quotes", []):
+                        raw_sym = quote.get("symbol", "")
+                        exch = quote.get("exchange", "")
+                        # Filter strictly for Indian stock market exchanges
+                        if raw_sym.endswith(".NS") or raw_sym.endswith(".BO") or exch in ("NSI", "BSE", "NSE"):
+                            is_bse = raw_sym.endswith(".BO") or exch == "BSE"
+                            clean_sym = raw_sym if (raw_sym.endswith(".NS") or raw_sym.endswith(".BO")) else (f"{raw_sym}.BO" if is_bse else f"{raw_sym}.NS")
+                            if clean_sym not in seen:
+                                seen.add(clean_sym)
+                                name = quote.get("shortname") or quote.get("longname") or clean_sym
+                                sector = quote.get("sector") or quote.get("industry") or "Indian Equity"
+                                matches.append({
+                                    "symbol": clean_sym,
+                                    "name": name,
+                                    "sector": sector,
+                                    "exchange": "BSE" if is_bse else "NSE",
+                                    "bse_code": clean_sym.replace(".NS", ".BO") if not is_bse else clean_sym,
+                                    "index": "NSE/BSE Listed"
+                                })
+            except Exception as e:
+                logger.debug(f"Live Yahoo search error for '{candidate_q}': {e}")
+
+    results = matches[:limit]
+    search_cache[cache_key] = results
+    return results
 
 def get_screener_stocks(category: str = "nifty50") -> List[Dict[str, str]]:
     """

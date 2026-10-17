@@ -23,15 +23,21 @@ screener_cache = TTLCache(maxsize=50, ttl=1800)
 class StockService:
 
     @classmethod
-    def get_stock_data(cls, raw_symbol: str) -> Optional[Dict[str, Any]]:
+    def get_stock_data(cls, raw_symbol: str, depth: int = 0) -> Optional[Dict[str, Any]]:
         """
         Fetches stock data, runs valuation engine, and returns full analysis payload.
+        Includes intelligent fallback to search and ticker auto-resolution.
         """
+        if depth > 2:
+            return None
+
         symbol = normalize_ticker(raw_symbol)
         
         # Check cache
         if symbol in stock_cache:
             return stock_cache[symbol]
+        if raw_symbol in stock_cache:
+            return stock_cache[raw_symbol]
 
         try:
             ticker = yf.Ticker(symbol)
@@ -51,10 +57,31 @@ class StockService:
                 current_price = float(history_df["Close"].iloc[-1])
 
             if not current_price:
-                # If still no price, try alternative exchange suffix if not specified
+                # 1. Try alternative exchange suffix (.NS -> .BO)
                 if symbol.endswith(".NS"):
                     alt_symbol = symbol.replace(".NS", ".BO")
-                    return cls.get_stock_data(alt_symbol)
+                    alt_res = cls.get_stock_data(alt_symbol, depth=depth + 1)
+                    if alt_res:
+                        stock_cache[symbol] = alt_res
+                        stock_cache[raw_symbol] = alt_res
+                        return alt_res
+                
+                # 2. Intelligent Auto-Resolution:
+                # If direct lookup yields no price, extract query candidate and search
+                if depth == 0:
+                    from .ticker_catalog import search_stocks
+                    clean_query = raw_symbol.replace(".NS", "").replace(".BO", "").strip()
+                    candidates = search_stocks(clean_query, limit=5)
+                    for cand in candidates:
+                        cand_sym = cand.get("symbol")
+                        if cand_sym and cand_sym != symbol and cand_sym != raw_symbol:
+                            logger.info(f"Auto-resolving '{raw_symbol}' to candidate '{cand_sym}'")
+                            resolved = cls.get_stock_data(cand_sym, depth=depth + 1)
+                            if resolved:
+                                stock_cache[symbol] = resolved
+                                stock_cache[raw_symbol] = resolved
+                                return resolved
+
                 return None
 
             current_price = float(current_price)
@@ -147,6 +174,7 @@ class StockService:
 
             # Cache the enriched result
             stock_cache[symbol] = result
+            stock_cache[raw_symbol] = result
             return result
 
         except Exception as e:
