@@ -12,8 +12,10 @@ import { DownloadAppModal } from './components/DownloadAppModal';
 import { adService } from './services/adService';
 import type { WatchlistEntry } from './components/WatchlistDrawer';
 import type { StockAnalysisResponse, MarketIndex } from './types';
-import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Loader2, AlertCircle, RefreshCw, WifiOff } from 'lucide-react';
 import { API_BASE_URL } from './config';
+import { mobileService } from './services/mobileService';
+import { Capacitor } from '@capacitor/core';
 
 // Helper to read initial state from URL parameters or localStorage
 const getInitialNavState = (): { activeTab: 'analyzer' | 'screener' | 'ipo'; currentSymbol: string } => {
@@ -54,11 +56,65 @@ export function App() {
   const [indices, setIndices] = useState<MarketIndex[]>([]);
   const [isWatchlistOpen, setIsWatchlistOpen] = useState<boolean>(false);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState<boolean>(false);
+  const [isOffline, setIsOffline] = useState<boolean>(() => typeof navigator !== 'undefined' && !navigator.onLine);
 
-  // Initialize Native Mobile AdMob ads if running on Android/iOS
+  // Initialize Native Mobile features (AdMob, Status Bar, Back Button)
   useEffect(() => {
     adService.initialize();
+    mobileService.initialize();
   }, []);
+
+  // Hardware Back Button integration for Android
+  useEffect(() => {
+    const unregister = mobileService.registerBackHandler(() => {
+      if (isWatchlistOpen) {
+        setIsWatchlistOpen(false);
+        return true;
+      }
+      if (isDownloadModalOpen) {
+        setIsDownloadModalOpen(false);
+        return true;
+      }
+      if (activeTab !== 'analyzer') {
+        setActiveTab('analyzer');
+        return true;
+      }
+      return false; // Let native app exit
+    });
+
+    return unregister;
+  }, [isWatchlistOpen, isDownloadModalOpen, activeTab]);
+
+  const fetchIndices = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/indices`);
+      if (res.ok) {
+        const data = await res.json();
+        setIndices(data.indices || []);
+      }
+    } catch (err) {
+      console.error('Failed to load indices:', err);
+    }
+  };
+
+  // Online / Offline network listeners
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOffline(false);
+      fetchIndices();
+      if (currentSymbol) {
+        fetchStockAnalysis(currentSymbol);
+      }
+    };
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [currentSymbol]);
 
   // Synchronize state with localStorage and URL query parameters
   useEffect(() => {
@@ -116,17 +172,6 @@ export function App() {
 
   // Fetch benchmark indices
   useEffect(() => {
-    const fetchIndices = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/indices`);
-        if (res.ok) {
-          const data = await res.json();
-          setIndices(data.indices || []);
-        }
-      } catch (err) {
-        console.error('Failed to load indices:', err);
-      }
-    };
     fetchIndices();
   }, []);
 
@@ -189,13 +234,23 @@ export function App() {
         indices={indices}
         watchlistCount={watchlist.length}
         onOpenWatchlist={() => setIsWatchlistOpen(true)}
-        onOpenDownloadApp={() => setIsDownloadModalOpen(true)}
+        onOpenDownloadApp={Capacitor.isNativePlatform() ? undefined : () => setIsDownloadModalOpen(true)}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
 
+      {/* Offline Alert Banner */}
+      {isOffline && (
+        <div className="bg-amber-500/95 text-slate-950 px-4 py-2 text-xs font-bold flex items-center justify-center gap-2 shadow-lg">
+          <WifiOff className="w-4 h-4 shrink-0" />
+          <span>No Internet Connection • Retrying live market data when connection restores...</span>
+        </div>
+      )}
+
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
+      <main className={`flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6 ${
+        Capacitor.isNativePlatform() ? 'pb-admob-buffer' : ''
+      }`}>
         {activeTab === 'screener' ? (
           <ScreenerView onSelectStock={handleSelectStock} />
         ) : activeTab === 'ipo' ? (
@@ -284,14 +339,18 @@ export function App() {
         onRemoveFromWatchlist={handleRemoveFromWatchlist}
       />
 
-      {/* Download App Modal & Smart Banner */}
-      <DownloadAppModal
-        forceOpen={isDownloadModalOpen}
-        onClose={() => setIsDownloadModalOpen(false)}
-      />
+      {/* Download App Modal & Smart Banner (only for browser visitors) */}
+      {!Capacitor.isNativePlatform() && (
+        <DownloadAppModal
+          forceOpen={isDownloadModalOpen}
+          onClose={() => setIsDownloadModalOpen(false)}
+        />
+      )}
 
       {/* Footer */}
-      <footer className="border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
+      <footer className={`border-t border-slate-800/80 py-6 text-center text-xs text-slate-500 ${
+        Capacitor.isNativePlatform() ? 'pb-admob-buffer' : ''
+      }`}>
         <p>
           DhakreyStock AI • Quantitative Stock & IPO Valuation Engine (NSE & BSE)
         </p>
@@ -307,13 +366,17 @@ export function App() {
           >
             Privacy Policy
           </a>
-          <span>•</span>
-          <button
-            onClick={() => setIsDownloadModalOpen(true)}
-            className="hover:text-emerald-400 transition-colors"
-          >
-            Download Mobile App
-          </button>
+          {!Capacitor.isNativePlatform() && (
+            <>
+              <span>•</span>
+              <button
+                onClick={() => setIsDownloadModalOpen(true)}
+                className="hover:text-emerald-400 transition-colors"
+              >
+                Download Mobile App
+              </button>
+            </>
+          )}
         </div>
       </footer>
     </div>

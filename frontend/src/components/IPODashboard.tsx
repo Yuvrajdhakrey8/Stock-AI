@@ -22,6 +22,7 @@ import type { IPOData, IPOSummaryMetrics } from '../types';
 import { IPODetailModal } from './IPODetailModal';
 import { IPOCompareModal } from './IPOCompareModal';
 import { API_BASE_URL } from '../config';
+import { mobileService } from '../services/mobileService';
 
 export const IPODashboard: React.FC = () => {
   const [ipos, setIpos] = useState<IPOData[]>([]);
@@ -59,6 +60,22 @@ export const IPODashboard: React.FC = () => {
   const [isCompareOpen, setIsCompareOpen] = useState<boolean>(false);
 
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+
+  // Mobile Back Button Handler for IPODashboard Modals
+  useEffect(() => {
+    const unregister = mobileService.registerBackHandler(() => {
+      if (isCompareOpen) {
+        setIsCompareOpen(false);
+        return true;
+      }
+      if (isDetailOpen) {
+        setIsDetailOpen(false);
+        return true;
+      }
+      return false;
+    });
+    return unregister;
+  }, [isCompareOpen, isDetailOpen]);
 
   useEffect(() => {
     try {

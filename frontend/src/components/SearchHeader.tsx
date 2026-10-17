@@ -70,10 +70,23 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
     setQuery('');
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (results.length > 0) {
+      handleSelect(results[0].symbol);
+    } else if (query.trim()) {
+      let sym = query.trim().toUpperCase();
+      if (!sym.includes('.')) {
+        sym = `${sym}.NS`;
+      }
+      handleSelect(sym);
+    }
+  };
+
   return (
     <div className="w-full relative" ref={dropdownRef}>
       {/* Search Input Box */}
-      <div className="relative">
+      <form onSubmit={handleSubmit} className="relative">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
           {loading ? (
             <Loader2 className="w-5 h-5 animate-spin text-emerald-400" />
@@ -82,7 +95,11 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
           )}
         </div>
         <input
-          type="text"
+          type="search"
+          enterKeyHint="search"
+          autoCapitalize="characters"
+          autoCorrect="off"
+          spellCheck="false"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => {
@@ -93,6 +110,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
         />
         {query && (
           <button
+            type="button"
             onClick={() => {
               setQuery('');
               setResults([]);
@@ -102,7 +120,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
             <X className="w-4 h-4" />
           </button>
         )}
-      </div>
+      </form>
 
       {/* Autocomplete Dropdown */}
       {isOpen && results.length > 0 && (

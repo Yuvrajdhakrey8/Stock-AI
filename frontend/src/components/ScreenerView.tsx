@@ -165,7 +165,7 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({ onSelectStock }) => 
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-950/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800 font-semibold">
                 <tr>
-                  <th className="py-3.5 px-4">Company</th>
+                  <th className="py-3.5 px-4 sticky left-0 bg-slate-950 z-20 shadow-[2px_0_5px_rgba(0,0,0,0.3)]">Company</th>
                   <th className="py-3.5 px-4 cursor-pointer hover:text-white" onClick={() => handleSort('current_price')}>
                     <div className="flex items-center gap-1">
                       <span>Price (₹)</span>
@@ -203,7 +203,7 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({ onSelectStock }) => 
                       className="hover:bg-slate-800/50 transition-colors cursor-pointer group"
                       onClick={() => onSelectStock(stock.symbol)}
                     >
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-4 sticky left-0 bg-slate-900 group-hover:bg-slate-850 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.3)]">
                         <div className="font-semibold text-white group-hover:text-emerald-400 transition-colors text-sm">
                           {stock.name}
                         </div>

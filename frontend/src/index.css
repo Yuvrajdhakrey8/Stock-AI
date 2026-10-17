@@ -4,9 +4,13 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color-scheme: dark;
   -webkit-tap-highlight-color: transparent;
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
 }
 
-body {
+html, body {
   margin: 0;
   padding: 0;
   background-color: #0b0f17;
@@ -14,11 +18,27 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior-y: none;
 }
 
 /* Touch and button tap optimization */
 button, a, input, select {
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe area padding utilities for notched/curved mobile screens */
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top, 0px), 0px);
+}
+
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+}
+
+/* AdMob Banner buffer for native mobile (prevents bottom content clipping) */
+.pb-admob-buffer {
+  padding-bottom: calc(max(env(safe-area-inset-bottom, 0px), 12px) + 60px);
 }
 
 /* Smooth momentum scrolling for mobile overflow containers */

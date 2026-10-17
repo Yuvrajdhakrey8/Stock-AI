@@ -115,7 +115,7 @@ export const TechnicalChart: React.FC<TechnicalChartProps> = ({
       </div>
 
       {/* Primary Price & Moving Averages Chart */}
-      <div className="h-64 sm:h-72 w-full -ml-2 sm:ml-0">
+      <div className="h-64 sm:h-72 w-full" style={{ touchAction: 'pan-y' }}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={filteredData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
             <defs>

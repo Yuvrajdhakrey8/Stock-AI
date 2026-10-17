@@ -22,7 +22,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
 }) => {
   return (
-    <header className="border-b border-slate-800 bg-slate-900/95 backdrop-blur sticky top-0 z-50">
+    <header className="border-b border-slate-800 bg-slate-900/95 backdrop-blur sticky top-0 z-50 pt-safe">
       {/* Indices Ticker Bar */}
       {indices.length > 0 && (
         <div className="bg-slate-950/90 border-b border-slate-800/60 px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs flex items-center gap-4 sm:gap-6 overflow-x-auto whitespace-nowrap scrollbar-none">
