@@ -248,6 +248,25 @@ export interface TrendingSector {
   change_percent: number;
 }
 
+export interface SectorStockItem {
+  symbol: string;
+  name: string;
+  exchange: string;
+  current_price: number;
+  change: number;
+  change_percent: number;
+  volume: number;
+  volume_formatted: string;
+  vol_diff_percent?: number;
+  low_52?: number;
+  high_52?: number;
+  position_52w_percent?: number;
+  rsi?: number;
+  macd?: string;
+  in_news?: boolean;
+  sparkline: number[];
+}
+
 export interface MarketExploreData {
   most_traded: MostTradedStock[];
   top_movers: {

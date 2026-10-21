@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { SearchHeader } from './components/SearchHeader';
 import { ExploreView } from './components/ExploreView';
+import { SectorDetailView } from './components/SectorDetailView';
 import { StockDetailView } from './components/StockDetailView';
 import { ScreenerView } from './components/ScreenerView';
 import { IPODashboard } from './components/IPODashboard';
@@ -44,6 +45,7 @@ const getInitialNavState = (): { activeTab: 'explore' | 'screener' | 'ipo'; curr
 export function App() {
   const [navState] = useState(getInitialNavState);
   const [currentSymbol, setCurrentSymbol] = useState<string | null>(navState.currentSymbol);
+  const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [stock, setStock] = useState<StockAnalysisResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,9 +73,14 @@ export function App() {
         setIsDownloadModalOpen(false);
         return true;
       }
-      // If viewing a stock, back button returns to Explore / Previous tab
+      // If viewing a stock, back button returns to Sector / Explore
       if (currentSymbol) {
-        handleBackToExplore();
+        handleBackFromStock();
+        return true;
+      }
+      // If viewing a sector, back button returns to Explore home
+      if (selectedSector) {
+        setSelectedSector(null);
         return true;
       }
       if (activeTab !== 'explore') {
@@ -85,7 +92,7 @@ export function App() {
     });
 
     return unregister;
-  }, [isWatchlistOpen, isDownloadModalOpen, activeTab, previousTab, currentSymbol]);
+  }, [isWatchlistOpen, isDownloadModalOpen, activeTab, previousTab, currentSymbol, selectedSector]);
 
   const fetchIndices = async () => {
     try {
@@ -228,6 +235,16 @@ export function App() {
     }
   };
 
+  const handleBackFromStock = () => {
+    setCurrentSymbol(null);
+    setStock(null);
+    try {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch {
+      // Fallback
+    }
+  };
+
   const handleBackToExplore = () => {
     if (previousTab && previousTab !== 'explore') {
       setActiveTab(previousTab);
@@ -237,6 +254,7 @@ export function App() {
       setPreviousTab(null);
     }
     setCurrentSymbol(null);
+    setSelectedSector(null);
     setStock(null);
     try {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -249,6 +267,7 @@ export function App() {
     if (tab === 'explore') {
       // Return directly to Explore home
       setCurrentSymbol(null);
+      setSelectedSector(null);
       setStock(null);
       setPreviousTab(null);
     }
@@ -347,10 +366,10 @@ export function App() {
                       <span>Try Again</span>
                     </button>
                     <button
-                      onClick={handleBackToExplore}
+                      onClick={handleBackFromStock}
                       className="px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 hover:bg-slate-800 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
                     >
-                      Back to Explore
+                      Back
                     </button>
                   </div>
                 </div>
@@ -360,11 +379,20 @@ export function App() {
               {!loading && !error && stock && (
                 <StockDetailView
                   stock={stock}
-                  onBack={handleBackToExplore}
+                  onBack={handleBackFromStock}
                   isWatchlisted={isCurrentWatchlisted}
                   onToggleWatchlist={handleToggleWatchlist}
                 />
               )}
+            </div>
+          ) : selectedSector ? (
+            /* Sector Deep-Dive Page (When a sector is clicked from Explore) */
+            <div className="space-y-5">
+              <SectorDetailView
+                sectorName={selectedSector}
+                onBack={() => setSelectedSector(null)}
+                onSelectStock={handleSelectStock}
+              />
             </div>
           ) : (
             /* Explore Home Dashboard: Most Traded Stocks, Top Movers, Sectors Trending */
@@ -375,7 +403,10 @@ export function App() {
               {/* Groww Explore Layout */}
               <ExploreView
                 onSelectStock={handleSelectStock}
-                onExploreSector={() => setActiveTab('screener')}
+                onExploreSector={(sectorName) => {
+                  setSelectedSector(sectorName);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
               />
             </div>
           )}

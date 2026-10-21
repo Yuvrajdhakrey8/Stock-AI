@@ -136,6 +136,15 @@ def get_market_explore():
     return MarketExploreService.get_explore_data()
 
 
+@app.get("/api/market/sector/{sector_name}")
+def get_market_sector_stocks(sector_name: str):
+    """
+    Returns the list of stocks in a specific sector with 1D change, volume,
+    1W volume anomaly %, 52W high/low performance slider, RSI, and MACD.
+    """
+    return MarketExploreService.get_sector_stocks(sector_name)
+
+
 @app.get("/api/ipo/summary")
 def get_ipo_summary():
     """
