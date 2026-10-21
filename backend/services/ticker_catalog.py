@@ -290,6 +290,16 @@ def search_stocks(query: str, limit: int = 15) -> List[Dict[str, str]]:
             except Exception as e:
                 logger.debug(f"Live Yahoo search error for '{candidate_q}': {e}")
 
+    # Fallback for custom or direct unlisted ticker searches (e.g. "MYSTOCK")
+    if not matches and len(q_clean) >= 3 and q_clean.isalnum():
+        clean_upper = q_clean.upper()
+        matches.append({
+            "symbol": f"{clean_upper}.NS",
+            "name": f"{clean_upper} (NSE)",
+            "sector": "Indian Equities",
+            "exchange": "NSE"
+        })
+
     results = matches[:limit]
     search_cache[cache_key] = results
     return results

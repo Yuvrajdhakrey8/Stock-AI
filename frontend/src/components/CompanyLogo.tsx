@@ -135,9 +135,14 @@ function getDomain(name: string, symbol?: string): string | null {
   }
 
   const cleanName = name.toUpperCase();
-  for (const [key, domain] of Object.entries(BRAND_DOMAINS)) {
-    if (cleanName.includes(key)) {
-      return domain;
+  // Sort keys by length descending so longer brand names (e.g. PARAS) match before short abbreviations (e.g. LT)
+  const sortedKeys = Object.keys(BRAND_DOMAINS).sort((a, b) => b.length - a.length);
+
+  for (const key of sortedKeys) {
+    // Strict whole-word match to avoid short abbreviations like "LT" matching inside "HEALTHCARE"
+    const wordPattern = new RegExp(`(?:^|[^A-Z0-9])${key}(?:[^A-Z0-9]|$)`, 'i');
+    if (wordPattern.test(cleanName)) {
+      return BRAND_DOMAINS[key];
     }
   }
   return null;

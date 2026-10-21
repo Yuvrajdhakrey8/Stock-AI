@@ -178,6 +178,11 @@ export const IPODashboard: React.FC = () => {
 
   const comparedIPOs = ipos.filter((i) => compareIds.includes(i.id));
 
+  const handleCheckAllotment = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    window.open('https://ipostatus.kfintech.com/', '_blank', 'noopener,noreferrer');
+  };
+
   // Helper function to render AI Suggestion badge
   const renderAISuggestion = (ipo: IPOData) => {
     const isListed = ipo.status === 'Listed';
@@ -419,7 +424,18 @@ export const IPODashboard: React.FC = () => {
             <p className="text-xs text-slate-500">Try changing your search query or selecting a different IPO type.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden divide-y divide-slate-800/60">
+            {/* Desktop Table Header (Groww Style) */}
+            <div className="hidden lg:grid grid-cols-12 gap-3 px-5 py-3.5 bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+              <div className="col-span-4">Company</div>
+              <div className="col-span-2">{statusFilter === 'closed' ? 'Listing Date' : statusFilter === 'open' ? 'Bidding Closes' : 'Opening Date'}</div>
+              <div className="col-span-2">Price & Lot</div>
+              <div className="col-span-2 text-right">{statusFilter === 'closed' ? 'Listing Gain' : 'Expected GMP'}</div>
+              <div className="col-span-1 text-center">Sub.</div>
+              <div className="col-span-1 text-right">Action</div>
+            </div>
+
+            {/* List Rows */}
             {sortedIPOs.map((ipo) => {
               const isListed = ipo.status === 'Listed';
               const isSelectedForCompare = compareIds.includes(ipo.id);
@@ -429,136 +445,176 @@ export const IPODashboard: React.FC = () => {
                 <div
                   key={ipo.id}
                   onClick={() => handleOpenDetail(ipo)}
-                  className={`bg-slate-900/90 border rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl hover:border-slate-700 transition-all cursor-pointer flex flex-col justify-between group relative overflow-hidden active:scale-[0.99] ${
-                    isSelectedForCompare ? 'ring-2 ring-indigo-500 border-indigo-500/50' : 'border-slate-800'
+                  className={`p-3.5 sm:p-4 hover:bg-slate-800/40 transition-colors cursor-pointer group flex flex-col lg:grid lg:grid-cols-12 gap-3 lg:items-center ${
+                    isSelectedForCompare ? 'bg-indigo-950/20' : ''
                   }`}
                 >
-                  <div>
-                    {/* Top Row: Company Logo + Name + SME chip + Compare Toggle */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-3 min-w-0">
-                        {/* Company Logo */}
-                        <CompanyLogo
-                          name={ipo.name}
-                          symbol={ipo.symbol}
-                          size="md"
-                          className="mt-0.5 rounded-xl shadow-md"
-                        />
-
-                        {/* Name & Sector */}
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <h3 className="font-bold text-white text-sm sm:text-base group-hover:text-emerald-400 transition-colors line-clamp-1">
-                              {ipo.name}
-                            </h3>
-                            {ipo.ipo_type === 'SME' && (
-                              <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold uppercase bg-amber-500/10 text-amber-300 border border-amber-500/30">
-                                SME
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                            {ipo.sector}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Compare Checkbox */}
-                      <button
-                        onClick={(e) => toggleCompare(ipo.id, e)}
-                        className={`text-[10px] px-2 py-0.5 rounded-lg border font-medium transition-colors shrink-0 ${
-                          isSelectedForCompare
-                            ? 'bg-indigo-600 text-white border-indigo-500'
-                            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
-                        }`}
-                        title="Add to side-by-side comparison"
-                      >
-                        {isSelectedForCompare ? '✓ In Compare' : '+ Compare'}
-                      </button>
-                    </div>
-
-                    {/* Initial Essential Details Grid (Clean & Scannable - Groww Style) */}
-                    <div className="grid grid-cols-2 gap-2.5 mt-3.5 pt-3 border-t border-slate-800/80 text-xs">
-                      {/* Left Column */}
-                      <div>
-                        {statusFilter === 'open' ? (
-                          <>
-                            <span className="text-[10px] text-slate-500 block">Bidding Closes</span>
-                            <span className={`font-bold text-xs ${ipo.closes_today ? 'text-amber-400 animate-pulse' : 'text-slate-200'}`}>
-                              {ipo.closes_today ? '⚡ Closes Today!' : (ipo.close_date || 'Live')}
-                            </span>
-                          </>
-                        ) : statusFilter === 'closed' ? (
-                          <>
-                            <span className="text-[10px] text-slate-500 block">Listing Date</span>
-                            <span className="font-bold text-slate-200 text-xs">
-                              {ipo.listing_date || ipo.close_date || 'Listed'}
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <span className="text-[10px] text-slate-500 block">Opening Date</span>
-                            <span className="font-bold text-slate-200 text-xs">
-                              {ipo.open_date || 'Announced'}
-                            </span>
-                          </>
-                        )}
-
-                        <div className="mt-2">
-                          <span className="text-[10px] text-slate-500 block">Price Band</span>
-                          <span className="font-semibold text-white text-xs">
-                            {ipo.price_band}
+                  {/* Company Info */}
+                  <div className="lg:col-span-4 flex items-center justify-between lg:justify-start gap-3 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <CompanyLogo
+                        name={ipo.name}
+                        symbol={ipo.symbol}
+                        size="md"
+                        className="rounded-xl shadow-md shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-white text-sm sm:text-base group-hover:text-emerald-400 transition-colors truncate">
+                            {ipo.name}
                           </span>
-                        </div>
-                      </div>
-
-                      {/* Right Column */}
-                      <div className="text-right">
-                        {statusFilter === 'closed' && listing ? (
-                          <>
-                            <span className="text-[10px] text-slate-500 block">Listing Return</span>
-                            <span className={`font-extrabold text-xs ${listing.listing_gain_percent >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                              {listing.listing_gain_percent >= 0 ? '+' : ''}{listing.listing_gain_percent.toFixed(1)}% (₹{listing.profit_per_lot.toLocaleString('en-IN')})
+                          {ipo.ipo_type === 'SME' && (
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold uppercase bg-amber-500/10 text-amber-300 border border-amber-500/30 shrink-0">
+                              SME
                             </span>
-                          </>
-                        ) : (
-                          <>
-                            <span className="text-[10px] text-slate-500 block">Expected GMP</span>
-                            <span className={`font-extrabold text-xs ${ipo.gmp_closing_day >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                              {ipo.gmp_closing_day >= 0 ? '+' : ''}₹{ipo.gmp_closing_day} ({ipo.gmp_closing_percent.toFixed(0)}%)
-                            </span>
-                          </>
-                        )}
-
-                        <div className="mt-2 text-right">
-                          <span className="text-[10px] text-slate-500 block">Overall Subscription</span>
-                          <span className="font-semibold text-slate-200 text-xs">
-                            {ipo.subscription.final_day?.total
-                              ? `${ipo.subscription.final_day.total}x`
-                              : ipo.subscription.day2?.total
-                              ? `${ipo.subscription.day2.total}x`
-                              : ipo.subscription.day1?.total
-                              ? `${ipo.subscription.day1.total}x`
-                              : 'Live'}
-                          </span>
+                          )}
                         </div>
+                        <span className="text-xs text-slate-400 truncate block mt-0.5">
+                          {ipo.sector}
+                        </span>
                       </div>
                     </div>
 
-                    {/* AI Suggestion Badge */}
-                    <div className="mt-3">
-                      {renderAISuggestion(ipo)}
-                    </div>
+                    {/* Compare Button on Mobile / Desktop */}
+                    <button
+                      onClick={(e) => toggleCompare(ipo.id, e)}
+                      className={`text-[10px] px-2 py-0.5 rounded-lg border font-medium transition-colors shrink-0 lg:ml-auto ${
+                        isSelectedForCompare
+                          ? 'bg-indigo-600 text-white border-indigo-500'
+                          : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+                      }`}
+                      title="Add to side-by-side comparison"
+                    >
+                      {isSelectedForCompare ? '✓ In Compare' : '+ Compare'}
+                    </button>
                   </div>
 
-                  {/* Card Bottom CTA (Click to see full details) */}
-                  <div className="mt-3.5 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
-                    <span className="text-[11px] text-slate-500 font-medium">
+                  {/* Dates */}
+                  <div className="hidden lg:block lg:col-span-2 text-xs">
+                    {statusFilter === 'open' ? (
+                      <span className={`font-semibold ${ipo.closes_today ? 'text-amber-400 animate-pulse font-bold' : 'text-slate-200'}`}>
+                        {ipo.closes_today ? '⚡ Closes Today!' : (ipo.close_date || 'Live')}
+                      </span>
+                    ) : statusFilter === 'closed' ? (
+                      <span className="font-semibold text-slate-200">
+                        {ipo.listing_date || ipo.close_date || 'Listed'}
+                      </span>
+                    ) : (
+                      <span className="font-semibold text-slate-200">
+                        {ipo.open_date || 'Announced'}
+                      </span>
+                    )}
+                    <span className="text-[10px] text-slate-500 block mt-0.5">
+                      {statusFilter === 'open' ? (ipo.open_date ? `Opened ${ipo.open_date}` : 'Open Now') : 'Bidding closed'}
+                    </span>
+                  </div>
+
+                  {/* Price & Lot */}
+                  <div className="hidden lg:block lg:col-span-2 text-xs">
+                    <span className="font-bold text-white block">{ipo.price_band}</span>
+                    <span className="text-[10px] text-slate-400 block mt-0.5">
                       Lot: {ipo.lot_size} (₹{ipo.min_investment.toLocaleString('en-IN')})
                     </span>
-                    <div className="flex items-center gap-1 font-bold text-emerald-400 group-hover:translate-x-0.5 transition-transform">
-                      <span>{statusFilter === 'open' ? 'Apply / Details' : statusFilter === 'closed' ? 'Check Allotment' : 'View Details'}</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
+                  </div>
+
+                  {/* Expected GMP / Listing Return */}
+                  <div className="hidden lg:block lg:col-span-2 text-right text-xs">
+                    {statusFilter === 'closed' && listing ? (
+                      <>
+                        <span className={`font-extrabold text-sm block ${listing.listing_gain_percent >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {listing.listing_gain_percent >= 0 ? '+' : ''}{listing.listing_gain_percent.toFixed(1)}%
+                        </span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5">
+                          ₹{listing.profit_per_lot.toLocaleString('en-IN')} / lot
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span className={`font-extrabold text-sm block ${ipo.gmp_closing_day >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {ipo.gmp_closing_day >= 0 ? '+' : ''}₹{ipo.gmp_closing_day} ({ipo.gmp_closing_percent.toFixed(0)}%)
+                        </span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5">
+                          Est: ₹{ipo.gmp_estimated_listing}
+                        </span>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Subscription */}
+                  <div className="hidden lg:block lg:col-span-1 text-center text-xs">
+                    <span className="font-bold text-slate-200 block">
+                      {ipo.subscription.final_day?.total
+                        ? `${ipo.subscription.final_day.total}x`
+                        : ipo.subscription.day2?.total
+                        ? `${ipo.subscription.day2.total}x`
+                        : ipo.subscription.day1?.total
+                        ? `${ipo.subscription.day1.total}x`
+                        : 'Live'}
+                    </span>
+                    <span className="text-[10px] text-slate-500 block mt-0.5">Total</span>
+                  </div>
+
+                  {/* Action Column on Desktop */}
+                  <div className="hidden lg:flex lg:col-span-1 justify-end items-center">
+                    {statusFilter === 'closed' ? (
+                      <button
+                        onClick={handleCheckAllotment}
+                        className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs inline-flex items-center gap-1 shadow-sm transition-all active:scale-95 cursor-pointer"
+                        title="Check allotment status on KFintech"
+                      >
+                        <span>Allotment</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-1 font-bold text-emerald-400 group-hover:translate-x-0.5 transition-transform text-xs">
+                        <span>Details</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Mobile Row Quick Details */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs lg:hidden pt-2 border-t border-slate-800/60 mt-1">
+                    <div>
+                      <span className="text-[10px] text-slate-500 block">Price & Lot</span>
+                      <span className="font-semibold text-white">{ipo.price_band}</span>
+                      <span className="text-[10px] text-slate-400 block">Lot: {ipo.lot_size}</span>
+                    </div>
+
+                    <div className="text-right sm:text-left">
+                      <span className="text-[10px] text-slate-500 block">
+                        {statusFilter === 'closed' ? 'Listing Gain' : 'Expected GMP'}
+                      </span>
+                      {statusFilter === 'closed' && listing ? (
+                        <span className={`font-bold text-xs ${listing.listing_gain_percent >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {listing.listing_gain_percent >= 0 ? '+' : ''}{listing.listing_gain_percent.toFixed(1)}% (₹{listing.profit_per_lot.toLocaleString('en-IN')})
+                        </span>
+                      ) : (
+                        <span className={`font-bold text-xs ${ipo.gmp_closing_day >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {ipo.gmp_closing_day >= 0 ? '+' : ''}₹{ipo.gmp_closing_day} ({ipo.gmp_closing_percent.toFixed(0)}%)
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="col-span-2 sm:col-span-1 flex items-center justify-between sm:justify-end gap-2 pt-1 sm:pt-0">
+                      <span className="text-[11px] text-slate-400">
+                        Sub: <strong className="text-slate-200">{ipo.subscription.final_day?.total ?? ipo.subscription.day2?.total ?? 'Live'}x</strong>
+                      </span>
+
+                      {statusFilter === 'closed' ? (
+                        <button
+                          onClick={handleCheckAllotment}
+                          className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs inline-flex items-center gap-1 shadow-sm transition-all active:scale-95 cursor-pointer"
+                        >
+                          <span>Check Allotment</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </button>
+                      ) : (
+                        <span className="text-emerald-400 font-bold text-xs inline-flex items-center gap-1">
+                          <span>Details</span>
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

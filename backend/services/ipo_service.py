@@ -15,6 +15,7 @@ import re
 from datetime import datetime, timezone, timedelta
 from cachetools import TTLCache
 import logging
+from .closed_ipos_catalog import CLOSED_IPOS_CATALOG
 
 logger = logging.getLogger(__name__)
 
@@ -328,13 +329,27 @@ class IPOService:
         except Exception as e:
             logger.error(f"Error fetching live IPOs: {e}")
 
-        # If live scrape succeeded with at least 5 items, cache and return
-        if len(parsed_ipos) >= 5:
-            live_ipo_cache[CACHE_KEY] = parsed_ipos
-            return parsed_ipos
+        # Determine base IPO items (from scrape or fallback)
+        base_ipos = parsed_ipos if len(parsed_ipos) >= 5 else cls._get_fallback_ipos()
 
-        # Fallback to curated seed if network fails completely
-        return cls._get_fallback_ipos()
+        # Merge with CLOSED_IPOS_CATALOG (150+ closed/listed IPOs)
+        merged_ipos: List[Dict[str, Any]] = []
+        seen_keys = set()
+
+        for item in base_ipos:
+            merged_ipos.append(item)
+            seen_keys.add(item["id"])
+            if item.get("symbol"):
+                seen_keys.add(item["symbol"])
+
+        for item in CLOSED_IPOS_CATALOG:
+            item_sym = item.get("symbol")
+            if item["id"] not in seen_keys and (not item_sym or item_sym not in seen_keys):
+                merged_ipos.append(item)
+                seen_keys.add(item["id"])
+
+        live_ipo_cache[CACHE_KEY] = merged_ipos
+        return merged_ipos
 
     @classmethod
     def get_all_ipos(cls, status_filter: str = "all", type_filter: str = "all", refresh: bool = False) -> List[Dict[str, Any]]:
