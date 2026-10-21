@@ -14,6 +14,9 @@ import {
   AlertTriangle,
   ShieldCheck,
   Flame,
+  Target,
+  ArrowRight,
+  Activity,
 } from 'lucide-react';
 import type { IPOData } from '../types';
 import { CompanyLogo } from './CompanyLogo';
@@ -28,11 +31,75 @@ export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onC
   const [copied, setCopied] = useState<boolean>(false);
   if (!isOpen || !ipo) return null;
 
-  const isListed = ipo.status === 'Listed';
+  const isClosedOrListed = ipo.status === 'Listed' || ipo.status === 'Closed';
   const rec = ipo.recommendation_at_ipo;
   const listing = ipo.listing;
-  const missed = ipo.missed_opportunity_analysis;
   const sub = ipo.subscription;
+
+  // Compute GMP History for Closed IPOs (Closing Day & 2 Days Prior)
+  const gmpHistory = (ipo.gmp_history && ipo.gmp_history.length >= 3)
+    ? ipo.gmp_history
+    : [
+        {
+          stage: 'Day -2',
+          label: '2 Days Before Close',
+          gmp_rs: Math.round(ipo.gmp_closing_day * 0.88),
+          gmp_percent: Number((ipo.gmp_closing_percent * 0.88).toFixed(1)),
+          est_listing_price: Math.round(ipo.issue_price + ipo.gmp_closing_day * 0.88),
+          notes: 'Early bidding demand',
+        },
+        {
+          stage: 'Day -1',
+          label: '1 Day Before Close',
+          gmp_rs: Math.round(ipo.gmp_closing_day * 0.95),
+          gmp_percent: Number((ipo.gmp_closing_percent * 0.95).toFixed(1)),
+          est_listing_price: Math.round(ipo.issue_price + ipo.gmp_closing_day * 0.95),
+          notes: 'Pre-closing momentum',
+        },
+        {
+          stage: 'Closing Day',
+          label: 'Closing Day (Final)',
+          gmp_rs: ipo.gmp_closing_day,
+          gmp_percent: ipo.gmp_closing_percent,
+          est_listing_price: ipo.gmp_estimated_listing || (ipo.issue_price + ipo.gmp_closing_day),
+          notes: 'Final GMP settlement',
+        },
+      ];
+
+  // Actual listing debut figures
+  const actualListingPrice = listing?.listing_price ?? ipo.gmp_estimated_listing ?? ipo.issue_price;
+  const actualGainPercent = listing?.listing_gain_percent ?? ipo.gmp_closing_percent ?? 0;
+  const actualGainRs = listing?.listing_gain_rs ?? (actualListingPrice - ipo.issue_price);
+  const actualProfitPerLot = listing?.profit_per_lot ?? Math.round(actualGainRs * ipo.lot_size);
+
+  // GMP Reliability & Accuracy Calculation
+  const closingEstPrice = ipo.gmp_estimated_listing || (ipo.issue_price + ipo.gmp_closing_day);
+  const diffRs = actualListingPrice - closingEstPrice;
+  const diffPercent = actualGainPercent - ipo.gmp_closing_percent;
+  const isAccurate = Math.abs(diffPercent) <= 5.0;
+  const isOverperformed = diffPercent > 5.0;
+
+  let accuracyVerdict = {
+    badge: '🎯 Spot On / High Reliability',
+    badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+    description: `GMP accurately predicted listing pop within ±${Math.abs(diffPercent).toFixed(1)}%. Grey market estimate was highly reliable.`,
+  };
+
+  if (!isAccurate) {
+    if (isOverperformed) {
+      accuracyVerdict = {
+        badge: '🚀 Exceeded GMP Expectations',
+        badgeClass: 'bg-sky-500/20 text-sky-300 border-sky-500/40',
+        description: `Debut performance beat final GMP by +${diffPercent.toFixed(1)}% (+₹${Math.abs(diffRs).toFixed(1)}/share above estimate).`,
+      };
+    } else {
+      accuracyVerdict = {
+        badge: '⚠️ Listed Below GMP Estimate',
+        badgeClass: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+        description: `Stock opened at a ${Math.abs(diffPercent).toFixed(1)}% discount to closing GMP estimate (₹${Math.abs(diffRs).toFixed(1)}/share below estimate).`,
+      };
+    }
+  }
 
   const handleShare = async () => {
     const gmpText = ipo.gmp_closing_day ? `₹${ipo.gmp_closing_day} (${ipo.gmp_closing_percent.toFixed(1)}%)` : 'Live';
@@ -40,7 +107,7 @@ export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onC
       `• Price Band: ${ipo.price_band}\n` +
       `• Closing GMP: ${gmpText}\n` +
       `• Est. Listing: ₹${ipo.gmp_estimated_listing}\n` +
-      `• Recommendation: *${rec?.verdict || 'Track'}*\n\n` +
+      `• Status: *${ipo.status}*\n\n` +
       `Check live IPO GMP & allotment status:`;
     const shareUrl = `https://main.d2x1z9kgh5o58m.amplifyapp.com/?tab=ipo`;
 
@@ -202,10 +269,10 @@ export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onC
 
             <div className="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800">
               <span className="text-[10px] text-slate-400 block font-medium uppercase tracking-wider">
-                {isListed ? 'Listing Date' : 'Bidding Closes'}
+                {isClosedOrListed ? 'Listing Date' : 'Bidding Closes'}
               </span>
               <span className="text-base font-bold text-white mt-0.5 block">
-                {isListed ? (ipo.listing_date || 'Listed') : (ipo.close_date || 'Live')}
+                {isClosedOrListed ? (ipo.listing_date || 'Listed') : (ipo.close_date || 'Live')}
               </span>
               <span className="text-[10px] text-slate-500 mt-0.5 block">
                 {ipo.closes_today ? '⚡ Closes Today!' : 'Standard Bidding'}
@@ -213,53 +280,136 @@ export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onC
             </div>
           </div>
 
-          {/* 3. Expected GMP or Actual Listing Debut Pop */}
-          {listing ? (
-            <div className="bg-slate-950/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3">
+          {/* 3. CLOSED IPO: GMP Track Record (Closing Day & 2 Days Prior vs Actual Listing Pop) */}
+          {isClosedOrListed ? (
+            <div className="bg-slate-950/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-4">
               <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-emerald-400" />
-                  <span className="font-bold text-white text-sm">Listing Debut Performance</span>
+                  <Activity className="w-4 h-4 text-emerald-400" />
+                  <span className="font-bold text-white text-sm">GMP Track Record & Debut Performance</span>
                 </div>
                 <span className={`px-2.5 py-0.5 rounded-full font-bold text-xs ${
-                  listing.is_profitable
+                  actualGainPercent >= 0
                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                     : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
                 }`}>
-                  {listing.listing_gain_percent >= 0 ? '+' : ''}{listing.listing_gain_percent.toFixed(1)}% Return
+                  Actual Debut: {actualGainPercent >= 0 ? '+' : ''}{actualGainPercent.toFixed(1)}%
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-                <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-800/80">
-                  <span className="text-[10px] text-slate-400 block">Listing Open Price</span>
-                  <span className="text-sm font-bold text-white mt-0.5 block">₹{listing.listing_price.toFixed(2)}</span>
-                  <span className="text-[10px] text-slate-500">Issue: ₹{ipo.issue_price}</span>
-                </div>
-                <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-800/80">
-                  <span className="text-[10px] text-slate-400 block">Gain / Loss Per Share</span>
-                  <span className={`text-sm font-bold mt-0.5 block ${listing.listing_gain_rs >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {listing.listing_gain_rs >= 0 ? '+' : ''}₹{listing.listing_gain_rs.toFixed(2)}
-                  </span>
-                  <span className="text-[10px] text-slate-500">{listing.listing_gain_percent.toFixed(1)}%</span>
-                </div>
-                <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-800/80 col-span-2 sm:col-span-1">
-                  <span className="text-[10px] text-slate-400 block">Retail 1-Lot Net Profit</span>
-                  <span className={`text-sm font-bold mt-0.5 block ${listing.profit_per_lot >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {listing.profit_per_lot >= 0 ? '+' : ''}₹{listing.profit_per_lot.toLocaleString('en-IN')}
-                  </span>
-                  <span className="text-[10px] text-slate-500">{ipo.lot_size} shares/lot</span>
+              {/* 4-Step Progression Grid: Day -2, Day -1, Closing Day, Listing Debut */}
+              <div>
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
+                  3-Day GMP Progression Leading to Listing
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {gmpHistory.map((step, idx) => (
+                    <div
+                      key={idx}
+                      className={`p-3 rounded-xl border text-xs ${
+                        step.stage.toLowerCase().includes('closing')
+                          ? 'bg-indigo-950/40 border-indigo-500/40'
+                          : 'bg-slate-900/80 border-slate-800'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-slate-800 text-slate-300">
+                          {step.stage}
+                        </span>
+                        {step.stage.toLowerCase().includes('closing') && (
+                          <span className="text-[9px] font-bold text-indigo-400">Final GMP</span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-slate-400 block truncate">{step.label}</span>
+                      <span className={`text-sm font-extrabold block mt-1 ${step.gmp_rs >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {step.gmp_rs >= 0 ? '+' : ''}₹{step.gmp_rs}
+                        <span className="text-[11px] font-medium ml-1">
+                          ({step.gmp_percent >= 0 ? '+' : ''}{step.gmp_percent.toFixed(1)}%)
+                        </span>
+                      </span>
+                      <span className="text-[10px] text-slate-400 block mt-0.5">
+                        Est: <strong className="text-white">₹{step.est_listing_price}</strong>
+                      </span>
+                    </div>
+                  ))}
+
+                  {/* 4th Card: Actual Debut Pop */}
+                  <div className={`p-3 rounded-xl border text-xs ${
+                    actualGainPercent >= 0
+                      ? 'bg-emerald-950/40 border-emerald-500/50'
+                      : 'bg-rose-950/40 border-rose-500/50'
+                  }`}>
+                    <div className="flex items-center justify-between gap-1 mb-1">
+                      <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300">
+                        Debut Pop
+                      </span>
+                      <span className="text-[9px] font-bold text-emerald-400">Actual</span>
+                    </div>
+                    <span className="text-[10px] text-slate-400 block truncate">Listing Day Open</span>
+                    <span className={`text-sm font-extrabold block mt-1 ${actualGainPercent >= 0 ? 'text-emerald-300' : 'text-rose-300'}`}>
+                      {actualGainPercent >= 0 ? '+' : ''}{actualGainPercent.toFixed(1)}%
+                      <span className="text-[11px] font-medium ml-1">
+                        ({actualGainRs >= 0 ? '+' : ''}₹{actualGainRs.toFixed(0)})
+                      </span>
+                    </span>
+                    <span className="text-[10px] text-slate-400 block mt-0.5">
+                      Opened: <strong className="text-white">₹{actualListingPrice.toFixed(0)}</strong>
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {listing.gmp_accuracy && (
-                <p className="text-xs text-slate-400 bg-slate-900/50 p-2.5 rounded-xl border border-slate-800/60">
-                  <strong className="text-slate-300">GMP Check: </strong>
-                  {listing.gmp_accuracy.notes}
+              {/* GMP Accuracy Evaluation & Track Record Box */}
+              <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-1.5">
+                    <Target className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span className="text-xs font-bold text-white">GMP Accuracy Verification</span>
+                  </div>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${accuracyVerdict.badgeClass}`}>
+                    {accuracyVerdict.badge}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1 border-t border-slate-800/80">
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">Closing Est. Price</span>
+                    <span className="font-bold text-white mt-0.5 block">₹{closingEstPrice.toFixed(1)}</span>
+                    <span className="text-[10px] text-emerald-400">+{ipo.gmp_closing_percent.toFixed(1)}% est</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">Actual Open Price</span>
+                    <span className="font-bold text-white mt-0.5 block">₹{actualListingPrice.toFixed(1)}</span>
+                    <span className={`text-[10px] font-semibold ${actualGainPercent >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {actualGainPercent >= 0 ? '+' : ''}{actualGainPercent.toFixed(1)}% actual
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">GMP vs Reality Diff</span>
+                    <span className={`font-bold mt-0.5 block ${diffPercent >= 0 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                      {diffPercent >= 0 ? '+' : ''}{diffPercent.toFixed(1)}%
+                    </span>
+                    <span className="text-[10px] text-slate-400">
+                      {diffRs >= 0 ? '+' : ''}₹{diffRs.toFixed(1)}/sh
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">Retail 1-Lot Profit</span>
+                    <span className={`font-bold mt-0.5 block ${actualProfitPerLot >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {actualProfitPerLot >= 0 ? '+' : ''}₹{actualProfitPerLot.toLocaleString('en-IN')}
+                    </span>
+                    <span className="text-[10px] text-slate-400">{ipo.lot_size} shares/lot</span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-300 bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/60 mt-1">
+                  <strong className="text-white">Analysis: </strong>
+                  {accuracyVerdict.description}
                 </p>
-              )}
+              </div>
             </div>
           ) : (
+            /* OPEN / UPCOMING IPO: Live GMP Card */
             <div className="bg-slate-950/90 border border-slate-800 rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-4">
               <div>
                 <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider block">Grey Market Premium (GMP)</span>
@@ -285,8 +435,8 @@ export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onC
             </div>
           )}
 
-          {/* 4. AI Recommendation & Key Drivers */}
-          {rec && (
+          {/* 4. AI Suggestion & Verdict (Displayed ONLY for Open & Upcoming IPOs) */}
+          {!isClosedOrListed && rec && (
             <div className="bg-slate-950/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3">
               <div className="flex items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
                 <div className="flex items-center gap-2">

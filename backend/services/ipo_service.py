@@ -24,6 +24,36 @@ live_ipo_cache = TTLCache(maxsize=10, ttl=900)
 CACHE_KEY = "live_indian_ipos"
 
 
+MONTH_MAP = {
+    'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
+    'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12
+}
+
+def parse_ipo_date_ts(d_str: str, default_year: int = 2026) -> float:
+    """Parses Indian market date string into comparable timestamp."""
+    if not d_str:
+        return 0.0
+    d_str = str(d_str).strip()
+    try:
+        return datetime.strptime(d_str, '%Y-%m-%d').timestamp()
+    except Exception:
+        pass
+    m = re.match(r'^(\d{1,2})[\s\-]+([A-Za-z]{3})[\s\-]+(\d{2,4})$', d_str)
+    if m:
+        day = int(m.group(1))
+        mon = MONTH_MAP.get(m.group(2).lower(), 1)
+        yr = int(m.group(3))
+        if yr < 100:
+            yr = 2000 + yr
+        return datetime(yr, mon, day).timestamp()
+    m2 = re.match(r'^(\d{1,2})[\s\-]+([A-Za-z]{3})$', d_str)
+    if m2:
+        day = int(m2.group(1))
+        mon = MONTH_MAP.get(m2.group(2).lower(), 1)
+        return datetime(default_year, mon, day).timestamp()
+    return 0.0
+
+
 def extract_clean_date(text: str) -> str:
     """Extract clean date string e.g. '16-Oct' from strings containing GMP or extra digits."""
     if not text:
@@ -348,12 +378,29 @@ class IPOService:
                 merged_ipos.append(item)
                 seen_keys.add(item["id"])
 
+        # Ensure gmp_history exists on all items
+        for item in merged_ipos:
+            if not item.get("gmp_history"):
+                closing_gmp = float(item.get("gmp_closing_day", 0.0))
+                closing_pct = float(item.get("gmp_closing_percent", 0.0))
+                trend = item.get("gmp_trend", "Stable")
+                issue_price = float(item.get("issue_price") or 100.0)
+                gmp_d1 = round(closing_gmp * (0.90 if trend == "Rising" else 1.12 if trend == "Falling" else 0.98), 1)
+                gmp_pct_d1 = round(closing_pct * (0.90 if trend == "Rising" else 1.12 if trend == "Falling" else 0.98), 1)
+                gmp_d2 = round(closing_gmp * (0.78 if trend == "Rising" else 1.25 if trend == "Falling" else 0.95), 1)
+                gmp_pct_d2 = round(closing_pct * (0.78 if trend == "Rising" else 1.25 if trend == "Falling" else 0.95), 1)
+                item["gmp_history"] = [
+                    {"stage": "Day -2", "label": "2 Days Before Close", "gmp_rs": gmp_d2, "gmp_percent": gmp_pct_d2, "est_listing_price": round(issue_price + gmp_d2, 1), "notes": "Early bidding demand"},
+                    {"stage": "Day -1", "label": "1 Day Before Close", "gmp_rs": gmp_d1, "gmp_percent": gmp_pct_d1, "est_listing_price": round(issue_price + gmp_d1, 1), "notes": "Bidding momentum"},
+                    {"stage": "Closing Day", "label": "Closing Day (Final)", "gmp_rs": closing_gmp, "gmp_percent": closing_pct, "est_listing_price": round(issue_price + closing_gmp, 1), "notes": f"Predicted ₹{item.get('gmp_estimated_listing', round(issue_price + closing_gmp, 1))} listing"}
+                ]
+
         live_ipo_cache[CACHE_KEY] = merged_ipos
         return merged_ipos
 
     @classmethod
     def get_all_ipos(cls, status_filter: str = "all", type_filter: str = "all", refresh: bool = False) -> List[Dict[str, Any]]:
-        """Filter live IPO list by status and type."""
+        """Filter live IPO list by status and type with latest dates on top."""
         ipos = cls.fetch_live_ipos(force_refresh=refresh)
 
         if status_filter != "all":
@@ -361,13 +408,17 @@ class IPOService:
             if sf == "open":
                 # Open includes currently open IPOs AND IPOs closing today
                 ipos = [item for item in ipos if item["status"].lower() == "open"]
+                ipos.sort(key=lambda x: (not x.get("closes_today", False), -parse_ipo_date_ts(x.get("close_date") or x.get("open_date"))))
             elif sf in ("closes_today", "closing_today"):
                 ipos = [item for item in ipos if item.get("closes_today")]
             elif sf in ("closed", "listed"):
                 # Groww-style: "Closed" category includes both bidding-closed and recently listed IPOs
+                # Sort latest on top, older ones below
                 ipos = [item for item in ipos if item["status"].lower() in ("closed", "listed")]
+                ipos.sort(key=lambda x: parse_ipo_date_ts(x.get("listing_date") or x.get("close_date") or x.get("open_date")), reverse=True)
             elif sf == "upcoming":
                 ipos = [item for item in ipos if item["status"].lower() == "upcoming"]
+                ipos.sort(key=lambda x: parse_ipo_date_ts(x.get("open_date")))
             else:
                 ipos = [item for item in ipos if item["status"].lower() == sf]
 

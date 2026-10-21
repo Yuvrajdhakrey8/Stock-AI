@@ -188,6 +188,14 @@ export interface IPOData {
   gmp_closing_percent: number;
   gmp_estimated_listing: number;
   gmp_trend: "Rising" | "Falling" | "Stable";
+  gmp_history?: Array<{
+    stage: string;
+    label: string;
+    gmp_rs: number;
+    gmp_percent: number;
+    est_listing_price?: number;
+    notes?: string;
+  }>;
   subscription: IPOSubscription;
   listing?: IPOListing | null;
   missed_opportunity_analysis?: IPOMissedOpportunity | null;

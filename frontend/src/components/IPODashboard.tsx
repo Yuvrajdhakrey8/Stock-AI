@@ -55,7 +55,7 @@ export const IPODashboard: React.FC = () => {
     }
   });
 
-  const [sortBy, setSortBy] = useState<'gmp' | 'gain' | 'issue_size' | 'date'>('gmp');
+  const [sortBy, setSortBy] = useState<'date' | 'gmp' | 'gain' | 'issue_size'>('date');
 
   // Selected IPO for detail modal
   const [selectedIPO, setSelectedIPO] = useState<IPOData | null>(null);
@@ -160,7 +160,33 @@ export const IPODashboard: React.FC = () => {
     );
   });
 
-  // Sort
+  const MONTH_MAP: Record<string, number> = {
+    jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+    jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
+  };
+
+  const parseIPODateToTime = (dStr?: string, defaultYear: number = 2026): number => {
+    if (!dStr) return 0;
+    const s = dStr.trim();
+    const m = s.match(/^(\d{1,2})[\s\-]+([A-Za-z]{3})[\s\-]+(\d{2,4})$/);
+    if (m) {
+      const day = parseInt(m[1], 10);
+      const mon = MONTH_MAP[m[2].toLowerCase()] ?? 0;
+      let yr = parseInt(m[3], 10);
+      if (yr < 100) yr = 2000 + yr;
+      return new Date(yr, mon, day).getTime();
+    }
+    const m2 = s.match(/^(\d{1,2})[\s\-]+([A-Za-z]{3})$/);
+    if (m2) {
+      const day = parseInt(m2[1], 10);
+      const mon = MONTH_MAP[m2[2].toLowerCase()] ?? 0;
+      return new Date(defaultYear, mon, day).getTime();
+    }
+    const t = new Date(s).getTime();
+    return isNaN(t) ? 0 : t;
+  };
+
+  // Sort: Latest one on top and then old ones
   const sortedIPOs = [...filteredIPOs].sort((a, b) => {
     if (sortBy === 'gmp') {
       return b.gmp_closing_percent - a.gmp_closing_percent;
@@ -173,7 +199,14 @@ export const IPODashboard: React.FC = () => {
     if (sortBy === 'issue_size') {
       return b.issue_size_cr - a.issue_size_cr;
     }
-    return new Date(b.open_date).getTime() - new Date(a.open_date).getTime();
+    // Default sortBy === 'date': Latest one on top, then old ones
+    if (statusFilter === 'open') {
+      if (a.closes_today && !b.closes_today) return -1;
+      if (!a.closes_today && b.closes_today) return 1;
+    }
+    const timeA = parseIPODateToTime(a.listing_date || a.close_date || a.open_date);
+    const timeB = parseIPODateToTime(b.listing_date || b.close_date || b.open_date);
+    return timeB - timeA;
   });
 
   const comparedIPOs = ipos.filter((i) => compareIds.includes(i.id));
@@ -375,10 +408,10 @@ export const IPODashboard: React.FC = () => {
                 onChange={(e) => setSortBy(e.target.value as any)}
                 className="bg-transparent font-medium text-white focus:outline-none cursor-pointer"
               >
+                <option value="date" className="bg-slate-900 text-white">Sort by Date (Latest First)</option>
                 <option value="gmp" className="bg-slate-900 text-white">Sort by GMP %</option>
                 <option value="gain" className="bg-slate-900 text-white">Sort by Listing Gain</option>
                 <option value="issue_size" className="bg-slate-900 text-white">Sort by Size</option>
-                <option value="date" className="bg-slate-900 text-white">Sort by Date</option>
               </select>
             </div>
 
@@ -425,15 +458,26 @@ export const IPODashboard: React.FC = () => {
           </div>
         ) : (
           <div className="bg-slate-900/90 border border-slate-800 rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden divide-y divide-slate-800/60">
-            {/* Desktop Table Header (Groww Style) */}
-            <div className="hidden lg:grid grid-cols-12 gap-3 px-5 py-3.5 bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
-              <div className="col-span-4">Company</div>
-              <div className="col-span-2">{statusFilter === 'closed' ? 'Listing Date' : statusFilter === 'open' ? 'Bidding Closes' : 'Opening Date'}</div>
-              <div className="col-span-2">Price & Lot</div>
-              <div className="col-span-2 text-right">{statusFilter === 'closed' ? 'Listing Gain' : 'Expected GMP'}</div>
-              <div className="col-span-1 text-center">Sub.</div>
-              <div className="col-span-1 text-right">Action</div>
-            </div>
+            {/* Desktop Table Header: Shows AI Suggestion on Open & Upcoming only */}
+            {statusFilter === 'closed' ? (
+              <div className="hidden lg:grid grid-cols-12 gap-3 px-5 py-3.5 bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                <div className="col-span-4">Company</div>
+                <div className="col-span-2">Listing Date</div>
+                <div className="col-span-2">Price & Lot</div>
+                <div className="col-span-2 text-right">Listing Gain</div>
+                <div className="col-span-1 text-center">Sub.</div>
+                <div className="col-span-1 text-right">Allotment</div>
+              </div>
+            ) : (
+              <div className="hidden lg:grid grid-cols-12 gap-3 px-5 py-3.5 bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                <div className="col-span-3">Company</div>
+                <div className="col-span-2">{statusFilter === 'open' ? 'Bidding Closes' : 'Opening Date'}</div>
+                <div className="col-span-2">Price & Lot</div>
+                <div className="col-span-2 text-right">Expected GMP</div>
+                <div className="col-span-1 text-center">Sub.</div>
+                <div className="col-span-2 text-right">AI Suggestion</div>
+              </div>
+            )}
 
             {/* List Rows */}
             {sortedIPOs.map((ipo) => {
@@ -450,7 +494,7 @@ export const IPODashboard: React.FC = () => {
                   }`}
                 >
                   {/* Company Info */}
-                  <div className="lg:col-span-4 flex items-center justify-between lg:justify-start gap-3 min-w-0">
+                  <div className={`${statusFilter === 'closed' ? 'lg:col-span-4' : 'lg:col-span-3'} flex items-center justify-between lg:justify-start gap-3 min-w-0`}>
                     <div className="flex items-center gap-3 min-w-0">
                       <CompanyLogo
                         name={ipo.name}
@@ -554,9 +598,9 @@ export const IPODashboard: React.FC = () => {
                     <span className="text-[10px] text-slate-500 block mt-0.5">Total</span>
                   </div>
 
-                  {/* Action Column on Desktop */}
-                  <div className="hidden lg:flex lg:col-span-1 justify-end items-center">
-                    {statusFilter === 'closed' ? (
+                  {/* 6th Column: AI Suggestion on Table for Open/Upcoming, OR Check Allotment for Closed */}
+                  {statusFilter === 'closed' ? (
+                    <div className="hidden lg:flex lg:col-span-1 justify-end items-center">
                       <button
                         onClick={handleCheckAllotment}
                         className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs inline-flex items-center gap-1 shadow-sm transition-all active:scale-95 cursor-pointer"
@@ -565,13 +609,12 @@ export const IPODashboard: React.FC = () => {
                         <span>Allotment</span>
                         <ExternalLink className="w-3 h-3" />
                       </button>
-                    ) : (
-                      <div className="flex items-center gap-1 font-bold text-emerald-400 group-hover:translate-x-0.5 transition-transform text-xs">
-                        <span>Details</span>
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </div>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="hidden lg:flex lg:col-span-2 justify-end items-center">
+                      {renderAISuggestion(ipo)}
+                    </div>
+                  )}
 
                   {/* Mobile Row Quick Details */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs lg:hidden pt-2 border-t border-slate-800/60 mt-1">
@@ -616,6 +659,13 @@ export const IPODashboard: React.FC = () => {
                         </span>
                       )}
                     </div>
+
+                    {/* Show AI Suggestion badge on Mobile ONLY for Open & Upcoming */}
+                    {statusFilter !== 'closed' && (
+                      <div className="col-span-2 sm:col-span-3 pt-1">
+                        {renderAISuggestion(ipo)}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
