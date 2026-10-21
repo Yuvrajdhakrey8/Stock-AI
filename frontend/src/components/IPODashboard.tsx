@@ -10,33 +10,43 @@ import {
   ChevronRight,
   Filter,
   Search,
-  Layers,
   ArrowUpDown,
-  CheckCircle2,
   Clock,
   Loader2,
   Scale,
   RefreshCw,
-  Check,
+  ExternalLink,
+  CheckCircle2,
+  Info,
 } from 'lucide-react';
 import type { IPOData, IPOSummaryMetrics } from '../types';
 import { IPODetailModal } from './IPODetailModal';
 import { IPOCompareModal } from './IPOCompareModal';
+import { CompanyLogo } from './CompanyLogo';
 import { API_BASE_URL } from '../config';
 import { mobileService } from '../services/mobileService';
+
+type TabType = 'open' | 'closed' | 'upcoming';
 
 export const IPODashboard: React.FC = () => {
   const [ipos, setIpos] = useState<IPOData[]>([]);
   const [summary, setSummary] = useState<IPOSummaryMetrics | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<string>(() => {
+
+  // Exactly 3 Categories: Open, Closed, Upcoming (Groww UI)
+  const [statusFilter, setStatusFilter] = useState<TabType>(() => {
     try {
-      return localStorage.getItem('dhakreystock_ipo_status') || 'all';
+      const saved = localStorage.getItem('dhakreystock_ipo_status');
+      if (saved === 'open' || saved === 'closed' || saved === 'upcoming') {
+        return saved;
+      }
+      return 'open';
     } catch {
-      return 'all';
+      return 'open';
     }
   });
+
   const [typeFilter, setTypeFilter] = useState<string>(() => {
     try {
       return localStorage.getItem('dhakreystock_ipo_type') || 'all';
@@ -44,13 +54,8 @@ export const IPODashboard: React.FC = () => {
       return 'all';
     }
   });
-  const [sortBy, setSortBy] = useState<'gmp' | 'listing_gain' | 'issue_size' | 'date'>(() => {
-    try {
-      return (localStorage.getItem('dhakreystock_ipo_sort') as any) || 'gmp';
-    } catch {
-      return 'gmp';
-    }
-  });
+
+  const [sortBy, setSortBy] = useState<'gmp' | 'gain' | 'issue_size' | 'date'>('gmp');
 
   // Selected IPO for detail modal
   const [selectedIPO, setSelectedIPO] = useState<IPOData | null>(null);
@@ -62,30 +67,6 @@ export const IPODashboard: React.FC = () => {
 
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const listRef = useRef<HTMLDivElement>(null);
-
-  const handleStatusCardClick = (status: 'open' | 'upcoming' | 'listed') => {
-    if (statusFilter === status && typeFilter === 'all') {
-      setStatusFilter('all');
-    } else {
-      setStatusFilter(status);
-      setTypeFilter('all');
-    }
-    setTimeout(() => {
-      listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 60);
-  };
-
-  const handleSmeCardClick = () => {
-    if (typeFilter === 'sme') {
-      setTypeFilter('all');
-    } else {
-      setTypeFilter('sme');
-      setStatusFilter('all');
-    }
-    setTimeout(() => {
-      listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 60);
-  };
 
   // Mobile Back Button Handler for IPODashboard Modals
   useEffect(() => {
@@ -120,14 +101,6 @@ export const IPODashboard: React.FC = () => {
     }
     fetchIPOData(false);
   }, [typeFilter]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('dhakreystock_ipo_sort', sortBy);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [sortBy]);
 
   const fetchIPOData = async (forceRefresh: boolean = false) => {
     if (forceRefresh) {
@@ -192,9 +165,9 @@ export const IPODashboard: React.FC = () => {
     if (sortBy === 'gmp') {
       return b.gmp_closing_percent - a.gmp_closing_percent;
     }
-    if (sortBy === 'listing_gain') {
-      const gainA = a.listing?.listing_gain_percent ?? -999;
-      const gainB = b.listing?.listing_gain_percent ?? -999;
+    if (sortBy === 'gain') {
+      const gainA = a.listing?.listing_gain_percent ?? a.gmp_closing_percent ?? -999;
+      const gainB = b.listing?.listing_gain_percent ?? b.gmp_closing_percent ?? -999;
       return gainB - gainA;
     }
     if (sortBy === 'issue_size') {
@@ -205,19 +178,93 @@ export const IPODashboard: React.FC = () => {
 
   const comparedIPOs = ipos.filter((i) => compareIds.includes(i.id));
 
+  // Helper function to render AI Suggestion badge
+  const renderAISuggestion = (ipo: IPOData) => {
+    const isListed = ipo.status === 'Listed';
+    const rec = ipo.recommendation_at_ipo;
+    const listing = ipo.listing;
+    const missed = ipo.missed_opportunity_analysis;
+
+    if (isListed && listing) {
+      if (listing.listing_gain_percent >= 20) {
+        return (
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+            <span>AI Review: <strong className="text-emerald-300">Stellar Gain (+{listing.listing_gain_percent.toFixed(1)}%)</strong> • ₹{listing.profit_per_lot.toLocaleString('en-IN')}/lot profit</span>
+          </div>
+        );
+      }
+      if (listing.listing_gain_percent < 0) {
+        return (
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-semibold">
+            <span className="w-2 h-2 rounded-full bg-rose-400 shrink-0" />
+            <span>AI Review: <strong className="text-rose-300">Capital Protected</strong> • Avoided {listing.listing_gain_percent.toFixed(1)}% loss</span>
+          </div>
+        );
+      }
+      return (
+        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-slate-300 text-xs font-semibold">
+          <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+          <span>AI Review: <strong className="text-slate-200">Listed at Par (+{listing.listing_gain_percent.toFixed(1)}%)</strong></span>
+        </div>
+      );
+    }
+
+    if (ipo.status === 'Open') {
+      if (ipo.gmp_closing_percent >= 25 || rec?.verdict === 'Apply') {
+        return (
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            <span>AI Suggestion: <strong className="text-emerald-300">Apply</strong> — Strong +{ipo.gmp_closing_percent.toFixed(0)}% GMP Expected</span>
+          </div>
+        );
+      }
+      if (ipo.gmp_closing_percent >= 8) {
+        return (
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold">
+            <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+            <span>AI Suggestion: <strong className="text-amber-300">Caution</strong> — Moderate Demand ({ipo.gmp_closing_percent.toFixed(0)}% GMP)</span>
+          </div>
+        );
+      }
+      return (
+        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-semibold">
+          <span className="w-2 h-2 rounded-full bg-rose-400 shrink-0" />
+          <span>AI Suggestion: <strong className="text-rose-300">Avoid</strong> — High Valuation Risk / Subdued GMP</span>
+        </div>
+      );
+    }
+
+    // Upcoming
+    if (ipo.gmp_closing_percent >= 20) {
+      return (
+        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300 text-xs font-semibold">
+          <span className="w-2 h-2 rounded-full bg-sky-400 shrink-0" />
+          <span>AI Outlook: <strong className="text-sky-300">Bullish Demand</strong> — High Grey Market Activity</span>
+        </div>
+      );
+    }
+    return (
+      <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-slate-300 text-xs font-semibold">
+        <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0" />
+        <span>AI Outlook: <strong className="text-slate-200">Watch</strong> — Awaiting Bidding Dates & Valuation Details</span>
+      </div>
+    );
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Top Header & Last Updated Badge */}
+    <div className="space-y-5">
+      {/* Groww-style Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
               <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400 shrink-0" />
-              <span>Indian IPO Research & Advisory</span>
+              <span>IPOs</span>
             </h1>
           </div>
-          <p className="text-[11px] sm:text-xs text-slate-400 mt-1">
-            Complete analysis of Mainboard and SME IPOs with closing-day GMP, subscription progression, 1-lot retail profit, and missed opportunity retrospectives.
+          <p className="text-xs text-slate-400 mt-1">
+            Real-time Indian IPO tracking, Closing-Day GMP, Live subscriptions, and AI recommendations.
           </p>
         </div>
 
@@ -229,7 +276,7 @@ export const IPODashboard: React.FC = () => {
             title="Fetch latest real-time Grey Market Premium and Subscription rates"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-emerald-400 shrink-0 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>{isRefreshing ? 'Fetching Live...' : 'Refresh Live'}</span>
+            <span>{isRefreshing ? 'Updating...' : 'Refresh Live'}</span>
           </button>
 
           {summary?.last_updated && (
@@ -241,469 +288,285 @@ export const IPODashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Groww-style Interactive Category Cards */}
-      {summary && (
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
-            {/* Card 1: Open for Bidding */}
-            <div
-              onClick={() => handleStatusCardClick('open')}
-              className={`rounded-2xl p-3.5 sm:p-4 transition-all cursor-pointer shadow-md group relative overflow-hidden active:scale-[0.98] ${
-                statusFilter === 'open' && typeFilter === 'all'
-                  ? 'bg-emerald-950/50 border-2 border-emerald-500 ring-2 ring-emerald-500/30'
-                  : 'bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 hover:bg-slate-850'
-              }`}
-            >
-              <div className="flex items-center justify-between text-slate-300 text-[11px] sm:text-xs">
-                <span className="font-semibold flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  Open Now
-                </span>
-                {statusFilter === 'open' && typeFilter === 'all' ? (
-                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-900/50 px-2 py-0.5 rounded-full border border-emerald-500/40">
-                    Active
-                  </span>
-                ) : (
-                  <span className="text-[10px] text-slate-500 group-hover:text-emerald-400 font-medium">Filter</span>
-                )}
-              </div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-white mt-1.5 flex items-baseline gap-1.5">
-                <span>{summary.open_count}</span>
-                <span className="text-[11px] sm:text-xs text-emerald-400 font-medium">Bidding Live</span>
-              </div>
-              <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/60 text-[10px] sm:text-[11px]">
-                <span className={summary.closes_today_count && summary.closes_today_count > 0 ? 'text-amber-400 font-semibold' : 'text-slate-400'}>
-                  {summary.closes_today_count && summary.closes_today_count > 0 ? `⚡ ${summary.closes_today_count} Closes Today!` : 'Accepting Bids'}
-                </span>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
-              </div>
-            </div>
-
-            {/* Card 2: Upcoming Issues */}
-            <div
-              onClick={() => handleStatusCardClick('upcoming')}
-              className={`rounded-2xl p-3.5 sm:p-4 transition-all cursor-pointer shadow-md group relative overflow-hidden active:scale-[0.98] ${
-                statusFilter === 'upcoming' && typeFilter === 'all'
-                  ? 'bg-sky-950/50 border-2 border-sky-500 ring-2 ring-sky-500/30'
-                  : 'bg-slate-900/90 border border-slate-800 hover:border-sky-500/50 hover:bg-slate-850'
-              }`}
-            >
-              <div className="flex items-center justify-between text-slate-300 text-[11px] sm:text-xs">
-                <span className="font-semibold flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-sky-400" />
-                  Upcoming
-                </span>
-                {statusFilter === 'upcoming' && typeFilter === 'all' ? (
-                  <span className="text-[10px] font-bold text-sky-400 bg-sky-900/50 px-2 py-0.5 rounded-full border border-sky-500/40">
-                    Active
-                  </span>
-                ) : (
-                  <span className="text-[10px] text-slate-500 group-hover:text-sky-400 font-medium">Filter</span>
-                )}
-              </div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-sky-400 mt-1.5 flex items-baseline gap-1.5">
-                <span>{summary.upcoming_count}</span>
-                <span className="text-[11px] sm:text-xs text-slate-400 font-normal">Issues</span>
-              </div>
-              <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/60 text-[10px] sm:text-[11px] text-slate-400">
-                <span>Announced / DRHP</span>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all" />
-              </div>
-            </div>
-
-            {/* Card 3: Recently Listed */}
-            <div
-              onClick={() => handleStatusCardClick('listed')}
-              className={`rounded-2xl p-3.5 sm:p-4 transition-all cursor-pointer shadow-md group relative overflow-hidden active:scale-[0.98] ${
-                statusFilter === 'listed' && typeFilter === 'all'
-                  ? 'bg-indigo-950/50 border-2 border-indigo-500 ring-2 ring-indigo-500/30'
-                  : 'bg-slate-900/90 border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-850'
-              }`}
-            >
-              <div className="flex items-center justify-between text-slate-300 text-[11px] sm:text-xs">
-                <span className="font-semibold flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-indigo-400" />
-                  Recently Listed
-                </span>
-                {statusFilter === 'listed' && typeFilter === 'all' ? (
-                  <span className="text-[10px] font-bold text-indigo-400 bg-indigo-900/50 px-2 py-0.5 rounded-full border border-indigo-500/40">
-                    Active
-                  </span>
-                ) : (
-                  <span className="text-[10px] text-slate-500 group-hover:text-indigo-400 font-medium">Filter</span>
-                )}
-              </div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-indigo-300 mt-1.5 flex items-baseline gap-1.5">
-                <span>{summary.total_listed_tracked}</span>
-                <span className="text-[11px] sm:text-xs text-emerald-400 font-semibold">+{summary.average_listing_gain_percent}% Pop</span>
-              </div>
-              <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/60 text-[10px] sm:text-[11px] text-slate-400">
-                <span>Listing Day Profit</span>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all" />
-              </div>
-            </div>
-
-            {/* Card 4: SME Platform */}
-            <div
-              onClick={handleSmeCardClick}
-              className={`rounded-2xl p-3.5 sm:p-4 transition-all cursor-pointer shadow-md group relative overflow-hidden active:scale-[0.98] ${
-                typeFilter === 'sme'
-                  ? 'bg-amber-950/50 border-2 border-amber-500 ring-2 ring-amber-500/30'
-                  : 'bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 hover:bg-slate-850'
-              }`}
-            >
-              <div className="flex items-center justify-between text-slate-300 text-[11px] sm:text-xs">
-                <span className="font-semibold flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-amber-400" />
-                  SME Platform
-                </span>
-                {typeFilter === 'sme' ? (
-                  <span className="text-[10px] font-bold text-amber-400 bg-amber-900/50 px-2 py-0.5 rounded-full border border-amber-500/40">
-                    Active
-                  </span>
-                ) : (
-                  <span className="text-[10px] text-slate-500 group-hover:text-amber-400 font-medium">Filter</span>
-                )}
-              </div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-amber-300 mt-1.5 flex items-baseline gap-1.5">
-                <span>SME</span>
-                <span className="text-[11px] sm:text-xs text-slate-400 font-normal">Issues</span>
-              </div>
-              <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/60 text-[10px] sm:text-[11px] text-slate-400">
-                <span>NSE Emerge & BSE SME</span>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all" />
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Performance Records Ribbon */}
-          <div className="bg-slate-950/80 border border-slate-800/80 rounded-2xl px-3 py-2 text-xs flex items-center justify-between gap-3 overflow-x-auto scrollbar-none text-slate-400">
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span className="text-[10px] uppercase font-bold text-slate-500">Track Record:</span>
-              <span className="text-white font-semibold">+{summary.average_listing_gain_percent}%</span>
-              <span>Avg Listing Gain</span>
-            </div>
-            {summary.best_performer && (
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className="text-emerald-400 font-bold">★ Top Winner:</span>
-                <span className="text-white font-medium">{summary.best_performer.name.split(' ')[0]}</span>
-                <span className="text-emerald-400 font-semibold">+{summary.best_performer.gain_percent}%</span>
-              </div>
-            )}
-            {summary.worst_performer && (
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className="text-rose-400 font-bold">⚠ Weakest:</span>
-                <span className="text-white font-medium">{summary.worst_performer.name.split(' ')[0]}</span>
-                <span className="text-rose-400 font-semibold">{summary.worst_performer.gain_percent}%</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Toolbar: Search, Filters, Sort, Compare Action */}
-      <div ref={listRef} className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-4 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
-        {/* Search */}
-        <div className="relative w-full md:max-w-md">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search IPO by company name or sector..."
-            className="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-          />
-        </div>
-
-        {/* Filters Group */}
-        <div className="flex items-center gap-2 sm:gap-3 flex-wrap text-xs">
-          {/* Status Pills */}
-          <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1 overflow-x-auto scrollbar-none">
-            {['all', 'open', 'upcoming', 'listed'].map((st) => (
-              <button
-                key={st}
-                onClick={() => setStatusFilter(st)}
-                className={`px-2 sm:px-2.5 py-1 rounded-lg font-medium transition-all uppercase text-[9px] sm:text-[10px] tracking-wider shrink-0 ${
-                  statusFilter === st
-                    ? 'bg-emerald-500 text-slate-950 font-bold'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                {st}
-              </button>
-            ))}
-          </div>
-
-          {/* Type Filter */}
-          <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1 overflow-x-auto scrollbar-none">
-            {['all', 'mainboard', 'sme'].map((tp) => (
-              <button
-                key={tp}
-                onClick={() => setTypeFilter(tp)}
-                className={`px-2 sm:px-2.5 py-1 rounded-lg font-medium transition-all uppercase text-[9px] sm:text-[10px] tracking-wider shrink-0 ${
-                  typeFilter === tp
-                    ? 'bg-emerald-500 text-slate-950 font-bold'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                {tp}
-              </button>
-            ))}
-          </div>
-
-          {/* Sort selector */}
-          <div className="flex items-center gap-1.5 text-slate-400">
-            <ArrowUpDown className="w-3.5 h-3.5 shrink-0" />
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-slate-200 text-xs focus:outline-none"
-            >
-              <option value="gmp">Sort by GMP %</option>
-              <option value="listing_gain">Sort by Actual Gain</option>
-              <option value="issue_size">Sort by Issue Size</option>
-              <option value="date">Sort by Recent Date</option>
-            </select>
-          </div>
-
-          {/* Compare Button */}
-          {compareIds.length > 0 && (
+      {/* Groww 3 Categories Pill Navigation + Type Filter */}
+      <div className="bg-slate-900/95 border border-slate-800 rounded-2xl p-2.5 sm:p-3 shadow-xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          {/* Exactly 3 Categories: Open, Closed, Upcoming (Groww Style) */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 md:pb-0">
+            {/* 1. Open Tab */}
             <button
-              onClick={() => setIsCompareOpen(true)}
-              className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-lg shadow-indigo-600/20 transition-all animate-bounce shrink-0"
+              onClick={() => setStatusFilter('open')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
+                statusFilter === 'open'
+                  ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
+                  : 'bg-slate-950 text-slate-300 hover:text-white border border-slate-800'
+              }`}
             >
-              <Scale className="w-3.5 h-3.5" />
-              <span>Compare ({compareIds.length})</span>
+              <span className={`w-2 h-2 rounded-full ${statusFilter === 'open' ? 'bg-slate-950 animate-pulse' : 'bg-emerald-400'}`} />
+              <span>Open</span>
+              <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-extrabold ${
+                statusFilter === 'open' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-300'
+              }`}>
+                {summary?.open_count ?? 0}
+              </span>
             </button>
-          )}
+
+            {/* 2. Closed Tab */}
+            <button
+              onClick={() => setStatusFilter('closed')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
+                statusFilter === 'closed'
+                  ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
+                  : 'bg-slate-950 text-slate-300 hover:text-white border border-slate-800'
+              }`}
+            >
+              <span>Closed</span>
+              <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-extrabold ${
+                statusFilter === 'closed' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-300'
+              }`}>
+                {summary?.closed_count ?? 0}
+              </span>
+            </button>
+
+            {/* 3. Upcoming Tab */}
+            <button
+              onClick={() => setStatusFilter('upcoming')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
+                statusFilter === 'upcoming'
+                  ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
+                  : 'bg-slate-950 text-slate-300 hover:text-white border border-slate-800'
+              }`}
+            >
+              <span>Upcoming</span>
+              <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-extrabold ${
+                statusFilter === 'upcoming' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-300'
+              }`}>
+                {summary?.upcoming_count ?? 0}
+              </span>
+            </button>
+          </div>
+
+          {/* Sub-Filters: Type & Sort */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* IPO Type Dropdown (Groww: IPO type: All v) */}
+            <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-slate-300">
+              <span className="text-slate-500">IPO type:</span>
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="bg-transparent font-semibold text-white focus:outline-none cursor-pointer"
+              >
+                <option value="all" className="bg-slate-900 text-white">All Types</option>
+                <option value="mainboard" className="bg-slate-900 text-white">Mainboard</option>
+                <option value="sme" className="bg-slate-900 text-white">SME</option>
+              </select>
+            </div>
+
+            {/* Sort Selector */}
+            <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-slate-300">
+              <ArrowUpDown className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="bg-transparent font-medium text-white focus:outline-none cursor-pointer"
+              >
+                <option value="gmp" className="bg-slate-900 text-white">Sort by GMP %</option>
+                <option value="gain" className="bg-slate-900 text-white">Sort by Listing Gain</option>
+                <option value="issue_size" className="bg-slate-900 text-white">Sort by Size</option>
+                <option value="date" className="bg-slate-900 text-white">Sort by Date</option>
+              </select>
+            </div>
+
+            {/* Compare Button */}
+            {compareIds.length > 0 && (
+              <button
+                onClick={() => setIsCompareOpen(true)}
+                className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-lg shadow-indigo-600/20 transition-all shrink-0"
+              >
+                <Scale className="w-3.5 h-3.5" />
+                <span>Compare ({compareIds.length})</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Search Bar */}
+        <div className="mt-2.5 pt-2.5 border-t border-slate-800/80">
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search IPO by company name or sector..."
+              className="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Active Filter Banner (Groww style) */}
-      {(statusFilter !== 'all' || typeFilter !== 'all' || searchQuery.trim()) && (
-        <div className="flex items-center justify-between p-3 bg-slate-900/90 border border-emerald-500/30 rounded-2xl shadow-md animate-in fade-in duration-200">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-slate-400">Viewing:</span>
-            {statusFilter !== 'all' && (
-              <span className="text-xs font-bold text-emerald-400 bg-emerald-950 border border-emerald-500/40 px-2.5 py-0.5 rounded-lg uppercase tracking-wide flex items-center gap-1">
-                <Check className="w-3 h-3" />
-                {statusFilter} IPOs
-              </span>
-            )}
-            {typeFilter !== 'all' && (
-              <span className="text-xs font-bold text-amber-400 bg-amber-950 border border-amber-500/40 px-2.5 py-0.5 rounded-lg uppercase tracking-wide flex items-center gap-1">
-                <Check className="w-3 h-3" />
-                {typeFilter} Platform
-              </span>
-            )}
-            {searchQuery.trim() && (
-              <span className="text-xs text-slate-300 font-medium bg-slate-800 px-2 py-0.5 rounded-lg">
-                "{searchQuery.trim()}"
-              </span>
-            )}
-            <span className="text-xs text-slate-400 font-semibold">({sortedIPOs.length} results)</span>
+      {/* IPO Cards Container */}
+      <div ref={listRef}>
+        {loading ? (
+          <div className="py-20 text-center space-y-3">
+            <Loader2 className="w-8 h-8 text-emerald-400 animate-spin mx-auto" />
+            <p className="text-sm text-slate-400">Loading verified Indian IPO dataset...</p>
           </div>
+        ) : sortedIPOs.length === 0 ? (
+          <div className="py-16 text-center text-slate-400 bg-slate-900/60 rounded-3xl border border-slate-800 space-y-2">
+            <Info className="w-6 h-6 text-slate-500 mx-auto" />
+            <p className="font-semibold text-white">No IPOs found in this category.</p>
+            <p className="text-xs text-slate-500">Try changing your search query or selecting a different IPO type.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {sortedIPOs.map((ipo) => {
+              const isListed = ipo.status === 'Listed';
+              const isSelectedForCompare = compareIds.includes(ipo.id);
+              const listing = ipo.listing;
 
-          <button
-            onClick={() => {
-              setStatusFilter('all');
-              setTypeFilter('all');
-              setSearchQuery('');
-            }}
-            className="text-xs font-semibold text-slate-300 hover:text-white px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors shrink-0"
-          >
-            Show All ✕
-          </button>
-        </div>
-      )}
+              return (
+                <div
+                  key={ipo.id}
+                  onClick={() => handleOpenDetail(ipo)}
+                  className={`bg-slate-900/90 border rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl hover:border-slate-700 transition-all cursor-pointer flex flex-col justify-between group relative overflow-hidden active:scale-[0.99] ${
+                    isSelectedForCompare ? 'ring-2 ring-indigo-500 border-indigo-500/50' : 'border-slate-800'
+                  }`}
+                >
+                  <div>
+                    {/* Top Row: Company Logo + Name + SME chip + Compare Toggle */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3 min-w-0">
+                        {/* Company Logo */}
+                        <CompanyLogo
+                          name={ipo.name}
+                          symbol={ipo.symbol}
+                          size="md"
+                          className="mt-0.5 rounded-xl shadow-md"
+                        />
 
-      {/* IPO Cards Grid */}
-      {loading ? (
-        <div className="py-20 text-center space-y-3">
-          <Loader2 className="w-8 h-8 text-emerald-400 animate-spin mx-auto" />
-          <p className="text-sm text-slate-400">Loading verified Indian IPO dataset...</p>
-        </div>
-      ) : sortedIPOs.length === 0 ? (
-        <div className="py-20 text-center text-slate-500 bg-slate-900/60 rounded-3xl border border-slate-800">
-          No IPOs found matching the specified filters.
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sortedIPOs.map((ipo) => {
-            const isListed = ipo.status === 'Listed';
-            const isSelectedForCompare = compareIds.includes(ipo.id);
-            const rec = ipo.recommendation_at_ipo;
-            const listing = ipo.listing;
-            const missed = ipo.missed_opportunity_analysis;
+                        {/* Name & Sector */}
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h3 className="font-bold text-white text-sm sm:text-base group-hover:text-emerald-400 transition-colors line-clamp-1">
+                              {ipo.name}
+                            </h3>
+                            {ipo.ipo_type === 'SME' && (
+                              <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold uppercase bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                                SME
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                            {ipo.sector}
+                          </p>
+                        </div>
+                      </div>
 
-            return (
-              <div
-                key={ipo.id}
-                onClick={() => handleOpenDetail(ipo)}
-                className={`bg-slate-900/90 border rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl hover:border-slate-700 transition-all cursor-pointer flex flex-col justify-between group relative overflow-hidden active:scale-[0.99] ${
-                  isSelectedForCompare ? 'ring-2 ring-indigo-500 border-indigo-500/50' : 'border-slate-800'
-                }`}
-              >
-                {/* Top Badge Row */}
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {ipo.closes_today ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> Closes Today
-                        </span>
-                      ) : (
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                          ipo.status === 'Open'
-                            ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 animate-pulse'
-                            : ipo.status === 'Upcoming'
-                            ? 'bg-sky-500/20 text-sky-400 border-sky-500/40'
-                            : 'bg-slate-800 text-slate-400 border-slate-700'
-                        }`}>
-                          {ipo.status}
-                        </span>
-                      )}
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800/80 text-slate-300 font-semibold border border-slate-700/60">
-                        {ipo.ipo_type}
-                      </span>
-                      {rec && (
-                        <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold ${
-                          rec.verdict === 'Apply'
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                            : rec.verdict === 'Avoid'
-                            ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                            : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                        }`}>
-                          Rec: {rec.verdict}
-                        </span>
-                      )}
+                      {/* Compare Checkbox */}
+                      <button
+                        onClick={(e) => toggleCompare(ipo.id, e)}
+                        className={`text-[10px] px-2 py-0.5 rounded-lg border font-medium transition-colors shrink-0 ${
+                          isSelectedForCompare
+                            ? 'bg-indigo-600 text-white border-indigo-500'
+                            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+                        }`}
+                        title="Add to side-by-side comparison"
+                      >
+                        {isSelectedForCompare ? '✓ In Compare' : '+ Compare'}
+                      </button>
                     </div>
 
-                    {/* Compare Toggle Checkbox */}
-                    <button
-                      onClick={(e) => toggleCompare(ipo.id, e)}
-                      className={`text-[10px] px-2 py-1 rounded-lg border font-medium transition-colors ${
-                        isSelectedForCompare
-                          ? 'bg-indigo-600 text-white border-indigo-500'
-                          : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
-                      }`}
-                    >
-                      {isSelectedForCompare ? '✓ In Compare' : '+ Compare'}
-                    </button>
-                  </div>
-
-                  {/* Company Name & Sector */}
-                  <h3 className="text-base font-bold text-white group-hover:text-emerald-400 transition-colors line-clamp-1">
-                    {ipo.name}
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-0.5 truncate">{ipo.sector}</p>
-
-                  {/* Mobile-Only Clean Card Summary (Prevents detail bombardment on mobile screens) */}
-                  <div className="block sm:hidden mt-3 pt-2.5 border-t border-slate-800/80 space-y-2">
-                    <div className="flex items-center justify-between text-xs">
+                    {/* Initial Essential Details Grid (Clean & Scannable - Groww Style) */}
+                    <div className="grid grid-cols-2 gap-2.5 mt-3.5 pt-3 border-t border-slate-800/80 text-xs">
+                      {/* Left Column */}
                       <div>
-                        <span className="text-[10px] text-slate-500 block">Price Band</span>
-                        <span className="font-bold text-white text-xs">{ipo.price_band}</span>
+                        {statusFilter === 'open' ? (
+                          <>
+                            <span className="text-[10px] text-slate-500 block">Bidding Closes</span>
+                            <span className={`font-bold text-xs ${ipo.closes_today ? 'text-amber-400 animate-pulse' : 'text-slate-200'}`}>
+                              {ipo.closes_today ? '⚡ Closes Today!' : (ipo.close_date || 'Live')}
+                            </span>
+                          </>
+                        ) : statusFilter === 'closed' ? (
+                          <>
+                            <span className="text-[10px] text-slate-500 block">Listing Date</span>
+                            <span className="font-bold text-slate-200 text-xs">
+                              {ipo.listing_date || ipo.close_date || 'Listed'}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-[10px] text-slate-500 block">Opening Date</span>
+                            <span className="font-bold text-slate-200 text-xs">
+                              {ipo.open_date || 'Announced'}
+                            </span>
+                          </>
+                        )}
+
+                        <div className="mt-2">
+                          <span className="text-[10px] text-slate-500 block">Price Band</span>
+                          <span className="font-semibold text-white text-xs">
+                            {ipo.price_band}
+                          </span>
+                        </div>
                       </div>
+
+                      {/* Right Column */}
                       <div className="text-right">
-                        <span className="text-[10px] text-slate-500 block">Expected GMP</span>
-                        <span className={`font-extrabold text-xs ${ipo.gmp_closing_day >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                          {ipo.gmp_closing_day >= 0 ? '+' : ''}₹{ipo.gmp_closing_day} ({ipo.gmp_closing_percent.toFixed(0)}%)
-                        </span>
-                      </div>
-                    </div>
-                    <div className="pt-1 text-[10px] text-emerald-400/90 font-medium flex items-center justify-between">
-                      <span>Tap to view subscription, financials & GMP trend</span>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-emerald-400 transition-colors" />
-                    </div>
-                  </div>
+                        {statusFilter === 'closed' && listing ? (
+                          <>
+                            <span className="text-[10px] text-slate-500 block">Listing Return</span>
+                            <span className={`font-extrabold text-xs ${listing.listing_gain_percent >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                              {listing.listing_gain_percent >= 0 ? '+' : ''}{listing.listing_gain_percent.toFixed(1)}% (₹{listing.profit_per_lot.toLocaleString('en-IN')})
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-[10px] text-slate-500 block">Expected GMP</span>
+                            <span className={`font-extrabold text-xs ${ipo.gmp_closing_day >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                              {ipo.gmp_closing_day >= 0 ? '+' : ''}₹{ipo.gmp_closing_day} ({ipo.gmp_closing_percent.toFixed(0)}%)
+                            </span>
+                          </>
+                        )}
 
-                  {/* Desktop-Only Detailed Multi-Box Layout */}
-                  <div className="hidden sm:block">
-                    {/* Issue Date & Price Band */}
-                    <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-800/80 text-xs">
-                      <div>
-                        <div className="text-[10px] text-slate-500">Price Band</div>
-                        <div className="font-bold text-white mt-0.5">{ipo.price_band}</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">
-                          Lot: {ipo.lot_size} (₹{ipo.min_investment.toLocaleString('en-IN')})
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] text-slate-500">Issue Size</div>
-                        <div className="font-bold text-white mt-0.5">₹{ipo.issue_size_cr.toLocaleString('en-IN')} Cr</div>
-                        <div className={`text-[10px] mt-0.5 ${ipo.closes_today ? 'text-amber-400 font-bold' : 'text-slate-400'}`}>
-                          {ipo.closes_today ? '⚡ Closes Today!' : (ipo.close_date ? `Closes: ${ipo.close_date}` : 'Dates TBA')}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Closing GMP & Subscription Progress */}
-                    <div className="mt-3 p-3 rounded-2xl bg-slate-950/70 border border-slate-800 text-xs space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] text-slate-400">Closing-Day GMP</span>
-                        <span className={`font-bold ${ipo.gmp_closing_day >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                          {ipo.gmp_closing_day >= 0 ? '+' : ''}₹{ipo.gmp_closing_day} ({ipo.gmp_closing_percent.toFixed(1)}%)
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] text-slate-400">Subscription Total</span>
-                        <span className="font-bold text-slate-200">
-                          {ipo.subscription.final_day
-                            ? `${ipo.subscription.final_day.total}x`
-                            : ipo.subscription.day2
-                            ? `${ipo.subscription.day2.total}x (Day 2)`
-                            : 'Pending'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Outcome Box (If Listed) */}
-                    {isListed && listing && (
-                      <div className="mt-3 p-3 rounded-2xl bg-emerald-950/20 border border-emerald-900/40 text-xs space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px] text-slate-400">Actual Listing Gain</span>
-                          <span className={`font-bold ${listing.listing_gain_percent >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                            {listing.listing_gain_percent >= 0 ? '+' : ''}{listing.listing_gain_percent.toFixed(1)}% (₹{listing.listing_gain_rs})
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px] text-slate-400">Retail 1-Lot Profit</span>
-                          <span className={`font-bold text-sm ${listing.profit_per_lot >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                            {listing.profit_per_lot >= 0 ? '+' : ''}₹{listing.profit_per_lot.toLocaleString('en-IN')}
+                        <div className="mt-2 text-right">
+                          <span className="text-[10px] text-slate-500 block">Overall Subscription</span>
+                          <span className="font-semibold text-slate-200 text-xs">
+                            {ipo.subscription.final_day?.total
+                              ? `${ipo.subscription.final_day.total}x`
+                              : ipo.subscription.day2?.total
+                              ? `${ipo.subscription.day2.total}x`
+                              : ipo.subscription.day1?.total
+                              ? `${ipo.subscription.day1.total}x`
+                              : 'Live'}
                           </span>
                         </div>
                       </div>
-                    )}
+                    </div>
 
-                    {/* Missed Opportunity Badge */}
-                    {missed && (
-                      <div className="mt-3 flex items-center justify-between text-[11px] px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800">
-                        <span className="text-slate-400">Skipping Decision:</span>
-                        <span className={`font-bold ${
-                          missed.is_missed_opp ? 'text-amber-400' : 'text-emerald-400'
-                        }`}>
-                          {missed.verdict}
-                        </span>
-                      </div>
-                    )}
+                    {/* AI Suggestion Badge */}
+                    <div className="mt-3">
+                      {renderAISuggestion(ipo)}
+                    </div>
+                  </div>
+
+                  {/* Card Bottom CTA (Click to see full details) */}
+                  <div className="mt-3.5 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+                    <span className="text-[11px] text-slate-500 font-medium">
+                      Lot: {ipo.lot_size} (₹{ipo.min_investment.toLocaleString('en-IN')})
+                    </span>
+                    <div className="flex items-center gap-1 font-bold text-emerald-400 group-hover:translate-x-0.5 transition-transform">
+                      <span>{statusFilter === 'open' ? 'Apply / Details' : statusFilter === 'closed' ? 'Check Allotment' : 'View Details'}</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </div>
                   </div>
                 </div>
-
-                {/* Bottom Action CTA (Desktop only) */}
-                <div className="hidden sm:flex mt-4 pt-3 border-t border-slate-800/80 items-center justify-between text-xs">
-                  <span className="text-slate-500 font-medium">Click to see full analysis</span>
-                  <div className="flex items-center gap-1 font-bold text-emerald-400 group-hover:translate-x-1 transition-all">
-                    <span>Research Report</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Detailed Modal */}
       <IPODetailModal
@@ -722,3 +585,4 @@ export const IPODashboard: React.FC = () => {
     </div>
   );
 };
+

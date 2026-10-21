@@ -19,6 +19,7 @@ import {
   Check,
 } from 'lucide-react';
 import type { IPOData } from '../types';
+import { CompanyLogo } from './CompanyLogo';
 
 interface IPODetailModalProps {
   ipo: IPOData | null;
@@ -83,46 +84,54 @@ export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onC
       <div className="relative w-full max-w-4xl bg-slate-900 border border-slate-700/80 rounded-2xl sm:rounded-3xl shadow-2xl z-10 max-h-[92vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="p-4 sm:p-6 bg-slate-950/80 border-b border-slate-800 flex items-start justify-between gap-3 sm:gap-4">
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5 sm:gap-2.5 flex-wrap">
-              <h2 className="text-lg sm:text-2xl font-bold text-white tracking-tight truncate">
-                {ipo.name}
-              </h2>
-              <span className={`px-2 py-0.2 rounded-full text-[10px] sm:text-xs font-bold border ${
-                ipo.closes_today
-                  ? 'bg-amber-500/20 text-amber-400 border-amber-500/50 animate-pulse'
-                  : ipo.status === 'Open'
-                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50 animate-pulse'
-                  : ipo.status === 'Upcoming'
-                  ? 'bg-sky-500/20 text-sky-400 border-sky-500/50'
-                  : ipo.status === 'Listed'
-                  ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/50'
-                  : 'bg-slate-800 text-slate-400 border-slate-700'
-              }`}>
-                {ipo.closes_today ? 'CLOSES TODAY' : ipo.status}
-              </span>
-              <span className="text-[10px] sm:text-xs font-semibold px-2 py-0.2 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                {ipo.ipo_type} IPO
-              </span>
-              {ipo.symbol && (
-                <span className="font-mono text-[10px] sm:text-xs text-slate-400 bg-slate-950 px-1.5 py-0.2 rounded border border-slate-800">
-                  {ipo.symbol}
+          <div className="flex items-start gap-3 sm:gap-4 min-w-0">
+            <CompanyLogo
+              name={ipo.name}
+              symbol={ipo.symbol}
+              size="lg"
+              className="mt-0.5 rounded-2xl shadow-lg border-slate-700 shrink-0"
+            />
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2.5 flex-wrap">
+                <h2 className="text-lg sm:text-2xl font-bold text-white tracking-tight truncate">
+                  {ipo.name}
+                </h2>
+                <span className={`px-2 py-0.2 rounded-full text-[10px] sm:text-xs font-bold border ${
+                  ipo.closes_today
+                    ? 'bg-amber-500/20 text-amber-400 border-amber-500/50 animate-pulse'
+                    : ipo.status === 'Open'
+                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50 animate-pulse'
+                    : ipo.status === 'Upcoming'
+                    ? 'bg-sky-500/20 text-sky-400 border-sky-500/50'
+                    : ipo.status === 'Listed'
+                    ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/50'
+                    : 'bg-slate-800 text-slate-400 border-slate-700'
+                }`}>
+                  {ipo.closes_today ? 'CLOSES TODAY' : ipo.status}
                 </span>
-              )}
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3 text-[11px] sm:text-xs text-slate-400 mt-1 flex-wrap">
-              <span className="truncate">{ipo.sector}</span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                Issue: <strong className="text-slate-200">{ipo.open_date}</strong> - <strong className="text-slate-200">{ipo.close_date}</strong>
-              </span>
-              {ipo.listing_date && (
-                <>
-                  <span>•</span>
-                  <span>Listing: <strong className="text-slate-200">{ipo.listing_date}</strong></span>
-                </>
-              )}
+                <span className="text-[10px] sm:text-xs font-semibold px-2 py-0.2 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                  {ipo.ipo_type} IPO
+                </span>
+                {ipo.symbol && (
+                  <span className="font-mono text-[10px] sm:text-xs text-slate-400 bg-slate-950 px-1.5 py-0.2 rounded border border-slate-800">
+                    {ipo.symbol}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2 sm:gap-3 text-[11px] sm:text-xs text-slate-400 mt-1 flex-wrap">
+                <span className="truncate">{ipo.sector}</span>
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                  Issue: <strong className="text-slate-200">{ipo.open_date}</strong> - <strong className="text-slate-200">{ipo.close_date}</strong>
+                </span>
+                {ipo.listing_date && (
+                  <>
+                    <span>•</span>
+                    <span>Listing: <strong className="text-slate-200">{ipo.listing_date}</strong></span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 

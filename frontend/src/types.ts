@@ -198,6 +198,7 @@ export interface IPOSummaryMetrics {
   open_count: number;
   closes_today_count?: number;
   upcoming_count: number;
+  closed_count?: number;
   total_listed_tracked: number;
   average_listing_gain_percent: number;
   best_performer?: {

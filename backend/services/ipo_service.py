@@ -348,8 +348,11 @@ class IPOService:
                 ipos = [item for item in ipos if item["status"].lower() == "open"]
             elif sf in ("closes_today", "closing_today"):
                 ipos = [item for item in ipos if item.get("closes_today")]
-            elif sf == "closed":
-                ipos = [item for item in ipos if item["status"].lower() == "closed" and not item.get("closes_today")]
+            elif sf in ("closed", "listed"):
+                # Groww-style: "Closed" category includes both bidding-closed and recently listed IPOs
+                ipos = [item for item in ipos if item["status"].lower() in ("closed", "listed")]
+            elif sf == "upcoming":
+                ipos = [item for item in ipos if item["status"].lower() == "upcoming"]
             else:
                 ipos = [item for item in ipos if item["status"].lower() == sf]
 
@@ -376,6 +379,7 @@ class IPOService:
         open_count = len(open_ipos)
         closes_today_count = len([i for i in open_ipos if i.get("closes_today")])
         upcoming_count = len([i for i in ipos if i["status"] == "Upcoming"])
+        closed_count = len([i for i in ipos if i["status"].lower() in ("closed", "listed")])
         listed_ipos = [i for i in ipos if i["status"] == "Listed" and i.get("listing")]
 
         gains = [i["listing"]["listing_gain_percent"] for i in listed_ipos if i.get("listing")]
@@ -390,6 +394,7 @@ class IPOService:
             "open_count": open_count,
             "closes_today_count": closes_today_count,
             "upcoming_count": upcoming_count,
+            "closed_count": closed_count,
             "total_listed_tracked": len(listed_ipos),
             "average_listing_gain_percent": avg_gain,
             "best_performer": {

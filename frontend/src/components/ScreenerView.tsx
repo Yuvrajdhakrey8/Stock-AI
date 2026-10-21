@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Filter, ArrowUpDown, ChevronRight, Loader2, Sparkles, ShieldCheck, AlertTriangle, RefreshCw, AlertCircle } from 'lucide-react';
 import type { ScreenerItem } from '../types';
+import { CompanyLogo } from './CompanyLogo';
 import { API_BASE_URL } from '../config';
 
 interface ScreenerViewProps {
@@ -246,20 +247,28 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({ onSelectStock }) => 
                     onClick={() => onSelectStock(stock.symbol)}
                     className="p-3.5 hover:bg-slate-850/60 active:bg-slate-800 transition-colors cursor-pointer group"
                   >
-                    {/* Top Row: Company Name & Current Price */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <div className="font-bold text-white text-sm group-hover:text-emerald-400 transition-colors truncate">
-                          {stock.name}
-                        </div>
-                        <div className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
-                          <span className="font-mono text-slate-300 font-semibold">{stock.display_symbol}</span>
-                          <span>•</span>
-                          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-bold text-[9px]">
-                            {stock.exchange}
-                          </span>
-                          <span>•</span>
-                          <span className="truncate max-w-[120px]">{stock.sector}</span>
+                    {/* Top Row: Company Logo, Name & Current Price */}
+                    <div className="flex items-start justify-between gap-2.5">
+                      <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                        <CompanyLogo
+                          name={stock.name}
+                          symbol={stock.symbol}
+                          size="sm"
+                          className="mt-0.5 rounded-lg shrink-0"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="font-bold text-white text-sm group-hover:text-emerald-400 transition-colors truncate">
+                            {stock.name}
+                          </div>
+                          <div className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                            <span className="font-mono text-slate-300 font-semibold">{stock.display_symbol}</span>
+                            <span>•</span>
+                            <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-bold text-[9px]">
+                              {stock.exchange}
+                            </span>
+                            <span>•</span>
+                            <span className="truncate max-w-[120px]">{stock.sector}</span>
+                          </div>
                         </div>
                       </div>
 
@@ -354,17 +363,27 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({ onSelectStock }) => 
                         onClick={() => onSelectStock(stock.symbol)}
                       >
                         <td className="py-3.5 px-4 sticky left-0 bg-slate-900 group-hover:bg-slate-850 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.3)]">
-                          <div className="font-semibold text-white group-hover:text-emerald-400 transition-colors text-sm">
-                            {stock.name}
-                          </div>
-                          <div className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
-                            <span className="font-mono text-slate-300">{stock.display_symbol}</span>
-                            <span>•</span>
-                            <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-bold text-[9px]">
-                              {stock.exchange}
-                            </span>
-                            <span>•</span>
-                            <span className="truncate max-w-[140px]">{stock.sector}</span>
+                          <div className="flex items-center gap-2.5">
+                            <CompanyLogo
+                              name={stock.name}
+                              symbol={stock.symbol}
+                              size="sm"
+                              className="rounded-lg shrink-0"
+                            />
+                            <div>
+                              <div className="font-semibold text-white group-hover:text-emerald-400 transition-colors text-sm">
+                                {stock.name}
+                              </div>
+                              <div className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                                <span className="font-mono text-slate-300">{stock.display_symbol}</span>
+                                <span>•</span>
+                                <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-bold text-[9px]">
+                                  {stock.exchange}
+                                </span>
+                                <span>•</span>
+                                <span className="truncate max-w-[140px]">{stock.sector}</span>
+                              </div>
+                            </div>
                           </div>
                         </td>
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Building2, ChevronRight, Sparkles, Loader2, X } from 'lucide-react';
 import type { StockSearchResult } from '../types';
+import { CompanyLogo } from './CompanyLogo';
 import { API_BASE_URL } from '../config';
 
 interface SearchHeaderProps {
@@ -190,9 +191,12 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
                   }`}
                 >
                   <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 font-bold text-xs shrink-0">
-                      <Building2 className="w-4 h-4 text-emerald-400" />
-                    </div>
+                    <CompanyLogo
+                      name={item.name}
+                      symbol={item.symbol}
+                      size="sm"
+                      className="rounded-lg shrink-0"
+                    />
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                         <span className="font-semibold text-slate-100 group-hover:text-emerald-400 transition-colors text-xs sm:text-sm truncate">

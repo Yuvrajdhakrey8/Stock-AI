@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Bookmark, BookmarkCheck, ExternalLink, Activity, BarChart2, Share2, Check } from 'lucide-react';
 import type { StockAnalysisResponse } from '../types';
+import { CompanyLogo } from './CompanyLogo';
 
 interface StockOverviewProps {
   stock: StockAnalysisResponse;
@@ -63,29 +64,37 @@ export const StockOverview: React.FC<StockOverviewProps> = ({
     <div className="bg-slate-900/90 border border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-xl">
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         {/* Company Title & Exchange Info */}
-        <div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight">
-              {stock.name}
-            </h1>
-            <span className="px-2 py-0.5 rounded-lg text-[10px] sm:text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-              {stock.exchange}
-            </span>
-            <span className="font-mono text-[10px] sm:text-xs font-semibold text-slate-400 px-1.5 sm:px-2 py-0.5 rounded bg-slate-800 border border-slate-700">
-              {stock.symbol}
-            </span>
-          </div>
+        <div className="flex items-start gap-3 sm:gap-4">
+          <CompanyLogo
+            name={stock.name}
+            symbol={stock.symbol}
+            size="lg"
+            className="mt-1 rounded-2xl shadow-lg border-slate-700/80 shrink-0"
+          />
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+                {stock.name}
+              </h1>
+              <span className="px-2 py-0.5 rounded-lg text-[10px] sm:text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                {stock.exchange}
+              </span>
+              <span className="font-mono text-[10px] sm:text-xs font-semibold text-slate-400 px-1.5 sm:px-2 py-0.5 rounded bg-slate-800 border border-slate-700">
+                {stock.symbol}
+              </span>
+            </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 mt-2 text-[11px] sm:text-xs text-slate-400 flex-wrap">
-            <span className="px-2 py-0.5 rounded bg-slate-800/80 text-slate-300 border border-slate-700/60 font-medium">
-              {stock.sector}
-            </span>
-            <span>•</span>
-            <span className="text-slate-400">{stock.industry}</span>
-            <span>•</span>
-            <span className="text-slate-300 font-medium">
-              M-Cap: <span className="text-white font-semibold">{stock.market_cap_formatted}</span>
-            </span>
+            <div className="flex items-center gap-1.5 sm:gap-2 mt-2 text-[11px] sm:text-xs text-slate-400 flex-wrap">
+              <span className="px-2 py-0.5 rounded bg-slate-800/80 text-slate-300 border border-slate-700/60 font-medium">
+                {stock.sector}
+              </span>
+              <span>•</span>
+              <span className="text-slate-400">{stock.industry}</span>
+              <span>•</span>
+              <span className="text-slate-300 font-medium">
+                M-Cap: <span className="text-white font-semibold">{stock.market_cap_formatted}</span>
+              </span>
+            </div>
           </div>
         </div>
 
