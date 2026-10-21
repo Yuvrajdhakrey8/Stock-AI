@@ -8,8 +8,8 @@ interface NavbarProps {
   openIpoCount?: number;
   onOpenWatchlist: () => void;
   onOpenDownloadApp?: () => void;
-  activeTab: 'analyzer' | 'screener' | 'ipo';
-  setActiveTab: (tab: 'analyzer' | 'screener' | 'ipo') => void;
+  activeTab: 'explore' | 'analyzer' | 'screener' | 'ipo';
+  setActiveTab: (tab: 'explore' | 'screener' | 'ipo') => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -53,7 +53,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Brand */}
           <div
             className="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none"
-            onClick={() => setActiveTab('analyzer')}
+            onClick={() => setActiveTab('explore')}
           >
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
               <TrendingUp className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
@@ -73,17 +73,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Desktop Navigation Tabs */}
+          {/* Desktop Navigation Tabs: 1st Tab is Explore */}
           <div className="hidden md:flex items-center gap-2 bg-slate-800/80 p-1 rounded-xl border border-slate-700/60">
             <button
-              onClick={() => setActiveTab('analyzer')}
+              onClick={() => setActiveTab('explore')}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                activeTab === 'analyzer'
+                activeTab === 'explore' || activeTab === 'analyzer'
                   ? 'bg-emerald-500 text-slate-950 shadow-sm font-semibold'
                   : 'text-slate-300 hover:text-white'
               }`}
             >
-              Stock Analyzer
+              Explore
             </button>
             <button
               onClick={() => setActiveTab('screener')}
@@ -149,18 +149,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Mobile Navigation Tabs (segmented full-width bar for thumb-friendly navigation) */}
+        {/* Mobile Navigation Tabs: 1st Tab is Explore */}
         <div className="md:hidden pb-2.5 pt-0.5">
           <div className="bg-slate-950/90 p-1 rounded-xl flex items-center border border-slate-800 w-full text-xs">
             <button
-              onClick={() => setActiveTab('analyzer')}
+              onClick={() => setActiveTab('explore')}
               className={`flex-1 py-2 text-center rounded-lg font-medium transition-all min-h-[38px] flex items-center justify-center ${
-                activeTab === 'analyzer'
+                activeTab === 'explore' || activeTab === 'analyzer'
                   ? 'bg-emerald-500 text-slate-950 shadow-sm font-bold'
                   : 'text-slate-300 hover:text-white'
               }`}
             >
-              Analyzer
+              Explore
             </button>
             <button
               onClick={() => setActiveTab('screener')}

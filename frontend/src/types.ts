@@ -214,3 +214,47 @@ export interface IPOSummaryMetrics {
   total_1_lot_profit_sum: number;
   last_updated: string;
 }
+
+export interface MostTradedStock {
+  symbol: string;
+  name: string;
+  exchange: string;
+  current_price: number;
+  change: number;
+  change_percent: number;
+  volume: number;
+  volume_formatted: string;
+  sparkline: number[];
+}
+
+export interface TopMoverStock {
+  symbol: string;
+  name: string;
+  exchange: string;
+  current_price: number;
+  change: number;
+  change_percent: number;
+  volume: number;
+  volume_formatted: string;
+  sparkline: number[];
+}
+
+export interface TrendingSector {
+  id: string;
+  name: string;
+  icon?: string;
+  gainers: number;
+  losers: number;
+  change_percent: number;
+}
+
+export interface MarketExploreData {
+  most_traded: MostTradedStock[];
+  top_movers: {
+    gainers: TopMoverStock[];
+    losers: TopMoverStock[];
+    volume_shockers: TopMoverStock[];
+  };
+  trending_sectors: TrendingSector[];
+}
+

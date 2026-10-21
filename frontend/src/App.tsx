@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { SearchHeader } from './components/SearchHeader';
-import { ValuationMeter } from './components/ValuationMeter';
-import { StockOverview } from './components/StockOverview';
-import { FundamentalGrid } from './components/FundamentalGrid';
-import { TechnicalChart } from './components/TechnicalChart';
+import { ExploreView } from './components/ExploreView';
+import { StockDetailView } from './components/StockDetailView';
 import { ScreenerView } from './components/ScreenerView';
 import { IPODashboard } from './components/IPODashboard';
 import { WatchlistDrawer } from './components/WatchlistDrawer';
@@ -12,48 +10,45 @@ import { DownloadAppModal } from './components/DownloadAppModal';
 import { adService } from './services/adService';
 import type { WatchlistEntry } from './components/WatchlistDrawer';
 import type { StockAnalysisResponse, MarketIndex } from './types';
-import { Loader2, AlertCircle, RefreshCw, WifiOff, ArrowLeft } from 'lucide-react';
+import { Loader2, AlertCircle, RefreshCw, WifiOff } from 'lucide-react';
 import { API_BASE_URL } from './config';
 import { mobileService } from './services/mobileService';
 import { Capacitor } from '@capacitor/core';
 
 // Helper to read initial state from URL parameters or localStorage
-const getInitialNavState = (): { activeTab: 'analyzer' | 'screener' | 'ipo'; currentSymbol: string } => {
+// Defaults to Explore tab with NO stock selected by default
+const getInitialNavState = (): { activeTab: 'explore' | 'screener' | 'ipo'; currentSymbol: string | null } => {
   try {
     const params = new URLSearchParams(window.location.search);
-    const urlTab = params.get('tab') as 'analyzer' | 'screener' | 'ipo' | null;
+    const urlTab = params.get('tab') as 'explore' | 'screener' | 'ipo' | null;
     const urlStock = params.get('stock');
 
-    const validTabs: ('analyzer' | 'screener' | 'ipo')[] = ['analyzer', 'screener', 'ipo'];
-    const savedTab = localStorage.getItem('dhakreystock_active_tab') as 'analyzer' | 'screener' | 'ipo' | null;
-    const savedStock = localStorage.getItem('dhakreystock_current_symbol');
+    const validTabs: ('explore' | 'screener' | 'ipo')[] = ['explore', 'screener', 'ipo'];
+    const savedTab = localStorage.getItem('dhakreystock_active_tab') as 'explore' | 'screener' | 'ipo' | null;
 
-    const activeTab: 'analyzer' | 'screener' | 'ipo' = (urlTab && validTabs.includes(urlTab))
+    // Do NOT select a stock by default unless explicitly specified in URL (?stock=...)
+    const currentSymbol = urlStock && urlStock.trim() ? urlStock.trim().toUpperCase() : null;
+
+    const activeTab: 'explore' | 'screener' | 'ipo' = (urlTab && validTabs.includes(urlTab))
       ? urlTab
       : (savedTab && validTabs.includes(savedTab))
       ? savedTab
-      : 'screener'; // Default to Screener for discovery & suggestions
-
-    const currentSymbol = urlStock && urlStock.trim()
-      ? urlStock.trim().toUpperCase()
-      : savedStock && savedStock.trim()
-      ? savedStock.trim().toUpperCase()
-      : 'RELIANCE.NS';
+      : 'explore'; // The 1st tab is Explore!
 
     return { activeTab, currentSymbol };
   } catch {
-    return { activeTab: 'screener', currentSymbol: 'RELIANCE.NS' };
+    return { activeTab: 'explore', currentSymbol: null };
   }
 };
 
 export function App() {
   const [navState] = useState(getInitialNavState);
-  const [currentSymbol, setCurrentSymbol] = useState<string>(navState.currentSymbol);
+  const [currentSymbol, setCurrentSymbol] = useState<string | null>(navState.currentSymbol);
   const [stock, setStock] = useState<StockAnalysisResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'analyzer' | 'screener' | 'ipo'>(navState.activeTab);
-  const [previousTab, setPreviousTab] = useState<'screener' | 'ipo' | null>(null);
+  const [activeTab, setActiveTab] = useState<'explore' | 'screener' | 'ipo'>(navState.activeTab);
+  const [previousTab, setPreviousTab] = useState<'explore' | 'screener' | 'ipo' | null>(null);
   const [indices, setIndices] = useState<MarketIndex[]>([]);
   const [isWatchlistOpen, setIsWatchlistOpen] = useState<boolean>(false);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState<boolean>(false);
@@ -76,13 +71,13 @@ export function App() {
         setIsDownloadModalOpen(false);
         return true;
       }
-      if (activeTab === 'analyzer' && previousTab) {
-        setActiveTab(previousTab);
-        setPreviousTab(null);
+      // If viewing a stock, back button returns to Explore / Previous tab
+      if (currentSymbol) {
+        handleBackToExplore();
         return true;
       }
-      if (activeTab !== 'screener') {
-        setActiveTab('screener');
+      if (activeTab !== 'explore') {
+        setActiveTab('explore');
         setPreviousTab(null);
         return true;
       }
@@ -90,7 +85,7 @@ export function App() {
     });
 
     return unregister;
-  }, [isWatchlistOpen, isDownloadModalOpen, activeTab, previousTab]);
+  }, [isWatchlistOpen, isDownloadModalOpen, activeTab, previousTab, currentSymbol]);
 
   const fetchIndices = async () => {
     try {
@@ -126,12 +121,16 @@ export function App() {
   // Synchronize state with localStorage and URL query parameters
   useEffect(() => {
     try {
-      localStorage.setItem('dhakreystock_current_symbol', currentSymbol);
+      if (currentSymbol) {
+        localStorage.setItem('dhakreystock_current_symbol', currentSymbol);
+      } else {
+        localStorage.removeItem('dhakreystock_current_symbol');
+      }
       localStorage.setItem('dhakreystock_active_tab', activeTab);
 
       const url = new URL(window.location.href);
       url.searchParams.set('tab', activeTab);
-      if (activeTab === 'analyzer' && currentSymbol) {
+      if (currentSymbol) {
         url.searchParams.set('stock', currentSymbol);
       } else {
         url.searchParams.delete('stock');
@@ -146,13 +145,16 @@ export function App() {
   useEffect(() => {
     const handlePopState = () => {
       const params = new URLSearchParams(window.location.search);
-      const tab = params.get('tab') as 'analyzer' | 'screener' | 'ipo' | null;
+      const tab = params.get('tab') as 'explore' | 'screener' | 'ipo' | null;
       const stockParam = params.get('stock');
-      if (tab && ['analyzer', 'screener', 'ipo'].includes(tab)) {
+      if (tab && ['explore', 'screener', 'ipo'].includes(tab)) {
         setActiveTab(tab);
       }
       if (stockParam) {
         setCurrentSymbol(stockParam.toUpperCase());
+      } else {
+        setCurrentSymbol(null);
+        setStock(null);
       }
     };
     window.addEventListener('popstate', handlePopState);
@@ -182,9 +184,15 @@ export function App() {
     fetchIndices();
   }, []);
 
-  // Fetch stock data whenever currentSymbol changes
+  // Fetch stock data only when currentSymbol is explicitly selected
   useEffect(() => {
-    fetchStockAnalysis(currentSymbol);
+    if (currentSymbol) {
+      fetchStockAnalysis(currentSymbol);
+    } else {
+      setStock(null);
+      setLoading(false);
+      setError(null);
+    }
   }, [currentSymbol]);
 
   const fetchStockAnalysis = async (symbol: string) => {
@@ -208,9 +216,11 @@ export function App() {
   const handleSelectStock = (symbol: string) => {
     if (activeTab === 'screener' || activeTab === 'ipo') {
       setPreviousTab(activeTab);
+    } else {
+      setPreviousTab('explore');
     }
     setCurrentSymbol(symbol);
-    setActiveTab('analyzer');
+    setActiveTab('explore');
     try {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch {
@@ -218,14 +228,31 @@ export function App() {
     }
   };
 
-  const handleGoBack = () => {
-    if (previousTab) {
+  const handleBackToExplore = () => {
+    if (previousTab && previousTab !== 'explore') {
       setActiveTab(previousTab);
       setPreviousTab(null);
     } else {
-      setActiveTab('screener');
+      setActiveTab('explore');
       setPreviousTab(null);
     }
+    setCurrentSymbol(null);
+    setStock(null);
+    try {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch {
+      // Fallback
+    }
+  };
+
+  const handleTabChange = (tab: 'explore' | 'screener' | 'ipo') => {
+    if (tab === 'explore') {
+      // Return directly to Explore home
+      setCurrentSymbol(null);
+      setStock(null);
+      setPreviousTab(null);
+    }
+    setActiveTab(tab);
   };
 
   const isCurrentWatchlisted = Boolean(
@@ -261,7 +288,7 @@ export function App() {
         onOpenWatchlist={() => setIsWatchlistOpen(true)}
         onOpenDownloadApp={Capacitor.isNativePlatform() ? undefined : () => setIsDownloadModalOpen(true)}
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleTabChange}
       />
 
       {/* Offline Alert Banner */}
@@ -276,6 +303,84 @@ export function App() {
       <main className={`flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6 ${
         Capacitor.isNativePlatform() ? 'pb-admob-buffer' : ''
       }`}>
+        {/* Explore View (The 1st Tab - Default State: No stock selected by default) */}
+        <div className={activeTab === 'explore' ? 'block' : 'hidden'}>
+          {currentSymbol ? (
+            /* Stock Detail View (When a stock is explicitly selected) */
+            <div className="space-y-4 sm:space-y-6">
+              {/* Search Bar for Quick Stock Lookup */}
+              <SearchHeader
+                onSelectStock={handleSelectStock}
+                currentSymbol={currentSymbol}
+              />
+
+              {/* Loading State */}
+              {loading && (
+                <div className="py-24 text-center space-y-4">
+                  <div className="relative w-16 h-16 mx-auto">
+                    <div className="w-16 h-16 rounded-full border-4 border-slate-800 border-t-emerald-400 animate-spin" />
+                    <Loader2 className="w-6 h-6 text-emerald-400 absolute inset-0 m-auto animate-pulse" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-white">
+                      Evaluating {currentSymbol}...
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Running DCF intrinsic cash flow, Graham multiples, RSI-14, and valuation algorithms
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Error State */}
+              {!loading && error && (
+                <div className="bg-rose-950/40 border border-rose-800/80 rounded-3xl p-8 text-center space-y-3">
+                  <AlertCircle className="w-10 h-10 text-rose-400 mx-auto" />
+                  <h3 className="text-base font-bold text-white">Stock Analysis Unavailable</h3>
+                  <p className="text-xs text-rose-300 max-w-md mx-auto">{error}</p>
+                  <div className="pt-2 flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => fetchStockAnalysis(currentSymbol)}
+                      className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Try Again</span>
+                    </button>
+                    <button
+                      onClick={handleBackToExplore}
+                      className="px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 hover:bg-slate-800 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+                    >
+                      Back to Explore
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Loaded Simplified Stock Content */}
+              {!loading && !error && stock && (
+                <StockDetailView
+                  stock={stock}
+                  onBack={handleBackToExplore}
+                  isWatchlisted={isCurrentWatchlisted}
+                  onToggleWatchlist={handleToggleWatchlist}
+                />
+              )}
+            </div>
+          ) : (
+            /* Explore Home Dashboard: Most Traded Stocks, Top Movers, Sectors Trending */
+            <div className="space-y-6">
+              {/* Search Bar at Top */}
+              <SearchHeader onSelectStock={handleSelectStock} />
+
+              {/* Groww Explore Layout */}
+              <ExploreView
+                onSelectStock={handleSelectStock}
+                onExploreSector={() => setActiveTab('screener')}
+              />
+            </div>
+          )}
+        </div>
+
         {/* Screener View - Kept mounted to preserve filter state and exact scroll position */}
         <div className={activeTab === 'screener' ? 'block' : 'hidden'}>
           <ScreenerView onSelectStock={handleSelectStock} />
@@ -284,95 +389,6 @@ export function App() {
         {/* IPO Dashboard - Kept mounted to preserve scroll position */}
         <div className={activeTab === 'ipo' ? 'block' : 'hidden'}>
           <IPODashboard />
-        </div>
-
-        {/* Stock Analyzer View */}
-        <div className={activeTab === 'analyzer' ? 'block space-y-4 sm:space-y-6' : 'hidden'}>
-          {/* Prominent Back to Screener / IPO button */}
-          {previousTab && (
-            <div className="flex items-center justify-between pb-1 animate-in fade-in duration-200">
-              <button
-                onClick={handleGoBack}
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700/90 text-slate-200 hover:text-white hover:bg-slate-800 text-xs sm:text-sm font-semibold transition-all shadow-md active:scale-95 group"
-              >
-                <ArrowLeft className="w-4 h-4 text-emerald-400 group-hover:-translate-x-1 transition-transform" />
-                <span>Back to {previousTab === 'screener' ? 'Screener' : 'IPO Research'}</span>
-              </button>
-              <span className="text-[11px] text-slate-400 hidden xs:inline">
-                Viewing analysis for <span className="text-white font-bold">{currentSymbol}</span>
-              </span>
-            </div>
-          )}
-
-          {/* Search Bar & Fast Ticker Chips */}
-          <SearchHeader
-            onSelectStock={handleSelectStock}
-            currentSymbol={currentSymbol}
-          />
-
-          {/* Loading State */}
-          {loading && (
-            <div className="py-24 text-center space-y-4">
-              <div className="relative w-16 h-16 mx-auto">
-                <div className="w-16 h-16 rounded-full border-4 border-slate-800 border-t-emerald-400 animate-spin" />
-                <Loader2 className="w-6 h-6 text-emerald-400 absolute inset-0 m-auto animate-pulse" />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-white">
-                  Evaluating {currentSymbol}...
-                </h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  Running DCF intrinsic cash flow, Graham multiples, RSI-14, and moving average cross algorithms
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Error State */}
-          {!loading && error && (
-            <div className="bg-rose-950/40 border border-rose-800/80 rounded-3xl p-8 text-center space-y-3">
-              <AlertCircle className="w-10 h-10 text-rose-400 mx-auto" />
-              <h3 className="text-base font-bold text-white">Stock Analysis Unavailable</h3>
-              <p className="text-xs text-rose-300 max-w-md mx-auto">{error}</p>
-              <div className="pt-2">
-                <button
-                  onClick={() => fetchStockAnalysis(currentSymbol)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Try Again</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Loaded Stock Content */}
-          {!loading && !error && stock && (
-            <div className="space-y-6 animate-in fade-in duration-300">
-              {/* 1. Quantitative Valuation Verdict Gauge */}
-              <ValuationMeter
-                valuation={stock.valuation}
-                currency={stock.currency}
-              />
-
-              {/* 2. Stock Overview: Price, Change, 52W Range */}
-              <StockOverview
-                stock={stock}
-                isWatchlisted={isCurrentWatchlisted}
-                onToggleWatchlist={handleToggleWatchlist}
-              />
-
-              {/* 3. Price History & Technical Moving Averages Chart */}
-              <TechnicalChart
-                chartData={stock.chart}
-                valuation={stock.valuation}
-                currentPrice={stock.current_price}
-              />
-
-              {/* 4. Fundamental Scorecards: DCF, Graham, P/E, PEG, ROE */}
-              <FundamentalGrid stock={stock} />
-            </div>
-          )}
         </div>
       </main>
 

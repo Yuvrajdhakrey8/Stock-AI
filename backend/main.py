@@ -9,6 +9,7 @@ import logging
 from services.ticker_catalog import search_stocks, normalize_ticker
 from services.stock_service import StockService
 from services.ipo_service import IPOService
+from services.explore_service import MarketExploreService
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -121,6 +122,18 @@ def get_top_indices():
             continue
 
     return {"indices": results}
+
+
+@app.get("/api/market/explore")
+def get_market_explore():
+    """
+    Returns market explore data:
+    1. Most traded stocks (Top 10 + see more)
+    2. Top movers today (Gainers, Losers, Volume Shockers with 1D sparkline)
+    3. Sectors trending today (Gainers/Losers visual ratio and 1D price change)
+    Following Groww design layout.
+    """
+    return MarketExploreService.get_explore_data()
 
 
 @app.get("/api/ipo/summary")

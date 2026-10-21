@@ -45,6 +45,14 @@ const BRAND_DOMAINS: Record<string, string> = {
   'IRCTC': 'irctc.co.in',
   'BHEL': 'bhel.com',
   'BEL': 'bel-india.in',
+  'TECHM': 'techmahindra.com',
+  'ULTRACEMCO': 'ultratechcement.com',
+  'HCLTECH': 'hcltech.com',
+  'LTTS': 'ltts.com',
+  'TRENT': 'mytrent.com',
+  'PCJEWELLER': 'pcjeweller.com',
+  'FRACTAL': 'fractal.ai',
+  'SHOPERSTOP': 'shoppersstop.com',
 
   // Prominent IPOs
   'JIO': 'jio.com',
