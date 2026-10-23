@@ -55,9 +55,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none"
             onClick={() => setActiveTab('explore')}
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
-              <TrendingUp className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="Stocks Suggestions - Dhakrey"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-contain shrink-0 shadow-lg shadow-blue-500/20 border border-slate-700/60 bg-white"
+            />
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <span className="text-base sm:text-lg font-bold tracking-tight text-white truncate">

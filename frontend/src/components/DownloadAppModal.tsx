@@ -83,9 +83,11 @@ export const DownloadAppModal: React.FC<DownloadAppModalProps> = ({ forceOpen = 
 
         {/* Header with App Icon */}
         <div className="flex items-center gap-3.5 pr-8">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
-            <Smartphone className="w-6 h-6 text-slate-950" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="Stocks Suggestions - Dhakrey"
+            className="w-12 h-12 rounded-full object-contain shrink-0 shadow-lg shadow-blue-500/20 border border-slate-700/60 bg-white"
+          />
           <div>
             <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-0.5">
               <Sparkles className="w-3 h-3" /> Android APK

@@ -3,9 +3,9 @@
   "name": "Stocks Suggestions - Dhakrey",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "type": "image/svg+xml",
-      "sizes": "192x192 512x512",
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "512x512",
       "purpose": "any maskable"
     }
   ],
