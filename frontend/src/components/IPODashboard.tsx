@@ -112,7 +112,7 @@ export const IPODashboard: React.FC = () => {
     try {
       const [listRes, sumRes] = await Promise.all([
         fetch(`${API_BASE_URL}/api/ipo/list?status=${statusFilter}&type=${typeFilter}&refresh=${forceRefresh}`),
-        fetch(`${API_BASE_URL}/api/ipo/summary`),
+        fetch(`${API_BASE_URL}/api/ipo/summary?type=${typeFilter}`),
       ]);
 
       if (listRes.ok) {
@@ -345,7 +345,7 @@ export const IPODashboard: React.FC = () => {
               <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-extrabold ${
                 statusFilter === 'open' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-300'
               }`}>
-                {summary?.open_count ?? 0}
+                {statusFilter === 'open' ? sortedIPOs.length : (summary?.open_count ?? 0)}
               </span>
             </button>
 
@@ -362,7 +362,7 @@ export const IPODashboard: React.FC = () => {
               <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-extrabold ${
                 statusFilter === 'closed' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-300'
               }`}>
-                {summary?.closed_count ?? 0}
+                {statusFilter === 'closed' ? sortedIPOs.length : (summary?.closed_count ?? 0)}
               </span>
             </button>
 
@@ -379,7 +379,7 @@ export const IPODashboard: React.FC = () => {
               <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-extrabold ${
                 statusFilter === 'upcoming' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-300'
               }`}>
-                {summary?.upcoming_count ?? 0}
+                {statusFilter === 'upcoming' ? sortedIPOs.length : (summary?.upcoming_count ?? 0)}
               </span>
             </button>
           </div>
@@ -451,10 +451,42 @@ export const IPODashboard: React.FC = () => {
             <p className="text-sm text-slate-400">Loading verified Indian IPO dataset...</p>
           </div>
         ) : sortedIPOs.length === 0 ? (
-          <div className="py-16 text-center text-slate-400 bg-slate-900/60 rounded-3xl border border-slate-800 space-y-2">
-            <Info className="w-6 h-6 text-slate-500 mx-auto" />
-            <p className="font-semibold text-white">No IPOs found in this category.</p>
-            <p className="text-xs text-slate-500">Try changing your search query or selecting a different IPO type.</p>
+          <div className="py-14 px-4 text-center text-slate-400 bg-slate-900/60 rounded-3xl border border-slate-800 max-w-lg mx-auto space-y-3 shadow-xl">
+            <Info className="w-8 h-8 text-slate-500 mx-auto" />
+            <p className="font-bold text-white text-base">
+              {searchQuery
+                ? `No IPOs matching "${searchQuery}"`
+                : typeFilter !== 'all'
+                ? `No ${typeFilter === 'mainboard' ? 'Mainboard' : 'SME'} IPOs in ${statusFilter.toUpperCase()}`
+                : `No IPOs currently in ${statusFilter.toUpperCase()}`}
+            </p>
+            <p className="text-xs text-slate-400 leading-relaxed max-w-md mx-auto">
+              {searchQuery
+                ? 'Try clearing your search query or searching with a different keyword.'
+                : typeFilter === 'mainboard'
+                ? 'There are currently no Mainboard IPOs in this tab. Switch to "All Types" to see available SME IPOs.'
+                : typeFilter === 'sme'
+                ? 'There are currently no SME IPOs in this tab. Switch to "All Types" to see available Mainboard IPOs.'
+                : 'Check the Upcoming tab for upcoming bidding dates and notifications.'}
+            </p>
+            <div className="flex items-center justify-center gap-2 pt-1 flex-wrap">
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition-colors cursor-pointer"
+                >
+                  Clear Search
+                </button>
+              )}
+              {typeFilter !== 'all' && (
+                <button
+                  onClick={() => setTypeFilter('all')}
+                  className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+                >
+                  Switch to All Types (Mainboard & SME)
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           <div className="bg-slate-900/90 border border-slate-800 rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden divide-y divide-slate-800/60">

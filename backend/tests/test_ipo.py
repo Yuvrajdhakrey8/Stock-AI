@@ -26,16 +26,26 @@ def test_ipo_filters():
 
 
 def test_ipo_summary_metrics():
-    summary = IPOService.get_summary_metrics()
-    assert "open_count" in summary
-    assert "upcoming_count" in summary
-    assert "last_updated" in summary
+    summary_all = IPOService.get_summary_metrics()
+    assert "open_count" in summary_all
+    assert "upcoming_count" in summary_all
+    assert "last_updated" in summary_all
+
+    # Type-specific summaries
+    summary_mb = IPOService.get_summary_metrics(type_filter="mainboard")
+    summary_sme = IPOService.get_summary_metrics(type_filter="sme")
+    assert summary_mb["open_count"] + summary_sme["open_count"] == summary_all["open_count"]
+    assert summary_mb["upcoming_count"] + summary_sme["upcoming_count"] == summary_all["upcoming_count"]
 
 
 def test_api_ipo_endpoints():
     res = client.get("/api/ipo/summary")
     assert res.status_code == 200
     assert "open_count" in res.json()
+
+    res_mb = client.get("/api/ipo/summary?type=mainboard")
+    assert res_mb.status_code == 200
+    assert "open_count" in res_mb.json()
 
     res_list = client.get("/api/ipo/list?status=all")
     assert res_list.status_code == 200

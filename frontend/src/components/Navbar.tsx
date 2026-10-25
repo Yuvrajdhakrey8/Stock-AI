@@ -15,7 +15,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({
   indices,
   watchlistCount,
-  openIpoCount = 1,
+  openIpoCount = 0,
   onOpenWatchlist,
   onOpenDownloadApp,
   activeTab,

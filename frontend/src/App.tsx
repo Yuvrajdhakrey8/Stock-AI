@@ -55,6 +55,19 @@ export function App() {
   const [isWatchlistOpen, setIsWatchlistOpen] = useState<boolean>(false);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState<boolean>(false);
   const [isOffline, setIsOffline] = useState<boolean>(() => typeof navigator !== 'undefined' && !navigator.onLine);
+  const [openIpoCount, setOpenIpoCount] = useState<number>(0);
+
+  // Fetch live Open IPO count for header badge
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/ipo/summary?type=all`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && typeof data.open_count === 'number') {
+          setOpenIpoCount(data.open_count);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Initialize Native Mobile features (AdMob, Status Bar, Back Button)
   useEffect(() => {
@@ -304,6 +317,7 @@ export function App() {
       <Navbar
         indices={indices}
         watchlistCount={watchlist.length}
+        openIpoCount={openIpoCount}
         onOpenWatchlist={() => setIsWatchlistOpen(true)}
         onOpenDownloadApp={Capacitor.isNativePlatform() ? undefined : () => setIsDownloadModalOpen(true)}
         activeTab={activeTab}

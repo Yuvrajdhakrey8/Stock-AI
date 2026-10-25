@@ -437,9 +437,11 @@ class IPOService:
         return None
 
     @classmethod
-    def get_summary_metrics(cls) -> Dict[str, Any]:
-        """Calculates dashboard summary metrics for the IPO market based on live data."""
+    def get_summary_metrics(cls, type_filter: str = "all") -> Dict[str, Any]:
+        """Calculates dashboard summary metrics for the IPO market based on live data and optional type filter."""
         ipos = cls.fetch_live_ipos()
+        if type_filter and type_filter.lower() != "all":
+            ipos = [i for i in ipos if i.get("ipo_type", "").lower() == type_filter.lower()]
 
         open_ipos = [i for i in ipos if i["status"] == "Open"]
         open_count = len(open_ipos)

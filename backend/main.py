@@ -146,12 +146,15 @@ def get_market_sector_stocks(sector_name: str):
 
 
 @app.get("/api/ipo/summary")
-def get_ipo_summary():
+def get_ipo_summary(
+    type: str = Query(default="all", description="Type: all, mainboard, sme")
+):
     """
     Returns dashboard summary metrics across Indian IPOs:
     Open count, upcoming count, average listing gain %, best & worst performers.
+    Supports filtering metrics by IPO type (all, mainboard, sme).
     """
-    return IPOService.get_summary_metrics()
+    return IPOService.get_summary_metrics(type_filter=type)
 
 
 @app.get("/api/ipo/list")
