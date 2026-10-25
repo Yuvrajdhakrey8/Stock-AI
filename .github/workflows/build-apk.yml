@@ -46,14 +46,29 @@ jobs:
         working-directory: frontend/android
         run: chmod +x gradlew
 
-      - name: Build Android APK and App Bundle (AAB)
+      - name: Ensure Release Keystore Exists
         working-directory: frontend/android
-        run: ./gradlew assembleDebug bundleDebug --no-daemon
+        run: |
+          if [ ! -f dhakreystock-release.jks ]; then
+            keytool -genkeypair -v \
+              -keystore dhakreystock-release.jks \
+              -alias dhakreystock \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -storepass dhakreystock2026 \
+              -keypass dhakreystock2026 \
+              -dname "CN=DhakreyStock, OU=Mobile, O=Dhakrey, L=Delhi, ST=Delhi, C=IN"
+          fi
+
+      - name: Build Android APK and App Bundle (Release Signed)
+        working-directory: frontend/android
+        run: ./gradlew assembleRelease bundleRelease --no-daemon
 
       - name: Package Artifacts
         run: |
-          cp frontend/android/app/build/outputs/apk/debug/app-debug.apk DhakreyStock-AI.apk
-          cp frontend/android/app/build/outputs/bundle/debug/app-debug.aab DhakreyStock-AI.aab
+          cp frontend/android/app/build/outputs/apk/release/app-release-unsigned.apk DhakreyStock-AI.apk 2>/dev/null || cp frontend/android/app/build/outputs/apk/release/app-release.apk DhakreyStock-AI.apk
+          cp frontend/android/app/build/outputs/bundle/release/app-release.aab DhakreyStock-AI.aab
 
       - name: Upload APK as Workflow Artifact
         uses: actions/upload-artifact@v4
@@ -69,6 +84,16 @@ jobs:
           path: DhakreyStock-AI.aab
           retention-days: 30
 
+      - name: Persist Release Keystore to Repository
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -f frontend/android/dhakreystock-release.jks ] && ! git ls-files --error-unmatch frontend/android/dhakreystock-release.jks > /dev/null 2>&1; then
+            git add frontend/android/dhakreystock-release.jks
+            git commit -m "chore: persist release signing keystore for Play Store"
+            git push origin main || true
+          fi
+
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/heads/main')
@@ -78,7 +103,7 @@ jobs:
           body: |
             Latest compiled mobile packages for DhakreyStock AI:
             - **`DhakreyStock-AI.apk`**: Direct installable APK for Android phones (Testing).
-            - **`DhakreyStock-AI.aab`**: Official Android App Bundle for Google Play Console submission.
+            - **`DhakreyStock-AI.aab`**: Official Release-Signed Android App Bundle for Google Play Console submission.
           draft: false
           prerelease: false
           files: |
