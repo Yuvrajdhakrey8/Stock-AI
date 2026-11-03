@@ -70,7 +70,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </div>
               <p className="text-[10px] sm:text-xs text-slate-400 hidden sm:block truncate">
-                Hybrid Valuation & Buy / Sell Decision Engine
+                DCF Intrinsic Valuation & Live IPO Tracker (NSE & BSE)
               </p>
             </div>
           </div>

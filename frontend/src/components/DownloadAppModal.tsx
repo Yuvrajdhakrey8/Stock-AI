@@ -90,7 +90,7 @@ export const DownloadAppModal: React.FC<DownloadAppModalProps> = ({ forceOpen = 
           />
           <div>
             <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-0.5">
-              <Sparkles className="w-3 h-3" /> Android APK
+              <Smartphone className="w-3 h-3" /> Android App
             </div>
             <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
               Download Stocks Suggestions - Dhakrey App

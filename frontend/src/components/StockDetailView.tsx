@@ -199,12 +199,12 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
                 ? 'bg-rose-500 text-white shadow-md shadow-rose-500/30'
                 : 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30'
             }`}>
-              <Sparkles className="w-5 h-5" />
+              <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  AI Valuation Suggestion
+                  Quantitative Valuation Verdict
                 </span>
                 <span className={`px-2 py-0.5 rounded-full text-xs font-black uppercase ${
                   valuation.verdict === 'BEST BUY'
@@ -250,8 +250,8 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
               : 'text-slate-300 hover:text-white'
           }`}
         >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Overview & AI Verdict</span>
+          <ShieldCheck className="w-3.5 h-3.5" />
+          <span>Valuation & Model Verdict</span>
         </button>
 
         <button

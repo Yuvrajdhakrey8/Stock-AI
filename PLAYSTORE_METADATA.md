@@ -1,4 +1,4 @@
-# DhakreyStock AI - Google Play Console Listing Kit
+# Dhakrey Stocks - Google Play Console Listing Kit
 
 Use this document to copy-paste directly into your [Google Play Console](https://play.google.com/console) app listing form.
 
@@ -8,8 +8,8 @@ Use this document to copy-paste directly into your [Google Play Console](https:/
 
 | Field | Content | Limit / Notes |
 | :--- | :--- | :--- |
-| **App Name** | `DhakreyStock AI - Stock Valuation & IPO` | Max 30 chars (38 chars: use `DhakreyStock AI - Stock & IPO`) |
-| **Short Description** | `Smart Indian stock valuation with DCF, Graham number & live IPO GMP tracker.` | Max 80 chars (78 chars) |
+| **App Name** | `Dhakrey Stocks - Stock & IPO` | Max 30 chars (28 chars) |
+| **Short Description** | `Intrinsic stock valuation (DCF, Graham) & real-time Indian IPO GMP tracker.` | Max 80 chars (76 chars) |
 | **Category** | `Finance` | Store listing category |
 | **Tags** | `Stocks`, `Investing`, `Personal Finance`, `Stock Market`, `Valuation` | Select up to 5 |
 
@@ -18,44 +18,44 @@ Use this document to copy-paste directly into your [Google Play Console](https:/
 ## 2. Full Description (Copy & Paste)
 
 ```markdown
-🚀 Discover Undervalued Stocks & Track IPOs with DhakreyStock AI
+📈 Intrinsic Stock Valuation & Real-Time Indian IPO Tracker
 
-DhakreyStock AI is an institutional-grade stock valuation and investment intelligence tool tailored for the Indian Equity Market (NSE & BSE). Powered by real-time quantitative models, it eliminates emotional bias from investing and helps retail investors identify fundamentally strong companies at a fair price.
+Calculate intrinsic stock fair value and track Indian IPOs in real time. Dhakrey Stocks brings mathematical valuation models to retail investing on the NSE & BSE, helping you evaluate companies using Discounted Cash Flow (DCF), Benjamin Graham formulas, and live Grey Market Premium (GMP) data.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⭐ KEY FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📊 1. INTRINSIC VALUATION & MARGIN OF SAFETY
-• Discounted Cash Flow (DCF): Estimates a stock's true intrinsic value using free cash flows, terminal growth, and cost of capital.
-• Benjamin Graham Number: Tests valuation limits using conservative earnings and book value formulas (√(22.5 × EPS × BVPS)).
-• Dynamic Valuation Gauge: Instant color-coded verdict — BEST BUY (Underpriced), AT FAIR PRICE, or CURRENTLY EXPENSIVE.
-• Margin of Safety Calculator: Know exactly how much discount you are buying with before risking capital.
+• Discounted Cash Flow (DCF): Estimates intrinsic fair value using multi-stage free cash flow projections, terminal growth, and cost of capital.
+• Benjamin Graham Number: Tests conservative valuation thresholds using earnings and book value fundamentals (√(22.5 × EPS × BVPS)).
+• Valuation Verdicts: Clear, rule-based classification — Undervalued (Best Buy), At Fair Price, or Stretched Premium.
+• Margin of Safety Calculator: Quantifies current discount or premium relative to intrinsic fair value before allocating capital.
 
-🎯 2. REAL-TIME NSE & BSE MARKET SCREENER
+🎯 2. NSE & BSE MARKET SCREENER
 • Curated Universes: Instantly screen NIFTY 50, NIFTY Next 50, Banking & Financials, Information Technology, and Auto sectors.
-• Multi-Metric Sorting: Sort stocks instantly by Margin of Safety %, P/E Ratio, 14-Day RSI, and 52-Week High Discount.
-• Clean, Fast & Liquid: Filters out illiquid penny stocks to ensure quality investment research.
+• Multi-Metric Sorting: Sort stocks by Margin of Safety %, P/E Ratio, 14-Day RSI, and 52-Week High Discount.
+• Liquidity Filter: Focuses on established, liquid companies for disciplined long-term research.
 
-🔥 3. LIVE IPO HUB & ALLOTMENT PROBABILITY ENGINE
+🔥 3. LIVE IPO HUB & ALLOTMENT PROBABILITY
 • Live GMP (Grey Market Premium): Real-time tracking of upcoming, ongoing, and recently listed Mainboard & SME IPOs.
-• Subscription Figures: Day-by-day QIB, NII, and Retail subscription tracking.
-• Allotment Probability Calculator: Simulate your actual allotment odds based on live retail oversubscription data.
-• Strategic Allotment Checklist: Proven retail investor strategies (multiple PAN applications, bidding at cut-off) to maximize chances.
+• Subscription Data: Day-by-day QIB, NII, and Retail subscription numbers.
+• Allotment Probability Calculator: Calculates allotment odds based on retail oversubscription multiples.
+• Retail Allotment Best Practices: Strategic tips (e.g. bidding at cut-off price, distinct PAN applications) to maximize allotment chances.
 
 📈 4. TECHNICAL INDICATORS & TREND HEALTH
-• Moving Averages: Live tracking of 50-Day and 200-Day Simple Moving Averages (Golden Cross / Death Cross detection).
-• 14-Day RSI: Real-time relative strength gauge (Overbought > 70 vs. Oversold < 35).
-• Risk Analysis: Automated beta and debt-to-equity risk evaluation for every company.
+• Moving Averages: Live tracking of 50-Day and 200-Day Simple Moving Averages (Golden Cross / Trend confirmation).
+• 14-Day RSI: Momentum assessment to identify overbought (>70) and oversold (<35) zones.
+• Balance Sheet Metrics: Debt-to-Equity, Return on Equity (ROE), and valuation multiples (P/E, P/B, PEG).
 
 🔒 5. PRIVACY & SECURITY FOCUSED
-• No account registration or broker credentials required.
+• No broker login or account registration required.
 • Lightweight, battery-efficient, and optimized for smooth performance on Android.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚠️ MANDATORY DISCLAIMER
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-DhakreyStock AI is an educational and analytical research software. We are NOT a SEBI registered investment advisor or financial intermediary. All intrinsic values, scores, and probabilities are mathematically generated estimates based on publicly available historical data and financial models. They do not constitute financial advice, investment recommendations, or endorsement of any securities. Securities market investments are subject to market risks. Please read all related documents carefully and consult a certified financial advisor before making any investment decisions.
+Dhakrey Stocks is an educational and analytical research software. We are NOT a SEBI-registered investment advisor or financial intermediary. All intrinsic values, scores, and probabilities are mathematically generated estimates based on publicly available historical data and financial models. They do not constitute financial advice, investment recommendations, or endorsement of any securities. Securities market investments are subject to market risks. Please read all related documents carefully and consult a certified financial advisor before making any investment decisions.
 ```
 
 ---
