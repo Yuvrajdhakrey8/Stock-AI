@@ -115,7 +115,32 @@ export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onC
         </div>
 
         {/* Scrollable Content */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-5 text-xs sm:text-sm">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs sm:text-sm">
+          {/* Section 1 Recommendation Verdict: Clean & Prominent */}
+          <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 sm:p-4 flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xs font-semibold text-slate-400">Verdict:</span>
+              <span className={`text-xs sm:text-sm font-bold px-2.5 py-0.5 rounded-lg ${
+                rec?.verdict === 'Apply' || ipo.gmp_closing_percent >= 25
+                  ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-800/40'
+                  : rec?.verdict === 'Apply with Caution' || ipo.gmp_closing_percent >= 8
+                  ? 'bg-amber-950/40 text-amber-300 border border-amber-800/40'
+                  : 'bg-rose-950/40 text-rose-300 border border-rose-800/40'
+              }`}>
+                {rec?.verdict === 'Apply' || ipo.gmp_closing_percent >= 25
+                  ? 'BEST BUY (Apply)'
+                  : rec?.verdict === 'Apply with Caution' || ipo.gmp_closing_percent >= 8
+                  ? 'CAUTION'
+                  : 'AVOID'}
+              </span>
+            </div>
+
+            <div className="text-xs text-slate-300">
+              Expected GMP: <strong className="text-white">+{ipo.gmp_closing_percent.toFixed(0)}%</strong>
+              <span className="text-slate-400 ml-1.5">(₹{ipo.gmp_closing_day}/share)</span>
+            </div>
+          </div>
+
           {/* Key Financials (Groww 2-Column Key-Value List) */}
           <div className="bg-slate-950/50 border border-slate-800 rounded-xl p-4">
             <div className="flex items-center justify-between pb-2.5 border-b border-slate-800/80 mb-1">

@@ -233,77 +233,49 @@ export const IPODashboard: React.FC = () => {
     window.open('https://ipostatus.kfintech.com/', '_blank', 'noopener,noreferrer');
   };
 
-  // Helper function to render AI Suggestion badge
+  // Helper function to render AI Suggestion badge (Clean, single-word badges: Best Buy, Caution, Avoid)
   const renderAISuggestion = (ipo: IPOData) => {
     const isListed = ipo.status === 'Listed';
     const rec = ipo.recommendation_at_ipo;
     const listing = ipo.listing;
-    const missed = ipo.missed_opportunity_analysis;
 
     if (isListed && listing) {
-      if (listing.listing_gain_percent >= 20) {
-        return (
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-            <span>AI Review: <strong className="text-emerald-300">Stellar Gain (+{listing.listing_gain_percent.toFixed(1)}%)</strong> • ₹{listing.profit_per_lot.toLocaleString('en-IN')}/lot profit</span>
-          </div>
-        );
-      }
-      if (listing.listing_gain_percent < 0) {
-        return (
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-semibold">
-            <span className="w-2 h-2 rounded-full bg-rose-400 shrink-0" />
-            <span>AI Review: <strong className="text-rose-300">Capital Protected</strong> • Avoided {listing.listing_gain_percent.toFixed(1)}% loss</span>
-          </div>
-        );
-      }
+      const isPos = listing.listing_gain_percent >= 0;
       return (
-        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-slate-300 text-xs font-semibold">
-          <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
-          <span>AI Review: <strong className="text-slate-200">Listed at Par (+{listing.listing_gain_percent.toFixed(1)}%)</strong></span>
-        </div>
+        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${
+          isPos ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-800/40' : 'bg-rose-950/40 text-rose-300 border border-rose-800/40'
+        }`}>
+          {isPos ? '+' : ''}{listing.listing_gain_percent.toFixed(1)}%
+        </span>
       );
     }
 
-    if (ipo.status === 'Open') {
+    if (ipo.status === 'Open' || ipo.status === 'Upcoming') {
       if (ipo.gmp_closing_percent >= 25 || rec?.verdict === 'Apply') {
         return (
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-            <span>AI Suggestion: <strong className="text-emerald-300">Apply</strong> — Strong +{ipo.gmp_closing_percent.toFixed(0)}% GMP Expected</span>
-          </div>
+          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-950/40 text-emerald-300 border border-emerald-800/40">
+            Best Buy
+          </span>
         );
       }
       if (ipo.gmp_closing_percent >= 8) {
         return (
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold">
-            <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
-            <span>AI Suggestion: <strong className="text-amber-300">Caution</strong> — Moderate Demand ({ipo.gmp_closing_percent.toFixed(0)}% GMP)</span>
-          </div>
+          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-amber-950/40 text-amber-300 border border-amber-800/40">
+            Caution
+          </span>
         );
       }
       return (
-        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-semibold">
-          <span className="w-2 h-2 rounded-full bg-rose-400 shrink-0" />
-          <span>AI Suggestion: <strong className="text-rose-300">Avoid</strong> — High Valuation Risk / Subdued GMP</span>
-        </div>
+        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-rose-950/40 text-rose-300 border border-rose-800/40">
+          Avoid
+        </span>
       );
     }
 
-    // Upcoming
-    if (ipo.gmp_closing_percent >= 20) {
-      return (
-        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300 text-xs font-semibold">
-          <span className="w-2 h-2 rounded-full bg-sky-400 shrink-0" />
-          <span>AI Outlook: <strong className="text-sky-300">Bullish Demand</strong> — High Grey Market Activity</span>
-        </div>
-      );
-    }
     return (
-      <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-slate-300 text-xs font-semibold">
-        <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0" />
-        <span>AI Outlook: <strong className="text-slate-200">Watch</strong> — Awaiting Bidding Dates & Valuation Details</span>
-      </div>
+      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-800 text-slate-400">
+        Watch
+      </span>
     );
   };
 
@@ -562,14 +534,17 @@ export const IPODashboard: React.FC = () => {
                       />
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="font-bold text-white text-sm sm:text-base group-hover:text-emerald-400 transition-colors truncate">
+                          <span className="font-bold text-white text-sm sm:text-base group-hover:text-slate-200 transition-colors truncate">
                             {ipo.name}
                           </span>
                           {ipo.ipo_type === 'SME' && (
-                            <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold uppercase bg-amber-500/10 text-amber-300 border border-amber-500/30 shrink-0">
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-semibold uppercase bg-amber-500/10 text-amber-300 border border-amber-500/30 shrink-0">
                               SME
                             </span>
                           )}
+                          <span className="lg:hidden shrink-0">
+                            {renderAISuggestion(ipo)}
+                          </span>
                         </div>
                         <span className="text-xs text-slate-400 truncate block mt-0.5">
                           {ipo.sector}
@@ -717,13 +692,6 @@ export const IPODashboard: React.FC = () => {
                         </span>
                       )}
                     </div>
-
-                    {/* Show AI Suggestion badge on Mobile ONLY for Open & Upcoming */}
-                    {statusFilter !== 'closed' && (
-                      <div className="col-span-2 sm:col-span-3 pt-1">
-                        {renderAISuggestion(ipo)}
-                      </div>
-                    )}
                   </div>
                 </div>
               );

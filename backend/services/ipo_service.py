@@ -512,26 +512,38 @@ class IPOService:
 
         today_d = ist_now.day
         today_mon = ist_now.strftime('%b').lower()
-        today_clean = f"{today_d}-{today_mon}"
 
-        # Find candidates: listed or closed IPOs with listing date matching today or recent
+        # Date regex: Match exact day (e.g. 4-nov or 04-nov, excluding 14-nov, 24-nov, or historical years)
+        day_pattern = rf'(?:^|[^\d])0?{today_d}-{today_mon}(?:$|[^\d])'
+
         listing_candidates = []
-        for i in ipos:
-            list_d = (i.get("listing_date") or "").lower()
-            if today_clean in list_d:
-                listing_candidates.append(i)
+        # If market is still pre-open / early (before 10:00 AM IST), find IPOs listing today
+        if time_minutes < 600:
+            for i in ipos:
+                list_d = (i.get("listing_date") or "").lower()
+                # Skip historical years like -22 or -24
+                if ("-22" in list_d or "-23" in list_d or "-24" in list_d):
+                    continue
+                if re.search(day_pattern, list_d, re.IGNORECASE):
+                    listing_candidates.append(i)
 
-        # If none today, pick premier closed IPOs with imminent listing date or most recent premier listing
+        # If after 10:00 AM, today's listing has already completed!
+        # Focus on the SINGLE next upcoming listing on the immediate horizon
         if not listing_candidates:
-            closed_or_recent = [
+            # Look for closed IPOs awaiting listing in the coming days
+            closed_upcoming = [
                 i for i in ipos
-                if i.get("status") in ("Closed", "Listed") and i.get("gmp_closing_day", 0) > 0
+                if i.get("status") in ("Closed", "Upcoming") and i.get("listing_date")
             ]
-            if closed_or_recent:
-                # Pick top 2 items (e.g. premier upcoming listing + recent blockbuster)
-                listing_candidates = closed_or_recent[:2]
+            if closed_upcoming:
+                # Pick exactly the 1 upcoming IPO with the nearest listing date
+                listing_candidates = closed_upcoming[:1]
             else:
-                listing_candidates = ipos[:2]
+                # Fallback to the latest active IPO
+                listing_candidates = ipos[:1]
+
+        # Ensure we never overwhelm the user: at most 1 or 2 IPOs
+        listing_candidates = listing_candidates[:2]
 
         predictions = []
         for ipo in listing_candidates:
@@ -547,28 +559,31 @@ class IPOService:
             pred_gain_pct = round(((pred_mid - issue_price) / issue_price) * 100, 1)
             pred_profit_lot = round((pred_mid - issue_price) * lot_size)
 
-            # Strategy Decision
-            if pred_gain_pct >= 30.0:
-                sell_verdict = "Book Profit at 10:00 AM Open"
-                sell_badge = "success"
-                sell_action = "High opening premium expected (+30%+). Place Limit Sell order at cut-off price during Pre-Open (9:00 - 9:45 AM) to lock in gains and avoid post-open volatility."
-                hold_strategy = f"If holding for long-term, place a Trailing Stop-Loss at ₹{round(pred_mid * 0.90, 1)} (10% below predicted open). Do not risk unbooked gains."
+            # Clear, unambiguous action recommendation (SELL vs HOLD)
+            if pred_gain_pct >= 25.0:
+                recommended_action = "SELL"
+                action_badge = "success"
+                action_title = "SELL (Book Profit in Pre-Open: 9:00 - 9:45 AM)"
+                action_summary = f"High opening premium predicted (+{pred_gain_pct:.0f}% / +₹{pred_profit_lot:,.0f} per lot). Sell during pre-open session to lock in peak gains before post-10 AM volatility."
+                hold_strategy = f"If holding for long-term, maintain a trailing stop-loss at ₹{round(pred_mid * 0.90, 1)} (10% below predicted open)."
                 bidding_pressure = "Strong Institutional Buy Demand (Buyer Overhang)"
-                pressure_score = 92
+                pressure_score = 90
             elif pred_gain_pct >= 8.0:
-                sell_verdict = "Selective Profit Booking / Tight Stop-Loss"
-                sell_badge = "warning"
-                sell_action = "Moderate pop expected (+8% to +30%). Partial profit booking recommended on listing open (sell 50%, hold 50% with SL at Issue Price)."
-                hold_strategy = f"Maintain strict stop loss at Issue Price (₹{issue_price:.1f}) to guarantee zero capital loss."
-                bidding_pressure = "Equilibrium Absorption (Balanced Order Flow)"
+                recommended_action = "PARTIAL_SELL"
+                action_badge = "warning"
+                action_title = "PARTIAL SELL (Sell 50%, Hold 50% with Stop-Loss)"
+                action_summary = f"Moderate listing gain expected (+{pred_gain_pct:.0f}%). Book profit on 50% of your allotment at 10 AM open, and keep stop-loss on remainder at Issue Price (₹{issue_price:.1f})."
+                hold_strategy = f"Strict stop-loss at Issue Price (₹{issue_price:.1f}) guarantees zero capital loss."
+                bidding_pressure = "Balanced Institutional & Retail Demand"
                 pressure_score = 65
             else:
-                sell_verdict = "Capital Protection Exit"
-                sell_badge = "danger"
-                sell_action = "Subdued or discount opening risk. Place exit order in Pre-Open session at Issue Price to minimize downside erosion."
-                hold_strategy = f"Exit on open recommended. Do not average down on lukewarm listings."
-                bidding_pressure = "Supply Overhang (Cautious Retail Selling)"
-                pressure_score = 38
+                recommended_action = "EXIT"
+                action_badge = "danger"
+                action_title = "EXIT / CAPITAL PROTECTION (Sell in Pre-Open)"
+                action_summary = f"Subdued opening expected ({pred_gain_pct:+.1f}%). Place exit order at Issue Price in pre-open (9:00 - 9:45 AM) to prevent capital erosion."
+                hold_strategy = "Not recommended to hold lukewarm or discounted listings. Exit on open."
+                bidding_pressure = "Cautious Retail Selling (Supply Overhang)"
+                pressure_score = 35
 
             predictions.append({
                 "id": ipo.get("id"),
@@ -587,10 +602,13 @@ class IPOService:
                 "expected_profit_per_lot": pred_profit_lot,
                 "bidding_pressure": bidding_pressure,
                 "pressure_score": pressure_score,
+                "recommended_action": recommended_action,
+                "action_title": action_title,
+                "action_summary": action_summary,
                 "retail_sell_playbook": {
-                    "verdict": sell_verdict,
-                    "badge": sell_badge,
-                    "action_guide": sell_action,
+                    "verdict": action_title,
+                    "badge": action_badge,
+                    "action_guide": action_summary,
                     "pre_open_order_tip": "In Zerodha / Groww: Go to Orders -> Bids / Holdings -> Tap Sell -> Order Type: Market / Limit. Submit between 9:00 AM - 9:45 AM IST."
                 },
                 "long_term_hold_playbook": {

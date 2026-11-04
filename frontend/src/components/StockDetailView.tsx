@@ -160,6 +160,27 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
           </div>
         </div>
 
+        {/* Section 1 Valuation Verdict: Direct & Clean */}
+        <div className="mt-3.5 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-400 font-medium">Valuation Verdict:</span>
+            <span className={`text-xs font-bold px-2.5 py-0.5 rounded-md ${
+              valuation.verdict === 'BEST BUY'
+                ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-800/40'
+                : valuation.verdict === 'CURRENTLY EXPENSIVE'
+                ? 'bg-rose-950/40 text-rose-300 border border-rose-800/40'
+                : 'bg-amber-950/40 text-amber-300 border border-amber-800/40'
+            }`}>
+              {valuation.verdict}
+            </span>
+          </div>
+
+          <div className="text-xs text-slate-300">
+            Fair Value: <strong className="text-white">₹{valuation.fair_value.toFixed(1)}</strong>
+            <span className="ml-1 text-slate-400">({isMoSPos ? '+' : ''}{mos.toFixed(1)}% Margin)</span>
+          </div>
+        </div>
+
         {/* 52-Week Range Slider (Subtle & Quiet) */}
         <div className="mt-4 pt-3.5 border-t border-slate-800/80">
           <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1.5">

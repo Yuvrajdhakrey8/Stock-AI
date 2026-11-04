@@ -305,6 +305,9 @@ export interface ListingRadarPrediction {
   expected_profit_per_lot: number;
   bidding_pressure: string;
   pressure_score: number;
+  recommended_action?: string;
+  action_title?: string;
+  action_summary?: string;
   retail_sell_playbook: {
     verdict: string;
     badge: "success" | "warning" | "danger";

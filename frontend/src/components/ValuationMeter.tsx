@@ -28,17 +28,17 @@ export const ValuationMeter: React.FC<ValuationMeterProps> = ({ valuation, curre
 
   const badgeTheme = {
     'BEST BUY': {
-      pill: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30',
+      pill: 'bg-emerald-950/40 text-emerald-300 border border-emerald-800/40',
       label: 'Undervalued (Best Buy)',
       icon: ShieldCheck,
     },
     'AT FAIR PRICE': {
-      pill: 'bg-amber-500/15 text-amber-400 border border-amber-500/30',
+      pill: 'bg-amber-950/40 text-amber-300 border border-amber-800/40',
       label: 'At Fair Price',
       icon: Info,
     },
     'CURRENTLY EXPENSIVE': {
-      pill: 'bg-rose-500/15 text-rose-400 border border-rose-500/30',
+      pill: 'bg-rose-950/40 text-rose-300 border border-rose-800/40',
       label: 'Stretched (Expensive)',
       icon: AlertTriangle,
     },
@@ -109,7 +109,7 @@ export const ValuationMeter: React.FC<ValuationMeterProps> = ({ valuation, curre
               </button>
             </div>
             <div className={`text-base sm:text-lg font-bold flex items-center gap-0.5 mt-0.5 ${
-              isDiscount ? 'text-emerald-400' : 'text-rose-400'
+              isDiscount ? 'text-emerald-300' : 'text-rose-300'
             }`}>
               {isDiscount ? <ArrowUpRight className="w-4 h-4 shrink-0" /> : <ArrowDownRight className="w-4 h-4 shrink-0" />}
               <span>{Math.abs(margin_of_safety_percent).toFixed(1)}%</span>
