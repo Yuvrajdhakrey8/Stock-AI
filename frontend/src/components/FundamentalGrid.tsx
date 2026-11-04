@@ -1,140 +1,148 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { Info } from 'lucide-react';
 import type { StockAnalysisResponse } from '../types';
+import { MetricInfoModal } from './MetricInfoModal';
 
 interface FundamentalGridProps {
   stock: StockAnalysisResponse;
 }
 
 export const FundamentalGrid: React.FC<FundamentalGridProps> = ({ stock }) => {
-  const [showSummary, setShowSummary] = useState(false);
+  const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
   const { valuation, ratios } = stock;
   const dToE = ratios.debt_to_equity;
 
-  const cards = [
+  // Format Market Cap in Indian Crores
+  const formatMarketCap = (cap?: number | null, formatted?: string) => {
+    if (formatted) return formatted;
+    if (!cap) return 'N/A';
+    if (cap >= 1e7) {
+      return `₹${(cap / 1e7).toLocaleString('en-IN', { maximumFractionDigits: 0 })}Cr`;
+    }
+    return `₹${cap.toLocaleString('en-IN')}`;
+  };
+
+  const leftColumnMetrics = [
     {
-      title: 'DCF Intrinsic Value',
-      value: valuation.dcf_intrinsic_value ? `₹${valuation.dcf_intrinsic_value.toFixed(2)}` : 'N/A',
-      desc: '5-Yr discounted free cash flow fair value',
-      highlight: valuation.dcf_intrinsic_value && stock.current_price < valuation.dcf_intrinsic_value ? 'positive' : 'neutral',
-      badge: 'Intrinsic Value',
+      key: 'market_cap',
+      label: 'Market Cap',
+      value: formatMarketCap(stock.market_cap, stock.market_cap_formatted),
     },
     {
-      title: 'Graham Number',
-      value: valuation.graham_number ? `₹${valuation.graham_number.toFixed(2)}` : 'N/A',
-      desc: 'Benjamin Graham max conservative valuation',
-      highlight: valuation.graham_number && stock.current_price < valuation.graham_number ? 'positive' : 'neutral',
-      badge: 'Defensive Value',
+      key: 'pe_ratio',
+      label: 'P/E Ratio (TTM)',
+      value: ratios.pe_ratio ? `${ratios.pe_ratio.toFixed(2)}` : 'N/A',
     },
     {
-      title: 'P/E Ratio',
-      value: ratios.pe_ratio ? `${ratios.pe_ratio.toFixed(1)}x` : 'N/A',
-      desc: ratios.pe_ratio && ratios.pe_ratio < 22 ? 'Attractive multiple' : 'Premium valuation multiple',
-      highlight: ratios.pe_ratio && ratios.pe_ratio < 22 ? 'positive' : ratios.pe_ratio && ratios.pe_ratio > 45 ? 'negative' : 'neutral',
-      badge: 'Valuation Multiple',
+      key: 'pb_ratio',
+      label: 'P/B Ratio',
+      value: ratios.pb_ratio ? `${ratios.pb_ratio.toFixed(2)}` : 'N/A',
     },
     {
-      title: 'PEG Ratio',
-      value: ratios.peg_ratio ? `${ratios.peg_ratio.toFixed(2)}` : 'N/A',
-      desc: ratios.peg_ratio && ratios.peg_ratio <= 1.2 ? 'Growth at reasonable price' : 'High growth required',
-      highlight: ratios.peg_ratio && ratios.peg_ratio <= 1.2 ? 'positive' : ratios.peg_ratio && ratios.peg_ratio > 2.2 ? 'negative' : 'neutral',
-      badge: 'Growth Adjusted',
-    },
-    {
-      title: 'Price to Book (P/B)',
-      value: ratios.pb_ratio ? `${ratios.pb_ratio.toFixed(2)}x` : 'N/A',
-      desc: ratios.book_value ? `Book value: ₹${ratios.book_value.toFixed(2)}` : 'Net asset value per share',
-      highlight: 'neutral',
-      badge: 'Asset Value',
-    },
-    {
-      title: 'Return on Equity (ROE)',
-      value: ratios.roe ? `${ratios.roe.toFixed(1)}%` : 'N/A',
-      desc: ratios.roe && ratios.roe >= 18 ? 'High capital efficiency' : 'Moderate capital returns',
-      highlight: ratios.roe && ratios.roe >= 18 ? 'positive' : 'neutral',
-      badge: 'Profitability',
-    },
-    {
-      title: 'Debt to Equity',
+      key: 'debt_to_equity',
+      label: 'Debt to Equity',
       value: dToE != null ? dToE.toFixed(2) : 'N/A',
-      desc: dToE != null && dToE < 0.5 ? 'Very low financial leverage' : 'Leverage in line with sector',
-      highlight: dToE != null && dToE < 0.5 ? 'positive' : 'neutral',
-      badge: 'Solvency Risk',
     },
     {
-      title: 'Dividend Yield',
-      value: ratios.dividend_yield ? `${ratios.dividend_yield.toFixed(2)}%` : '0.00%',
-      desc: 'Annualized dividend yield',
-      highlight: ratios.dividend_yield && ratios.dividend_yield > 2.0 ? 'positive' : 'neutral',
-      badge: 'Income Yield',
+      key: 'dcf_intrinsic_value',
+      label: 'DCF Intrinsic Value',
+      value: valuation.dcf_intrinsic_value ? `₹${valuation.dcf_intrinsic_value.toFixed(2)}` : 'N/A',
+    },
+  ];
+
+  const rightColumnMetrics = [
+    {
+      key: 'roe',
+      label: 'ROE',
+      value: ratios.roe ? `${ratios.roe.toFixed(2)}%` : 'N/A',
+    },
+    {
+      key: 'eps',
+      label: 'EPS (TTM)',
+      value: ratios.eps ? `₹${ratios.eps.toFixed(2)}` : 'N/A',
+    },
+    {
+      key: 'dividend_yield',
+      label: 'Dividend Yield',
+      value: ratios.dividend_yield != null ? `${ratios.dividend_yield.toFixed(2)}%` : '0.00%',
+    },
+    {
+      key: 'book_value',
+      label: 'Book Value',
+      value: ratios.book_value ? `₹${ratios.book_value.toFixed(2)}` : 'N/A',
+    },
+    {
+      key: 'graham_number',
+      label: 'Graham Number',
+      value: valuation.graham_number ? `₹${valuation.graham_number.toFixed(2)}` : 'N/A',
     },
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-          <span>Fundamental Valuation & Solvency Matrix</span>
-        </h3>
-        <span className="text-[11px] sm:text-xs text-slate-400">Audited Financial Ratios</span>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
-        {cards.map((card, idx) => {
-          const isPos = card.highlight === 'positive';
-          const isNeg = card.highlight === 'negative';
-
-          return (
-            <div
-              key={idx}
-              className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border transition-all ${
-                isPos
-                  ? 'bg-slate-900/90 border-emerald-500/30 shadow-sm shadow-emerald-500/5'
-                  : isNeg
-                  ? 'bg-slate-900/90 border-rose-500/30'
-                  : 'bg-slate-900/80 border-slate-800'
-              }`}
-            >
-              <div className="flex justify-between items-start">
-                <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-1.5 sm:px-2 py-0.5 rounded bg-slate-800/80 text-slate-400 border border-slate-700/60 truncate">
-                  {card.badge}
-                </span>
-                {isPos && <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 shrink-0 ml-1" />}
-                {isNeg && <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-rose-400 shrink-0 ml-1" />}
-              </div>
-
-              <div className="mt-2.5 sm:mt-3">
-                <div className="text-[11px] sm:text-xs text-slate-400 font-medium truncate">{card.title}</div>
-                <div className={`text-lg sm:text-xl font-bold mt-0.5 ${isPos ? 'text-emerald-400' : isNeg ? 'text-rose-400' : 'text-slate-100'}`}>
-                  {card.value}
-                </div>
-                <div className="text-[10px] sm:text-[11px] text-slate-500 mt-1 line-clamp-1">{card.desc}</div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Business Overview Accordion */}
-      {stock.description && (
-        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 text-xs">
+    <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-4">
+      {/* Section Header with Groww-style (i) icon */}
+      <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+        <div className="flex items-center gap-2">
+          <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
+            Fundamentals
+          </h3>
           <button
-            onClick={() => setShowSummary(!showSummary)}
-            className="w-full flex items-center justify-between text-slate-300 hover:text-white font-semibold transition-colors"
+            onClick={() => setSelectedMetric('market_cap')}
+            className="text-slate-500 hover:text-slate-300 transition-colors p-0.5 rounded cursor-pointer"
+            title="What do these fundamental metrics mean?"
           >
-            <span>About {stock.name}</span>
-            <div className="flex items-center gap-1 text-slate-400">
-              <span className="text-[11px] font-normal">{showSummary ? 'Collapse' : 'Read Profile'}</span>
-              {showSummary ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </div>
+            <Info className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
-          {showSummary && (
-            <p className="mt-3 text-slate-400 leading-relaxed pt-3 border-t border-slate-800">
-              {stock.description}
-            </p>
-          )}
         </div>
-      )}
+        <span className="text-[11px] text-slate-500 font-medium">Audited Financial Ratios</span>
+      </div>
+
+      {/* 2-Column Minimal Key-Value Table (Direct Groww Reference) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-y-1 md:gap-x-12">
+        {/* Left Column */}
+        <div className="divide-y divide-slate-800/60">
+          {leftColumnMetrics.map((item) => (
+            <div key={item.key} className="flex items-center justify-between py-2.5 sm:py-3 text-xs sm:text-sm">
+              <div className="flex items-center gap-1.5 text-slate-400">
+                <span>{item.label}</span>
+                <button
+                  onClick={() => setSelectedMetric(item.key)}
+                  className="text-slate-600 hover:text-slate-400 transition-colors cursor-pointer"
+                  title={`Learn about ${item.label}`}
+                >
+                  <Info className="w-3 h-3" />
+                </button>
+              </div>
+              <span className="font-medium text-white tracking-tight">{item.value}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Right Column */}
+        <div className="divide-y divide-slate-800/60">
+          {rightColumnMetrics.map((item) => (
+            <div key={item.key} className="flex items-center justify-between py-2.5 sm:py-3 text-xs sm:text-sm">
+              <div className="flex items-center gap-1.5 text-slate-400">
+                <span>{item.label}</span>
+                <button
+                  onClick={() => setSelectedMetric(item.key)}
+                  className="text-slate-600 hover:text-slate-400 transition-colors cursor-pointer"
+                  title={`Learn about ${item.label}`}
+                >
+                  <Info className="w-3 h-3" />
+                </button>
+              </div>
+              <span className="font-medium text-white tracking-tight">{item.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Modal for Metric Explanations */}
+      <MetricInfoModal
+        metricKey={selectedMetric}
+        onClose={() => setSelectedMetric(null)}
+      />
     </div>
   );
 };

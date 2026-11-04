@@ -5,21 +5,19 @@ import {
   BookmarkCheck,
   Share2,
   Check,
+  ChevronDown,
+  ChevronUp,
   Sparkles,
+  ShieldCheck,
   TrendingUp,
   TrendingDown,
-  ShieldCheck,
-  AlertTriangle,
-  BarChart2,
-  Layers,
-  FileText,
-  Activity,
+  Info,
 } from 'lucide-react';
 import type { StockAnalysisResponse } from '../types';
 import { CompanyLogo } from './CompanyLogo';
-import { ValuationMeter } from './ValuationMeter';
 import { TechnicalChart } from './TechnicalChart';
 import { FundamentalGrid } from './FundamentalGrid';
+import { ValuationMeter } from './ValuationMeter';
 
 interface StockDetailViewProps {
   stock: StockAnalysisResponse;
@@ -34,8 +32,8 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
   isWatchlisted,
   onToggleWatchlist,
 }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'verdict' | 'chart' | 'fundamentals'>('verdict');
   const [copied, setCopied] = useState<boolean>(false);
+  const [showValuationInsights, setShowValuationInsights] = useState<boolean>(false);
 
   const isPos = stock.change >= 0;
   const valuation = stock.valuation;
@@ -51,12 +49,12 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
   const handleShare = async () => {
     const verdict = valuation.verdict;
     const fairVal = valuation.dcf_intrinsic_value ?? valuation.graham_number ?? stock.current_price;
-    const shareText = `📊 *${stock.name} (${stock.display_symbol})* on Stocks Suggestions - Dhakrey:\n` +
+    const shareText = `📊 *${stock.name} (${stock.display_symbol})* on Dhakrey Stocks:\n` +
       `• CMP: ₹${stock.current_price.toFixed(2)}\n` +
-      `• Intrinsic Fair Value: ₹${fairVal.toFixed(2)}\n` +
-      `• Verdict: *${verdict}* (Margin of Safety: ${mos > 0 ? '+' : ''}${mos.toFixed(1)}%)\n\n` +
-      `Calculate DCF Intrinsic Value & Live IPOs on Stocks Suggestions - Dhakrey:`;
-    const shareUrl = `https://main.d2x1z9kgh5o58m.amplifyapp.com/?stock=${encodeURIComponent(stock.symbol)}`;
+      `• Fair Value: ₹${fairVal.toFixed(2)}\n` +
+      `• Verdict: ${verdict} (${mos > 0 ? '+' : ''}${mos.toFixed(1)}%)\n\n` +
+      `Explore DCF Fair Value & Live IPOs:`;
+    const shareUrl = `https://main.dtvi3uv6gm2u7.amplifyapp.com/?stock=${encodeURIComponent(stock.symbol)}`;
 
     if (navigator.share) {
       try {
@@ -80,22 +78,22 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
   };
 
   return (
-    <div className="space-y-5 animate-in fade-in duration-300">
+    <div className="space-y-4 sm:space-y-5 animate-in fade-in duration-200">
       {/* Top Navigation Row: Back to Explore & Quick Actions */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700/80 hover:bg-slate-800 text-slate-200 hover:text-white text-xs sm:text-sm font-semibold transition-all shadow-md active:scale-95 group cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition-all cursor-pointer"
         >
-          <ArrowLeft className="w-4 h-4 text-emerald-400 group-hover:-translate-x-1 transition-transform" />
-          <span>Back to Explore</span>
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back</span>
         </button>
 
         <div className="flex items-center gap-2">
           {/* Share */}
           <button
             onClick={handleShare}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition-colors shadow-sm cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-medium transition-colors cursor-pointer"
             title="Share analysis"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
@@ -105,9 +103,9 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
           {/* Watchlist */}
           <button
             onClick={onToggleWatchlist}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
               isWatchlisted
-                ? 'bg-amber-500/20 border-amber-500/50 text-amber-300'
+                ? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
                 : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white'
             }`}
           >
@@ -116,196 +114,122 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
             ) : (
               <Bookmark className="w-3.5 h-3.5" />
             )}
-            <span>{isWatchlisted ? 'Watchlisted' : 'Add Watchlist'}</span>
+            <span>{isWatchlisted ? 'Watchlisted' : 'Watchlist'}</span>
           </button>
         </div>
       </div>
 
-      {/* Stock Main Header Card (Clean & Simple) */}
-      <div className="bg-slate-900/95 border border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl">
+      {/* Primary Stock Header: Clean, Typography-Driven (Groww Reference) */}
+      <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-4 sm:p-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Left: Logo & Company Name */}
-          <div className="flex items-start gap-3.5">
+          <div className="flex items-start gap-3">
             <CompanyLogo
               name={stock.name}
               symbol={stock.symbol}
               size="lg"
-              className="mt-0.5 rounded-2xl shadow-lg border-slate-700/80 shrink-0"
+              className="rounded-xl border border-slate-800 shrink-0"
             />
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-lg sm:text-2xl font-extrabold text-white tracking-tight">
+                <h1 className="text-lg sm:text-2xl font-bold text-white tracking-tight">
                   {stock.name}
                 </h1>
-                <span className="px-2 py-0.2 rounded-lg text-[10px] sm:text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                  {stock.exchange}
-                </span>
-                <span className="font-mono text-[10px] sm:text-xs text-slate-400 px-1.5 py-0.2 rounded bg-slate-800 border border-slate-700">
-                  {stock.display_symbol}
+                <span className="text-[11px] font-medium text-slate-400">
+                  {stock.exchange} • {stock.display_symbol}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
+              <div className="text-xs text-slate-400 mt-0.5">
                 <span>{stock.sector}</span>
-                <span>•</span>
-                <span>M-Cap: <strong className="text-slate-200">{stock.market_cap_formatted}</strong></span>
               </div>
             </div>
           </div>
 
           {/* Right: Live Price & 1D Change */}
-          <div className="text-left md:text-right pt-2 md:pt-0 border-t md:border-t-0 border-slate-800/80">
-            <div className="text-2xl sm:text-3xl font-extrabold text-white">
+          <div className="text-left md:text-right pt-2 md:pt-0 border-t md:border-t-0 border-slate-800/60">
+            <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
               ₹{stock.current_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
             </div>
-            <div className={`text-xs sm:text-sm font-bold flex items-center gap-1.5 md:justify-end mt-0.5 ${
+            <div className={`text-xs sm:text-sm font-semibold flex items-center gap-1.5 md:justify-end mt-0.5 ${
               isPos ? 'text-emerald-400' : 'text-rose-400'
             }`}>
               <span>{isPos ? '+' : ''}₹{stock.change.toFixed(2)}</span>
               <span>({isPos ? '+' : ''}{stock.change_percent.toFixed(2)}%)</span>
+              <span className="text-slate-500 text-[11px] font-normal">• 1D</span>
             </div>
           </div>
         </div>
 
-        {/* 52-Week Range Bar */}
-        <div className="mt-4 pt-3 border-t border-slate-800/80">
+        {/* 52-Week Range Slider (Subtle & Quiet) */}
+        <div className="mt-4 pt-3.5 border-t border-slate-800/80">
           <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1.5">
-            <span>52W Low: <strong className="text-slate-200">₹{low52.toFixed(2)}</strong></span>
-            <span className="text-slate-500">52-Week Range</span>
-            <span>52W High: <strong className="text-slate-200">₹{high52.toFixed(2)}</strong></span>
+            <span>52W Low: <strong className="text-slate-200 font-medium">₹{low52.toFixed(1)}</strong></span>
+            <span className="text-slate-500 font-medium">52-Week Range</span>
+            <span>52W High: <strong className="text-slate-200 font-medium">₹{high52.toFixed(1)}</strong></span>
           </div>
-          <div className="relative w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+          <div className="relative w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
             <div
-              className="absolute top-0 bottom-0 left-0 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full"
+              className="absolute top-0 bottom-0 left-0 bg-slate-400 rounded-full"
               style={{ width: `${positionPercent}%` }}
             />
           </div>
         </div>
       </div>
 
-      {/* Simplified AI Suggestion & Verdict Banner */}
-      <div className={`rounded-2xl sm:rounded-3xl p-4 sm:p-5 border shadow-xl ${
-        valuation.verdict === 'BEST BUY'
-          ? 'bg-emerald-950/30 border-emerald-500/40'
-          : valuation.verdict === 'CURRENTLY EXPENSIVE'
-          ? 'bg-rose-950/30 border-rose-500/40'
-          : 'bg-amber-950/30 border-amber-500/40'
-      }`}>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${
+      {/* 1. Primary Focus: Interactive Price & Technical Chart */}
+      <TechnicalChart
+        chartData={stock.chart}
+        valuation={stock.valuation}
+        currentPrice={stock.current_price}
+      />
+
+      {/* 2. Secondary Focus: Clean Fundamentals (Direct Groww Reference) */}
+      <FundamentalGrid stock={stock} />
+
+      {/* 3. OPTIONAL Valuation Insights & Recommendations (Collapsed by Default) */}
+      <div className="bg-slate-900/40 border border-slate-800 rounded-2xl overflow-hidden transition-all">
+        <button
+          onClick={() => setShowValuationInsights(!showValuationInsights)}
+          className="w-full p-4 sm:p-5 flex items-center justify-between gap-3 text-left hover:bg-slate-850/50 transition-colors cursor-pointer"
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <ShieldCheck className="w-4 h-4 text-slate-400 shrink-0" />
+            <div className="min-w-0">
+              <span className="text-xs sm:text-sm font-semibold text-white block truncate">
+                Valuation Analysis & DCF Insights
+              </span>
+              <span className="text-[11px] text-slate-400 block truncate">
+                Intrinsic value estimate: ₹{valuation.fair_value.toFixed(1)} ({isMoSPos ? '+' : ''}{mos.toFixed(1)}% margin)
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0">
+            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${
               valuation.verdict === 'BEST BUY'
-                ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/30'
+                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                 : valuation.verdict === 'CURRENTLY EXPENSIVE'
-                ? 'bg-rose-500 text-white shadow-md shadow-rose-500/30'
-                : 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30'
+                ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
             }`}>
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Quantitative Valuation Verdict
-                </span>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-black uppercase ${
-                  valuation.verdict === 'BEST BUY'
-                    ? 'bg-emerald-500 text-slate-950'
-                    : valuation.verdict === 'CURRENTLY EXPENSIVE'
-                    ? 'bg-rose-500 text-white'
-                    : 'bg-amber-500 text-slate-950'
-                }`}>
-                  {valuation.verdict}
-                </span>
-              </div>
-              <p className="text-sm font-semibold text-white mt-0.5">
-                {valuation.action_call}
-              </p>
+              {valuation.verdict}
+            </span>
+            <div className="p-1 rounded-md text-slate-400 hover:text-white bg-slate-800">
+              {showValuationInsights ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             </div>
           </div>
+        </button>
 
-          {/* Target Fair Value & Margin */}
-          <div className="flex items-center gap-4 self-end sm:self-auto text-right">
-            <div>
-              <span className="text-[10px] text-slate-400 block uppercase font-bold">Intrinsic Value</span>
-              <span className="text-sm sm:text-base font-extrabold text-white">
-                ₹{valuation.fair_value.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-              </span>
-            </div>
-            <div className="pl-3 border-l border-slate-800">
-              <span className="text-[10px] text-slate-400 block uppercase font-bold">Margin of Safety</span>
-              <span className={`text-sm sm:text-base font-black ${isMoSPos ? 'text-emerald-400' : 'text-rose-400'}`}>
-                {isMoSPos ? '+' : ''}{mos.toFixed(1)}%
-              </span>
-            </div>
+        {/* Expanded View of Valuation Meter */}
+        {showValuationInsights && (
+          <div className="p-4 sm:p-6 border-t border-slate-800 animate-in fade-in duration-200">
+            <ValuationMeter
+              valuation={stock.valuation}
+              currency={stock.currency}
+            />
           </div>
-        </div>
+        )}
       </div>
-
-      {/* Clean Analytical Sub-Tabs (Prevents overwhelming data bombardment) */}
-      <div className="flex items-center gap-2 bg-slate-900/95 p-1 rounded-2xl border border-slate-800 overflow-x-auto scrollbar-none text-xs">
-        <button
-          onClick={() => setActiveSubTab('verdict')}
-          className={`flex-1 py-2.5 px-3 rounded-xl font-bold transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
-            activeSubTab === 'verdict'
-              ? 'bg-emerald-500 text-slate-950 shadow-md font-extrabold'
-              : 'text-slate-300 hover:text-white'
-          }`}
-        >
-          <ShieldCheck className="w-3.5 h-3.5" />
-          <span>Valuation & Model Verdict</span>
-        </button>
-
-        <button
-          onClick={() => setActiveSubTab('chart')}
-          className={`flex-1 py-2.5 px-3 rounded-xl font-bold transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
-            activeSubTab === 'chart'
-              ? 'bg-emerald-500 text-slate-950 shadow-md font-extrabold'
-              : 'text-slate-300 hover:text-white'
-          }`}
-        >
-          <BarChart2 className="w-3.5 h-3.5" />
-          <span>Price Chart & Technicals</span>
-        </button>
-
-        <button
-          onClick={() => setActiveSubTab('fundamentals')}
-          className={`flex-1 py-2.5 px-3 rounded-xl font-bold transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
-            activeSubTab === 'fundamentals'
-              ? 'bg-emerald-500 text-slate-950 shadow-md font-extrabold'
-              : 'text-slate-300 hover:text-white'
-          }`}
-        >
-          <FileText className="w-3.5 h-3.5" />
-          <span>Financials & DCF Model</span>
-        </button>
-      </div>
-
-      {/* Sub-Tab 1: Simple Overview & AI Verdict */}
-      {activeSubTab === 'verdict' && (
-        <div className="space-y-5 animate-in fade-in duration-200">
-          <ValuationMeter
-            valuation={stock.valuation}
-            currency={stock.currency}
-          />
-        </div>
-      )}
-
-      {/* Sub-Tab 2: Technical Chart */}
-      {activeSubTab === 'chart' && (
-        <div className="space-y-5 animate-in fade-in duration-200">
-          <TechnicalChart
-            chartData={stock.chart}
-            valuation={stock.valuation}
-            currentPrice={stock.current_price}
-          />
-        </div>
-      )}
-
-      {/* Sub-Tab 3: Fundamental Grid */}
-      {activeSubTab === 'fundamentals' && (
-        <div className="space-y-5 animate-in fade-in duration-200">
-          <FundamentalGrid stock={stock} />
-        </div>
-      )}
     </div>
   );
 };
