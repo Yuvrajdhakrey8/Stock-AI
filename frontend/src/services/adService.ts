@@ -15,9 +15,9 @@ import {
 class AdService {
   private isInitialized = false;
 
-  // Official Google Test IDs for Android
-  private bannerAdId = 'ca-app-pub-3940256099942544/6300978111';
-  private interstitialAdId = 'ca-app-pub-3940256099942544/1033173712';
+  // Real AdMob IDs for Production (Dhakrey Stocks Android)
+  private bannerAdId = 'ca-app-pub-2089907962773759/3597977889';
+  private interstitialAdId = 'ca-app-pub-2089907962773759/7237664982';
 
   public async initialize(): Promise<void> {
     if (!Capacitor.isNativePlatform() || this.isInitialized) {
@@ -26,7 +26,7 @@ class AdService {
 
     try {
       await AdMob.initialize({
-        initializeForTesting: true,
+        initializeForTesting: false,
       });
       this.isInitialized = true;
       console.log('AdMob successfully initialized on mobile platform.');
@@ -47,7 +47,7 @@ class AdService {
         adSize: BannerAdSize.ADAPTIVE_BANNER,
         position: BannerAdPosition.BOTTOM_CENTER,
         margin: 0,
-        isTesting: true,
+        isTesting: false,
       };
       await AdMob.showBanner(options);
     } catch (error) {
@@ -70,7 +70,7 @@ class AdService {
     try {
       const options: AdOptions = {
         adId: this.interstitialAdId,
-        isTesting: true,
+        isTesting: false,
       };
       await AdMob.prepareInterstitial(options);
       await AdMob.showInterstitial();

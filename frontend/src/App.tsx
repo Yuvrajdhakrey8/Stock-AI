@@ -75,6 +75,15 @@ export function App() {
     mobileService.initialize();
   }, []);
 
+  // Temporarily hide bottom banner during modals/drawers to avoid obstructing user actions
+  useEffect(() => {
+    if (isWatchlistOpen || isDownloadModalOpen) {
+      adService.hideBanner();
+    } else {
+      adService.showBottomBanner();
+    }
+  }, [isWatchlistOpen, isDownloadModalOpen]);
+
   // Hardware Back Button integration for Android
   useEffect(() => {
     const unregister = mobileService.registerBackHandler(() => {
@@ -435,6 +444,11 @@ export function App() {
         <div className={activeTab === 'ipo' ? 'block' : 'hidden'}>
           <IPODashboard />
         </div>
+
+        {/* Dedicated mobile bottom buffer to ensure all content scrolls safely above the AdMob banner */}
+        {Capacitor.isNativePlatform() && (
+          <div className="h-28 w-full shrink-0 pointer-events-none" aria-hidden="true" />
+        )}
       </main>
 
       {/* Watchlist Side Drawer */}

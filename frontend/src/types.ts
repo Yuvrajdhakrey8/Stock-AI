@@ -285,3 +285,44 @@ export interface MarketExploreData {
   trending_sectors: TrendingSector[];
 }
 
+export interface ListingRadarPrediction {
+  id: string;
+  name: string;
+  symbol?: string;
+  ipo_type: string;
+  status: string;
+  listing_date: string;
+  issue_price: number;
+  lot_size: number;
+  closing_gmp_rs: number;
+  closing_gmp_pct: number;
+  predicted_open_price: number;
+  predicted_range: {
+    min: number;
+    max: number;
+  };
+  expected_gain_percent: number;
+  expected_profit_per_lot: number;
+  bidding_pressure: string;
+  pressure_score: number;
+  retail_sell_playbook: {
+    verdict: string;
+    badge: "success" | "warning" | "danger";
+    action_guide: string;
+    pre_open_order_tip: string;
+  };
+  long_term_hold_playbook: {
+    strategy: string;
+    suggested_stop_loss: number;
+  };
+}
+
+export interface ListingRadarData {
+  session_stage: "pre_market_early" | "pre_open_auction" | "order_matching" | "trading_active";
+  session_title: string;
+  session_description: string;
+  current_time_ist: string;
+  target_listing_time: string;
+  predictions: ListingRadarPrediction[];
+}
+

@@ -157,6 +157,15 @@ def get_ipo_summary(
     return IPOService.get_summary_metrics(type_filter=type)
 
 
+@app.get("/api/ipo/listing-radar")
+def get_ipo_listing_radar():
+    """
+    Returns pre-market listing price predictions, bidding pressure, and retail exit playbook
+    for IPOs listing today (or the next immediate listing on the horizon).
+    """
+    return IPOService.get_listing_radar_data()
+
+
 @app.get("/api/ipo/list")
 def get_ipo_list(
     status: str = Query(default="all", description="Status: all, open, upcoming, closed, listed"),

@@ -19,18 +19,21 @@ import {
   CheckCircle2,
   Info,
 } from 'lucide-react';
-import type { IPOData, IPOSummaryMetrics } from '../types';
+import type { IPOData, IPOSummaryMetrics, ListingRadarData } from '../types';
 import { IPODetailModal } from './IPODetailModal';
 import { IPOCompareModal } from './IPOCompareModal';
+import { ListingRadarCard } from './ListingRadarCard';
 import { CompanyLogo } from './CompanyLogo';
 import { API_BASE_URL } from '../config';
 import { mobileService } from '../services/mobileService';
+import { adService } from '../services/adService';
 
 type TabType = 'open' | 'closed' | 'upcoming';
 
 export const IPODashboard: React.FC = () => {
   const [ipos, setIpos] = useState<IPOData[]>([]);
   const [summary, setSummary] = useState<IPOSummaryMetrics | null>(null);
+  const [radarData, setRadarData] = useState<ListingRadarData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -84,6 +87,15 @@ export const IPODashboard: React.FC = () => {
     return unregister;
   }, [isCompareOpen, isDetailOpen]);
 
+  // Hide bottom banner during full-screen modals to prevent covering modal buttons
+  useEffect(() => {
+    if (isDetailOpen || isCompareOpen) {
+      adService.hideBanner();
+    } else {
+      adService.showBottomBanner();
+    }
+  }, [isDetailOpen, isCompareOpen]);
+
   useEffect(() => {
     try {
       localStorage.setItem('dhakreystock_ipo_status', statusFilter);
@@ -110,9 +122,10 @@ export const IPODashboard: React.FC = () => {
     }
 
     try {
-      const [listRes, sumRes] = await Promise.all([
+      const [listRes, sumRes, radarRes] = await Promise.all([
         fetch(`${API_BASE_URL}/api/ipo/list?status=${statusFilter}&type=${typeFilter}&refresh=${forceRefresh}`),
         fetch(`${API_BASE_URL}/api/ipo/summary?type=${typeFilter}`),
+        fetch(`${API_BASE_URL}/api/ipo/listing-radar`),
       ]);
 
       if (listRes.ok) {
@@ -122,6 +135,10 @@ export const IPODashboard: React.FC = () => {
       if (sumRes.ok) {
         const sumData = await sumRes.json();
         setSummary(sumData);
+      }
+      if (radarRes.ok) {
+        const radar = await radarRes.json();
+        setRadarData(radar);
       }
     } catch (err) {
       console.error('Failed to load IPO data:', err);
@@ -325,6 +342,15 @@ export const IPODashboard: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Listing Day Radar & Pre-Market Price Discovery */}
+      <ListingRadarCard
+        radarData={radarData}
+        onSelectIPO={(id) => {
+          const found = ipos.find((item) => item.id === id);
+          if (found) handleOpenDetail(found);
+        }}
+      />
 
       {/* Groww 3 Categories Pill Navigation + Type Filter */}
       <div className="bg-slate-900/95 border border-slate-800 rounded-2xl p-2.5 sm:p-3 shadow-xl">

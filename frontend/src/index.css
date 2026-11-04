@@ -38,7 +38,7 @@ button, a, input, select {
 
 /* AdMob Banner buffer for native mobile (prevents bottom content clipping) */
 .pb-admob-buffer {
-  padding-bottom: calc(max(env(safe-area-inset-bottom, 0px), 12px) + 60px);
+  padding-bottom: calc(max(env(safe-area-inset-bottom, 0px), 16px) + 90px);
 }
 
 /* Smooth momentum scrolling for mobile overflow containers */
