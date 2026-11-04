@@ -132,7 +132,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
       <form onSubmit={handleSubmit} className="relative">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
           {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin text-emerald-400" />
+            <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
           ) : (
             <Search className="w-5 h-5" />
           )}
@@ -151,7 +151,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
             if (query.trim()) setIsOpen(true);
           }}
           placeholder="Search Indian stocks (e.g. Muthoot Finance, Tata Motors, RELIANCE, TCS)..."
-          className="w-full pl-11 pr-10 py-3 sm:py-3.5 bg-slate-900/90 border border-slate-700/80 rounded-2xl text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all text-xs sm:text-sm shadow-inner shadow-black/20"
+          className="w-full pl-11 pr-10 py-3 sm:py-3.5 bg-slate-900/90 border border-slate-750 rounded-2xl text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-700 focus:border-slate-600 transition-all text-xs sm:text-sm shadow-inner shadow-black/20"
         />
         {query && (
           <button
@@ -173,7 +173,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
         <div className="absolute left-0 right-0 mt-2 bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl z-[100] overflow-hidden divide-y divide-slate-800 max-h-80 sm:max-h-96 overflow-y-auto">
           {loading && results.length === 0 ? (
             <div className="p-4 text-center text-slate-400 text-xs sm:text-sm flex items-center justify-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+              <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
               <span>Searching listed Indian stocks across NSE & BSE...</span>
             </div>
           ) : results.length > 0 ? (
@@ -187,7 +187,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
                   key={item.symbol}
                   onClick={() => handleSelect(item.symbol)}
                   className={`px-3.5 sm:px-4 py-2.5 sm:py-3 cursor-pointer flex items-center justify-between transition-colors group active:bg-slate-800 ${
-                    selectedIndex === idx ? 'bg-slate-800 ring-1 ring-emerald-500/30' : 'hover:bg-slate-800/80'
+                    selectedIndex === idx ? 'bg-slate-800' : 'hover:bg-slate-800/80'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
@@ -199,10 +199,10 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
                     />
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                        <span className="font-semibold text-slate-100 group-hover:text-emerald-400 transition-colors text-xs sm:text-sm truncate">
+                        <span className="font-semibold text-slate-100 group-hover:text-white transition-colors text-xs sm:text-sm truncate">
                           {item.name}
                         </span>
-                        <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 shrink-0">
+                        <span className="text-[9px] sm:text-[10px] font-semibold px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 border border-slate-700/60 shrink-0">
                           {item.exchange || 'NSE'}
                         </span>
                         {item.index && (
@@ -218,7 +218,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
                       </div>
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                  <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-slate-300 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
                 </div>
               ))}
             </>
@@ -233,7 +233,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
       {/* Popular Fast Chips */}
       <div className="flex items-center gap-1.5 sm:gap-2 mt-2.5 sm:mt-3 overflow-x-auto pb-1 scrollbar-none text-xs -mx-1 px-1">
         <span className="text-slate-400 flex items-center gap-1 font-medium whitespace-nowrap shrink-0 text-[11px] sm:text-xs">
-          <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+          <Sparkles className="w-3.5 h-3.5 text-slate-400 shrink-0" />
           Quick Picks:
         </span>
         {POPULAR_STOCKS.map((stock) => {
@@ -242,10 +242,10 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
             <button
               key={stock.symbol}
               onClick={() => onSelectStock(stock.symbol)}
-              className={`px-2.5 sm:px-3 py-1 rounded-lg border whitespace-nowrap transition-all font-medium text-[11px] sm:text-xs shrink-0 active:scale-95 ${
+              className={`px-2.5 sm:px-3 py-1 rounded-lg border whitespace-nowrap transition-all font-medium text-[11px] sm:text-xs shrink-0 active:scale-95 cursor-pointer ${
                 isActive
-                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/60 font-semibold'
-                  : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700 hover:text-white'
+                  ? 'bg-slate-800 text-white border-slate-700 font-semibold shadow-sm'
+                  : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white'
               }`}
             >
               {stock.name}

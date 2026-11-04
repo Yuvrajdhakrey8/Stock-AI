@@ -96,7 +96,7 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-medium transition-colors cursor-pointer"
             title="Share analysis"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
+            {copied ? <Check className="w-3.5 h-3.5 text-teal-400" /> : <Share2 className="w-3.5 h-3.5" />}
             <span>{copied ? 'Copied' : 'Share'}</span>
           </button>
 
@@ -151,7 +151,7 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
               ₹{stock.current_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
             </div>
             <div className={`text-xs sm:text-sm font-semibold flex items-center gap-1.5 md:justify-end mt-0.5 ${
-              isPos ? 'text-emerald-400' : 'text-rose-400'
+              isPos ? 'text-teal-400' : 'text-rose-400'
             }`}>
               <span>{isPos ? '+' : ''}₹{stock.change.toFixed(2)}</span>
               <span>({isPos ? '+' : ''}{stock.change_percent.toFixed(2)}%)</span>
@@ -166,10 +166,10 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
             <span className="text-xs text-slate-400 font-medium">Valuation Verdict:</span>
             <span className={`text-xs font-bold px-2.5 py-0.5 rounded-md ${
               valuation.verdict === 'BEST BUY'
-                ? 'bg-[#f0fdf4] text-[#047857] border border-[#d1fae5]'
+                ? 'bg-teal-950/40 text-teal-300 border border-teal-800/40'
                 : valuation.verdict === 'CURRENTLY EXPENSIVE'
-                ? 'bg-[#fff1f3] text-[#be123c] border border-[#fecdd3]'
-                : 'bg-[#fff8eb] text-[#b45309] border border-[#fef3c7]'
+                ? 'bg-rose-950/40 text-rose-300 border border-rose-800/40'
+                : 'bg-amber-950/40 text-amber-300 border border-amber-800/40'
             }`}>
               {valuation.verdict}
             </span>
@@ -228,10 +228,10 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
           <div className="flex items-center gap-2.5 shrink-0">
             <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${
               valuation.verdict === 'BEST BUY'
-                ? 'bg-[#f0fdf4] text-[#047857] border border-[#d1fae5]'
+                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                 : valuation.verdict === 'CURRENTLY EXPENSIVE'
-                ? 'bg-[#fff1f3] text-[#be123c] border border-[#fecdd3]'
-                : 'bg-[#fff8eb] text-[#b45309] border border-[#fef3c7]'
+                ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
             }`}>
               {valuation.verdict}
             </span>

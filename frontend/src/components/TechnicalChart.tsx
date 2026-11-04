@@ -58,7 +58,7 @@ export const TechnicalChart: React.FC<TechnicalChartProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-              <Activity className="w-4 h-4 text-emerald-400 shrink-0" />
+              <Activity className="w-4 h-4 text-slate-400 shrink-0" />
               <span>Price Trend & Moving Average Timing</span>
             </h3>
           </div>
@@ -73,37 +73,37 @@ export const TechnicalChart: React.FC<TechnicalChartProps> = ({
           <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs">
             <button
               onClick={() => setShowSMA50(!showSMA50)}
-              className={`px-2 sm:px-2.5 py-1 rounded-lg border flex items-center gap-1.5 transition-all ${
+              className={`px-2 sm:px-2.5 py-1 rounded-lg border flex items-center gap-1.5 transition-all cursor-pointer ${
                 showSMA50
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 font-semibold'
-                  : 'bg-slate-800/60 text-slate-500 border-slate-700/60'
+                  ? 'bg-slate-800 text-amber-300 border-amber-800/40 font-medium'
+                  : 'bg-slate-900/60 text-slate-500 border-slate-800'
               }`}
             >
-              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-400" />
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-400/80" />
               <span>50 DMA</span>
             </button>
             <button
               onClick={() => setShowSMA200(!showSMA200)}
-              className={`px-2 sm:px-2.5 py-1 rounded-lg border flex items-center gap-1.5 transition-all ${
+              className={`px-2 sm:px-2.5 py-1 rounded-lg border flex items-center gap-1.5 transition-all cursor-pointer ${
                 showSMA200
-                  ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/50 font-semibold'
-                  : 'bg-slate-800/60 text-slate-500 border-slate-700/60'
+                  ? 'bg-slate-800 text-indigo-300 border-indigo-800/40 font-medium'
+                  : 'bg-slate-900/60 text-slate-500 border-slate-800'
               }`}
             >
-              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-indigo-400" />
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-indigo-400/80" />
               <span>200 DMA</span>
             </button>
           </div>
 
-          {/* Timeframe selector */}
-          <div className="bg-slate-800/80 p-0.5 rounded-xl border border-slate-700 flex text-xs">
+          {/* Timeframe selector (Groww-style calm pills) */}
+          <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex text-xs gap-1">
             {(['1M', '3M', '6M', '1Y'] as const).map((tf) => (
               <button
                 key={tf}
                 onClick={() => setTimeframe(tf)}
-                className={`px-2.5 sm:px-3 py-1 rounded-lg font-semibold transition-all text-[11px] sm:text-xs ${
+                className={`px-2.5 sm:px-3 py-1 rounded-lg font-medium transition-all text-[11px] sm:text-xs cursor-pointer ${
                   timeframe === tf
-                    ? 'bg-slate-100 text-slate-950 shadow-sm'
+                    ? 'bg-slate-800 text-white font-semibold shadow-sm border border-slate-700/80'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -120,8 +120,8 @@ export const TechnicalChart: React.FC<TechnicalChartProps> = ({
           <AreaChart data={filteredData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
             <defs>
               <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.35} />
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
+                <stop offset="5%" stopColor="#00d09c" stopOpacity={0.25} />
+                <stop offset="95%" stopColor="#00d09c" stopOpacity={0.0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
@@ -174,11 +174,11 @@ export const TechnicalChart: React.FC<TechnicalChartProps> = ({
               />
             )}
 
-            {/* Price Area */}
+            {/* Price Area (Cool Mint Tone) */}
             <Area
               type="monotone"
               dataKey="close"
-              stroke="#10b981"
+              stroke="#00d09c"
               strokeWidth={2}
               fillOpacity={1}
               fill="url(#priceGradient)"

@@ -27,7 +27,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {indices.length > 0 && (
         <div className="bg-slate-950/90 border-b border-slate-800/60 px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs flex items-center gap-4 sm:gap-6 overflow-x-auto whitespace-nowrap scrollbar-none">
           <span className="text-slate-400 font-semibold flex items-center gap-1.5 shrink-0">
-            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="inline-block w-2 h-2 rounded-full bg-teal-400" />
             LIVE MARKETS
           </span>
           {indices.map((idx) => {
@@ -38,7 +38,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="font-semibold text-slate-100">
                   ₹{idx.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                 </span>
-                <span className={`text-[10px] sm:text-[11px] font-medium ${isPos ? 'text-emerald-400' : 'text-rose-400'}`}>
+                <span className={`text-[10px] sm:text-[11px] font-medium ${isPos ? 'text-teal-400' : 'text-rose-400'}`}>
                   {isPos ? '+' : ''}{idx.change_percent.toFixed(2)}%
                 </span>
               </div>
@@ -63,9 +63,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <span className="text-base sm:text-lg font-bold tracking-tight text-white truncate">
-                  Stocks Suggestions - <span className="text-slate-200">Dhakrey</span>
+                  Stocks Suggestions - <span className="text-slate-100">Dhakrey</span>
                 </span>
-                <span className="text-[9px] sm:text-[10px] bg-slate-800 text-slate-300 border border-slate-700 px-1.5 sm:px-2 py-0.2 rounded-full font-semibold uppercase tracking-wider shrink-0">
+                <span className="text-[9px] sm:text-[10px] bg-slate-800 text-slate-300 border border-slate-700/60 px-1.5 sm:px-2 py-0.2 rounded-full font-medium uppercase tracking-wider shrink-0">
                   NSE & BSE
                 </span>
               </div>
@@ -75,13 +75,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Desktop Navigation Tabs: 1st Tab is Explore */}
-          <div className="hidden md:flex items-center gap-1.5 bg-slate-950/80 p-1 rounded-xl border border-slate-800">
+          {/* Desktop Navigation Tabs: Cool, Calm Slate Navigation (Groww Style) */}
+          <div className="hidden md:flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
             <button
               onClick={() => setActiveTab('explore')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                 activeTab === 'explore' || activeTab === 'analyzer'
-                  ? 'bg-slate-100 text-slate-950 shadow-sm'
+                  ? 'bg-slate-800 text-white font-semibold shadow-sm border border-slate-700/80'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -89,9 +89,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
             <button
               onClick={() => setActiveTab('screener')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                 activeTab === 'screener'
-                  ? 'bg-slate-100 text-slate-950 shadow-sm'
+                  ? 'bg-slate-800 text-white font-semibold shadow-sm border border-slate-700/80'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -99,15 +99,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
             <button
               onClick={() => setActiveTab('ipo')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'ipo'
-                  ? 'bg-slate-100 text-slate-950 shadow-sm'
+                  ? 'bg-slate-800 text-white font-semibold shadow-sm border border-slate-700/80'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
               <span>IPO Research</span>
               {openIpoCount > 0 && (
-                <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-[#fff8eb] text-[#b45309] border border-[#fef3c7]">
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-medium ${
+                  activeTab === 'ipo' ? 'bg-slate-700 text-slate-200' : 'bg-slate-850 text-slate-400 border border-slate-750'
+                }`}>
                   {openIpoCount} Open
                 </span>
               )}
@@ -119,29 +121,23 @@ export const Navbar: React.FC<NavbarProps> = ({
             {onOpenDownloadApp && (
               <button
                 onClick={onOpenDownloadApp}
-                className="relative group flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-emerald-500/25 via-teal-500/20 to-indigo-500/25 hover:from-emerald-500/35 hover:to-indigo-500/35 border border-emerald-500/50 hover:border-emerald-400 text-emerald-300 hover:text-white text-xs font-semibold transition-all duration-300 hover:scale-105 active:scale-95 shadow-sm shadow-emerald-500/10 shrink-0"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-slate-700/80 bg-slate-850 hover:bg-slate-800 text-slate-200 text-xs font-medium transition-colors shadow-sm shrink-0 cursor-pointer"
                 title="Download Android Mobile App"
               >
-                {/* Subtle beacon pulse on top right corner */}
-                <span className="absolute -top-1 -right-1 flex h-2 w-2 pointer-events-none">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-
-                <Smartphone className="w-3.5 h-3.5 text-emerald-400 shrink-0 group-hover:-rotate-12 transition-transform duration-300" />
+                <Smartphone className="w-3.5 h-3.5 text-slate-300 shrink-0" />
                 <span className="hidden sm:inline">Get App</span>
               </button>
             )}
 
             <button
               onClick={onOpenWatchlist}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-slate-700/80 bg-slate-800/60 hover:bg-slate-800 text-slate-200 text-xs font-medium transition-colors shrink-0"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-slate-700/80 bg-slate-850 hover:bg-slate-800 text-slate-200 text-xs font-medium transition-colors shrink-0 cursor-pointer"
               title="Open Watchlist"
             >
-              <Bookmark className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
+              <Bookmark className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-300" />
               <span className="hidden xs:inline sm:inline">Watchlist</span>
               {watchlistCount > 0 && (
-                <span className="w-4 h-4 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-bold flex items-center justify-center">
+                <span className="w-4 h-4 rounded-full bg-slate-700 text-white text-[10px] font-bold flex items-center justify-center">
                   {watchlistCount}
                 </span>
               )}
@@ -149,14 +145,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Mobile Navigation Tabs: 1st Tab is Explore */}
+        {/* Mobile Navigation Tabs: Cool Slate Pills */}
         <div className="md:hidden pb-2.5 pt-0.5">
-          <div className="bg-slate-950/90 p-1 rounded-xl flex items-center border border-slate-800 w-full text-xs">
+          <div className="bg-slate-950 p-1 rounded-xl flex items-center border border-slate-800 w-full text-xs gap-1">
             <button
               onClick={() => setActiveTab('explore')}
-              className={`flex-1 py-1.5 text-center rounded-lg font-semibold transition-all min-h-[36px] flex items-center justify-center ${
+              className={`flex-1 py-2 text-center rounded-lg font-medium transition-all min-h-[38px] flex items-center justify-center cursor-pointer ${
                 activeTab === 'explore' || activeTab === 'analyzer'
-                  ? 'bg-slate-100 text-slate-950 shadow-sm'
+                  ? 'bg-slate-800 text-white font-semibold shadow-sm border border-slate-700/80'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -164,9 +160,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
             <button
               onClick={() => setActiveTab('screener')}
-              className={`flex-1 py-1.5 text-center rounded-lg font-semibold transition-all min-h-[36px] flex items-center justify-center ${
+              className={`flex-1 py-2 text-center rounded-lg font-medium transition-all min-h-[38px] flex items-center justify-center cursor-pointer ${
                 activeTab === 'screener'
-                  ? 'bg-slate-100 text-slate-950 shadow-sm'
+                  ? 'bg-slate-800 text-white font-semibold shadow-sm border border-slate-700/80'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -174,15 +170,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
             <button
               onClick={() => setActiveTab('ipo')}
-              className={`flex-1 py-1.5 text-center rounded-lg font-semibold transition-all min-h-[36px] flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2 text-center rounded-lg font-medium transition-all min-h-[38px] flex items-center justify-center gap-1 cursor-pointer ${
                 activeTab === 'ipo'
-                  ? 'bg-slate-100 text-slate-950 shadow-sm'
+                  ? 'bg-slate-800 text-white font-semibold shadow-sm border border-slate-700/80'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
               <span>IPO</span>
               {openIpoCount > 0 && (
-                <span className="text-[9px] px-1.5 py-0.2 rounded font-bold bg-[#fff8eb] text-[#b45309] border border-[#fef3c7]">
+                <span className={`text-[9px] px-1.5 py-0.2 rounded font-medium ${
+                  activeTab === 'ipo' ? 'bg-slate-700 text-slate-200' : 'bg-slate-850 text-slate-400 border border-slate-750'
+                }`}>
                   {openIpoCount}
                 </span>
               )}

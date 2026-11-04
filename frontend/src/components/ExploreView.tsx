@@ -544,7 +544,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
           </h2>
           <button
             onClick={() => setShowAllTraded(!showAllTraded)}
-            className="text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+            className="text-xs font-medium text-slate-400 hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
           >
             <span>{showAllTraded ? 'Show less' : 'See more'}</span>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -579,7 +579,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                   <div className="font-extrabold text-white text-sm">
                     ₹{item.current_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </div>
-                  <div className={`text-xs font-semibold mt-0.5 ${isPos ? 'text-emerald-300' : 'text-rose-300'}`}>
+                  <div className={`text-xs font-semibold mt-0.5 ${isPos ? 'text-teal-400' : 'text-rose-400'}`}>
                     {isPos ? '+' : ''}{item.change.toFixed(2)} ({isPos ? '+' : ''}{item.change_percent.toFixed(2)}%)
                   </div>
                 </div>
@@ -688,7 +688,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                       <div className="font-extrabold text-white text-xs sm:text-sm">
                         ₹{stock.current_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </div>
-                      <div className={`text-[11px] font-bold ${isPos ? 'text-emerald-300' : 'text-rose-300'}`}>
+                      <div className={`text-[11px] font-semibold ${isPos ? 'text-teal-400' : 'text-rose-400'}`}>
                         {isPos ? '+' : ''}{stock.change.toFixed(2)} ({isPos ? '+' : ''}{stock.change_percent.toFixed(2)}%)
                       </div>
                     </div>

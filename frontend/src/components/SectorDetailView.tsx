@@ -133,7 +133,7 @@ export const SectorDetailView: React.FC<SectorDetailViewProps> = ({
             className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 hover:text-white transition-all shadow-md active:scale-95 cursor-pointer shrink-0"
             title="Back to Explore"
           >
-            <ArrowLeft className="w-5 h-5 text-emerald-400" />
+            <ArrowLeft className="w-5 h-5 text-slate-300" />
           </button>
           <div>
             <div className="flex items-center gap-2">
@@ -143,10 +143,10 @@ export const SectorDetailView: React.FC<SectorDetailViewProps> = ({
               <button
                 onClick={() => fetchSectorStocks(true)}
                 disabled={isRefreshing}
-                className="p-1 text-slate-400 hover:text-emerald-400 transition-colors disabled:opacity-50 cursor-pointer"
+                className="p-1 text-slate-400 hover:text-white transition-colors disabled:opacity-50 cursor-pointer"
                 title="Refresh Sector Data"
               >
-                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-emerald-400' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-slate-400' : ''}`} />
               </button>
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
@@ -161,8 +161,8 @@ export const SectorDetailView: React.FC<SectorDetailViewProps> = ({
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-none text-xs pb-1 sm:pb-0">
           {/* Active Filter Count Button */}
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold shrink-0">
-            <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="w-4 h-4 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-black flex items-center justify-center">
+            <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400" />
+            <span className="w-4 h-4 rounded-full bg-slate-700 text-white text-[10px] font-bold flex items-center justify-center">
               {activeFilterCount}
             </span>
           </div>
@@ -174,7 +174,7 @@ export const SectorDetailView: React.FC<SectorDetailViewProps> = ({
               onChange={(e) => setPriceChangeFilter(e.target.value as any)}
               className={`appearance-none bg-slate-950 border px-3 py-1.5 pr-7 rounded-xl font-medium focus:outline-none cursor-pointer transition-all ${
                 priceChangeFilter !== 'all'
-                  ? 'border-emerald-500 text-emerald-300 font-bold bg-emerald-950/20'
+                  ? 'border-slate-700 text-teal-300 font-semibold bg-slate-800'
                   : 'border-slate-800 text-slate-300 hover:text-white'
               }`}
             >

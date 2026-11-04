@@ -122,10 +122,10 @@ export const IPODetailModal: React.FC<IPODetailModalProps> = ({ ipo, isOpen, onC
               <span className="text-xs font-semibold text-slate-400">Verdict:</span>
               <span className={`text-xs sm:text-sm font-bold px-2.5 py-0.5 rounded-lg ${
                 rec?.verdict === 'Apply' || ipo.gmp_closing_percent >= 25
-                  ? 'bg-[#f0fdf4] text-[#047857] border border-[#d1fae5]'
+                  ? 'bg-teal-950/40 text-teal-300 border border-teal-800/40'
                   : rec?.verdict === 'Apply with Caution' || ipo.gmp_closing_percent >= 8
-                  ? 'bg-[#fff8eb] text-[#b45309] border border-[#fef3c7]'
-                  : 'bg-[#fff1f3] text-[#be123c] border border-[#fecdd3]'
+                  ? 'bg-amber-950/40 text-amber-300 border border-amber-800/40'
+                  : 'bg-rose-950/40 text-rose-300 border border-rose-800/40'
               }`}>
                 {rec?.verdict === 'Apply' || ipo.gmp_closing_percent >= 25
                   ? 'BEST BUY (Apply)'

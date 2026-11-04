@@ -71,7 +71,7 @@ export const WatchlistDrawer: React.FC<WatchlistDrawerProps> = ({
                 className="py-3.5 px-2 hover:bg-slate-800/50 rounded-xl cursor-pointer flex items-center justify-between group transition-colors"
               >
                 <div>
-                  <div className="font-semibold text-white group-hover:text-emerald-400 text-sm transition-colors">
+                  <div className="font-semibold text-white group-hover:text-slate-200 text-sm transition-colors">
                     {item.name}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
@@ -89,12 +89,12 @@ export const WatchlistDrawer: React.FC<WatchlistDrawerProps> = ({
                       ₹{item.current_price?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </div>
                     <span
-                      className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
+                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                         item.verdict === 'BEST BUY'
-                          ? 'bg-[#f0fdf4] text-[#047857] border border-[#d1fae5]'
+                          ? 'bg-emerald-500/20 text-emerald-400'
                           : item.verdict === 'CURRENTLY EXPENSIVE'
-                          ? 'bg-[#fff1f3] text-[#be123c] border border-[#fecdd3]'
-                          : 'bg-[#fff8eb] text-[#b45309] border border-[#fef3c7]'
+                          ? 'bg-rose-500/20 text-rose-400'
+                          : 'bg-amber-500/20 text-amber-400'
                       }`}
                     >
                       {item.verdict}

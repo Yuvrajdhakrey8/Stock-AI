@@ -360,8 +360,8 @@ export function App() {
               {loading && (
                 <div className="py-24 text-center space-y-4">
                   <div className="relative w-16 h-16 mx-auto">
-                    <div className="w-16 h-16 rounded-full border-4 border-slate-800 border-t-emerald-400 animate-spin" />
-                    <Loader2 className="w-6 h-6 text-emerald-400 absolute inset-0 m-auto animate-pulse" />
+                    <div className="w-16 h-16 rounded-full border-4 border-slate-800 border-t-slate-400 animate-spin" />
+                    <Loader2 className="w-6 h-6 text-slate-400 absolute inset-0 m-auto animate-pulse" />
                   </div>
                   <div>
                     <h3 className="text-base font-semibold text-white">

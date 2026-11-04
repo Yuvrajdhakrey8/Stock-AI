@@ -143,10 +143,10 @@ export const IPOCompareModal: React.FC<IPOCompareModalProps> = ({
                   <td key={ipo.id} className="py-3 px-4">
                     <span className={`px-2 py-0.5 rounded font-semibold text-[11px] ${
                       ipo.recommendation_at_ipo?.verdict === 'Apply'
-                        ? 'bg-[#f0fdf4] text-[#047857] border border-[#d1fae5]'
+                        ? 'bg-teal-950/40 text-teal-300 border border-teal-800/40'
                         : ipo.recommendation_at_ipo?.verdict === 'Avoid'
-                        ? 'bg-[#fff1f3] text-[#be123c] border border-[#fecdd3]'
-                        : 'bg-[#fff8eb] text-[#b45309] border border-[#fef3c7]'
+                        ? 'bg-rose-950/40 text-rose-300 border border-rose-800/40'
+                        : 'bg-amber-950/40 text-amber-300 border border-amber-800/40'
                     }`}>
                       {ipo.recommendation_at_ipo?.verdict || 'N/A'}
                     </span>
