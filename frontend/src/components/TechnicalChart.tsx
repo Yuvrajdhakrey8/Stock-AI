@@ -101,9 +101,9 @@ export const TechnicalChart: React.FC<TechnicalChartProps> = ({
               <button
                 key={tf}
                 onClick={() => setTimeframe(tf)}
-                className={`px-2.5 sm:px-3 py-1 rounded-lg font-medium transition-all text-[11px] sm:text-xs ${
+                className={`px-2.5 sm:px-3 py-1 rounded-lg font-semibold transition-all text-[11px] sm:text-xs ${
                   timeframe === tf
-                    ? 'bg-emerald-500 text-slate-950 font-bold'
+                    ? 'bg-slate-100 text-slate-950 shadow-sm'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >

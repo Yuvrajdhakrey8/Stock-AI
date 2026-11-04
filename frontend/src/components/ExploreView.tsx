@@ -544,7 +544,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
           </h2>
           <button
             onClick={() => setShowAllTraded(!showAllTraded)}
-            className="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors cursor-pointer"
+            className="text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
           >
             <span>{showAllTraded ? 'Show less' : 'See more'}</span>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -569,7 +569,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                     className="rounded-xl shadow-md"
                   />
                   <div className="mt-3">
-                    <h3 className="font-bold text-white text-xs sm:text-sm group-hover:text-emerald-400 transition-colors line-clamp-1">
+                    <h3 className="font-bold text-white text-xs sm:text-sm group-hover:text-slate-200 transition-colors line-clamp-1">
                       {item.name}
                     </h3>
                   </div>
@@ -579,7 +579,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                   <div className="font-extrabold text-white text-sm">
                     ₹{item.current_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </div>
-                  <div className={`text-xs font-semibold mt-0.5 ${isPos ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  <div className={`text-xs font-semibold mt-0.5 ${isPos ? 'text-emerald-300' : 'text-rose-300'}`}>
                     {isPos ? '+' : ''}{item.change.toFixed(2)} ({isPos ? '+' : ''}{item.change_percent.toFixed(2)}%)
                   </div>
                 </div>
@@ -672,7 +672,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                       className="rounded-lg shrink-0"
                     />
                     <div className="min-w-0">
-                      <div className="font-bold text-white text-xs sm:text-sm group-hover:text-emerald-400 transition-colors truncate">
+                      <div className="font-bold text-white text-xs sm:text-sm group-hover:text-slate-200 transition-colors truncate">
                         {stock.name}
                       </div>
                       <div className="text-[10px] text-slate-400 mt-0.5 truncate hidden sm:block">
@@ -688,7 +688,7 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
                       <div className="font-extrabold text-white text-xs sm:text-sm">
                         ₹{stock.current_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </div>
-                      <div className={`text-[11px] font-bold ${isPos ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      <div className={`text-[11px] font-bold ${isPos ? 'text-emerald-300' : 'text-rose-300'}`}>
                         {isPos ? '+' : ''}{stock.change.toFixed(2)} ({isPos ? '+' : ''}{stock.change_percent.toFixed(2)}%)
                       </div>
                     </div>

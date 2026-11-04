@@ -28,17 +28,17 @@ export const ValuationMeter: React.FC<ValuationMeterProps> = ({ valuation, curre
 
   const badgeTheme = {
     'BEST BUY': {
-      pill: 'bg-emerald-950/40 text-emerald-300 border border-emerald-800/40',
+      pill: 'bg-[#f0fdf4] text-[#047857] border border-[#d1fae5]',
       label: 'Undervalued (Best Buy)',
       icon: ShieldCheck,
     },
     'AT FAIR PRICE': {
-      pill: 'bg-amber-950/40 text-amber-300 border border-amber-800/40',
+      pill: 'bg-[#fff8eb] text-[#b45309] border border-[#fef3c7]',
       label: 'At Fair Price',
       icon: Info,
     },
     'CURRENTLY EXPENSIVE': {
-      pill: 'bg-rose-950/40 text-rose-300 border border-rose-800/40',
+      pill: 'bg-[#fff1f3] text-[#be123c] border border-[#fecdd3]',
       label: 'Stretched (Expensive)',
       icon: AlertTriangle,
     },

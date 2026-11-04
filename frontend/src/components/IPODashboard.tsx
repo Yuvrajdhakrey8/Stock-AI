@@ -233,7 +233,7 @@ export const IPODashboard: React.FC = () => {
     window.open('https://ipostatus.kfintech.com/', '_blank', 'noopener,noreferrer');
   };
 
-  // Helper function to render AI Suggestion badge (Clean, single-word badges: Best Buy, Caution, Avoid)
+  // Helper function to render AI Suggestion badge (Soft, pastel tones: #fff1f3, #fff8eb, #f0fdf4)
   const renderAISuggestion = (ipo: IPOData) => {
     const isListed = ipo.status === 'Listed';
     const rec = ipo.recommendation_at_ipo;
@@ -242,8 +242,8 @@ export const IPODashboard: React.FC = () => {
     if (isListed && listing) {
       const isPos = listing.listing_gain_percent >= 0;
       return (
-        <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${
-          isPos ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-800/40' : 'bg-rose-950/40 text-rose-300 border border-rose-800/40'
+        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-md ${
+          isPos ? 'bg-[#f0fdf4] text-[#047857] border border-[#d1fae5]' : 'bg-[#fff1f3] text-[#be123c] border border-[#fecdd3]'
         }`}>
           {isPos ? '+' : ''}{listing.listing_gain_percent.toFixed(1)}%
         </span>
@@ -253,27 +253,27 @@ export const IPODashboard: React.FC = () => {
     if (ipo.status === 'Open' || ipo.status === 'Upcoming') {
       if (ipo.gmp_closing_percent >= 25 || rec?.verdict === 'Apply') {
         return (
-          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-950/40 text-emerald-300 border border-emerald-800/40">
+          <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-[#f0fdf4] text-[#047857] border border-[#d1fae5]">
             Best Buy
           </span>
         );
       }
       if (ipo.gmp_closing_percent >= 8) {
         return (
-          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-amber-950/40 text-amber-300 border border-amber-800/40">
+          <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-[#fff8eb] text-[#b45309] border border-[#fef3c7]">
             Caution
           </span>
         );
       }
       return (
-        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-rose-950/40 text-rose-300 border border-rose-800/40">
+        <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-[#fff1f3] text-[#be123c] border border-[#fecdd3]">
           Avoid
         </span>
       );
     }
 
     return (
-      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-800 text-slate-400">
+      <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-[#f8fafc] text-[#334155] border border-[#e2e8f0]">
         Watch
       </span>
     );
@@ -286,7 +286,7 @@ export const IPODashboard: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
-              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400 shrink-0" />
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400 shrink-0" />
               <span>IPOs</span>
             </h1>
           </div>
@@ -302,7 +302,7 @@ export const IPODashboard: React.FC = () => {
             className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 text-xs text-slate-200 bg-slate-900 hover:bg-slate-800 border border-slate-700/80 px-3 py-2 sm:py-1.5 rounded-xl font-medium transition-colors shadow-sm disabled:opacity-50 active:scale-95"
             title="Fetch latest real-time Grey Market Premium and Subscription rates"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-emerald-400 shrink-0 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-slate-400 shrink-0 ${isRefreshing ? 'animate-spin' : ''}`} />
             <span>{isRefreshing ? 'Updating...' : 'Refresh Live'}</span>
           </button>
 
@@ -332,16 +332,15 @@ export const IPODashboard: React.FC = () => {
             {/* 1. Open Tab */}
             <button
               onClick={() => setStatusFilter('open')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 cursor-pointer ${
                 statusFilter === 'open'
-                  ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
-                  : 'bg-slate-950 text-slate-300 hover:text-white border border-slate-800'
+                  ? 'bg-slate-100 text-slate-950 shadow-sm'
+                  : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
               }`}
             >
-              <span className={`w-2 h-2 rounded-full ${statusFilter === 'open' ? 'bg-slate-950 animate-pulse' : 'bg-emerald-400'}`} />
               <span>Open</span>
-              <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-extrabold ${
-                statusFilter === 'open' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-300'
+              <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-bold ${
+                statusFilter === 'open' ? 'bg-slate-300 text-slate-950' : 'bg-slate-800 text-slate-400'
               }`}>
                 {statusFilter === 'open' ? sortedIPOs.length : (summary?.open_count ?? 0)}
               </span>
@@ -350,15 +349,15 @@ export const IPODashboard: React.FC = () => {
             {/* 2. Closed Tab */}
             <button
               onClick={() => setStatusFilter('closed')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 cursor-pointer ${
                 statusFilter === 'closed'
-                  ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
-                  : 'bg-slate-950 text-slate-300 hover:text-white border border-slate-800'
+                  ? 'bg-slate-100 text-slate-950 shadow-sm'
+                  : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
               }`}
             >
               <span>Closed</span>
-              <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-extrabold ${
-                statusFilter === 'closed' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-300'
+              <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-bold ${
+                statusFilter === 'closed' ? 'bg-slate-300 text-slate-950' : 'bg-slate-800 text-slate-400'
               }`}>
                 {statusFilter === 'closed' ? sortedIPOs.length : (summary?.closed_count ?? 0)}
               </span>
@@ -367,15 +366,15 @@ export const IPODashboard: React.FC = () => {
             {/* 3. Upcoming Tab */}
             <button
               onClick={() => setStatusFilter('upcoming')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 cursor-pointer ${
                 statusFilter === 'upcoming'
-                  ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
-                  : 'bg-slate-950 text-slate-300 hover:text-white border border-slate-800'
+                  ? 'bg-slate-100 text-slate-950 shadow-sm'
+                  : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
               }`}
             >
               <span>Upcoming</span>
-              <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-extrabold ${
-                statusFilter === 'upcoming' ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-800 text-slate-300'
+              <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-bold ${
+                statusFilter === 'upcoming' ? 'bg-slate-300 text-slate-950' : 'bg-slate-800 text-slate-400'
               }`}>
                 {statusFilter === 'upcoming' ? sortedIPOs.length : (summary?.upcoming_count ?? 0)}
               </span>
@@ -417,7 +416,7 @@ export const IPODashboard: React.FC = () => {
             {compareIds.length > 0 && (
               <button
                 onClick={() => setIsCompareOpen(true)}
-                className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-lg shadow-indigo-600/20 transition-all shrink-0"
+                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs inline-flex items-center gap-1.5 border border-slate-700 transition-all shrink-0"
               >
                 <Scale className="w-3.5 h-3.5" />
                 <span>Compare ({compareIds.length})</span>
@@ -479,7 +478,7 @@ export const IPODashboard: React.FC = () => {
               {typeFilter !== 'all' && (
                 <button
                   onClick={() => setTypeFilter('all')}
-                  className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-all active:scale-95 cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs border border-slate-700 transition-all active:scale-95 cursor-pointer"
                 >
                   Switch to All Types (Mainboard & SME)
                 </button>
@@ -636,7 +635,7 @@ export const IPODashboard: React.FC = () => {
                     <div className="hidden lg:flex lg:col-span-1 justify-end items-center">
                       <button
                         onClick={handleCheckAllotment}
-                        className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs inline-flex items-center gap-1 shadow-sm transition-all active:scale-95 cursor-pointer"
+                        className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs inline-flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
                         title="Check allotment status on KFintech"
                       >
                         <span>Allotment</span>
@@ -680,7 +679,7 @@ export const IPODashboard: React.FC = () => {
                       {statusFilter === 'closed' ? (
                         <button
                           onClick={handleCheckAllotment}
-                          className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs inline-flex items-center gap-1 shadow-sm transition-all active:scale-95 cursor-pointer"
+                          className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs inline-flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
                         >
                           <span>Check Allotment</span>
                           <ExternalLink className="w-3 h-3" />

@@ -116,10 +116,10 @@ export const ListingRadarCard: React.FC<ListingRadarCardProps> = ({ radarData })
             <div className="flex items-center gap-2">
               <span className={`text-xs sm:text-sm font-bold px-2.5 py-1 rounded-lg ${
                 prediction.expected_gain_percent >= 25
-                  ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                  ? 'bg-[#f0fdf4] text-[#047857] border border-[#d1fae5]'
                   : prediction.expected_gain_percent >= 8
-                  ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
-                  : 'bg-rose-500/15 text-rose-300 border border-rose-500/30'
+                  ? 'bg-[#fff8eb] text-[#b45309] border border-[#fef3c7]'
+                  : 'bg-[#fff1f3] text-[#be123c] border border-[#fecdd3]'
               }`}>
                 {actionTitle}
               </span>

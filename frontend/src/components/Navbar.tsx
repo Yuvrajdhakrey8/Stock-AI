@@ -63,9 +63,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <span className="text-base sm:text-lg font-bold tracking-tight text-white truncate">
-                  Stocks Suggestions - <span className="text-emerald-400">Dhakrey</span>
+                  Stocks Suggestions - <span className="text-slate-200">Dhakrey</span>
                 </span>
-                <span className="text-[9px] sm:text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800/80 px-1.5 sm:px-2 py-0.2 rounded-full font-semibold uppercase tracking-wider shrink-0">
+                <span className="text-[9px] sm:text-[10px] bg-slate-800 text-slate-300 border border-slate-700 px-1.5 sm:px-2 py-0.2 rounded-full font-semibold uppercase tracking-wider shrink-0">
                   NSE & BSE
                 </span>
               </div>
@@ -76,40 +76,38 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Desktop Navigation Tabs: 1st Tab is Explore */}
-          <div className="hidden md:flex items-center gap-2 bg-slate-800/80 p-1 rounded-xl border border-slate-700/60">
+          <div className="hidden md:flex items-center gap-1.5 bg-slate-950/80 p-1 rounded-xl border border-slate-800">
             <button
               onClick={() => setActiveTab('explore')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === 'explore' || activeTab === 'analyzer'
-                  ? 'bg-emerald-500 text-slate-950 shadow-sm font-semibold'
-                  : 'text-slate-300 hover:text-white'
+                  ? 'bg-slate-100 text-slate-950 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               Explore
             </button>
             <button
               onClick={() => setActiveTab('screener')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === 'screener'
-                  ? 'bg-emerald-500 text-slate-950 shadow-sm font-semibold'
-                  : 'text-slate-300 hover:text-white'
+                  ? 'bg-slate-100 text-slate-950 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               Market Screener
             </button>
             <button
               onClick={() => setActiveTab('ipo')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                 activeTab === 'ipo'
-                  ? 'bg-emerald-500 text-slate-950 shadow-sm font-semibold'
-                  : 'text-slate-300 hover:text-white'
+                  ? 'bg-slate-100 text-slate-950 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <span>IPO Research</span>
               {openIpoCount > 0 && (
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                  activeTab === 'ipo' ? 'bg-slate-950 text-emerald-400' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                }`}>
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-[#fff8eb] text-[#b45309] border border-[#fef3c7]">
                   {openIpoCount} Open
                 </span>
               )}
@@ -156,37 +154,35 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="bg-slate-950/90 p-1 rounded-xl flex items-center border border-slate-800 w-full text-xs">
             <button
               onClick={() => setActiveTab('explore')}
-              className={`flex-1 py-2 text-center rounded-lg font-medium transition-all min-h-[38px] flex items-center justify-center ${
+              className={`flex-1 py-1.5 text-center rounded-lg font-semibold transition-all min-h-[36px] flex items-center justify-center ${
                 activeTab === 'explore' || activeTab === 'analyzer'
-                  ? 'bg-emerald-500 text-slate-950 shadow-sm font-bold'
-                  : 'text-slate-300 hover:text-white'
+                  ? 'bg-slate-100 text-slate-950 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               Explore
             </button>
             <button
               onClick={() => setActiveTab('screener')}
-              className={`flex-1 py-2 text-center rounded-lg font-medium transition-all min-h-[38px] flex items-center justify-center ${
+              className={`flex-1 py-1.5 text-center rounded-lg font-semibold transition-all min-h-[36px] flex items-center justify-center ${
                 activeTab === 'screener'
-                  ? 'bg-emerald-500 text-slate-950 shadow-sm font-bold'
-                  : 'text-slate-300 hover:text-white'
+                  ? 'bg-slate-100 text-slate-950 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               Screener
             </button>
             <button
               onClick={() => setActiveTab('ipo')}
-              className={`flex-1 py-2 text-center rounded-lg font-medium transition-all min-h-[38px] flex items-center justify-center gap-1 ${
+              className={`flex-1 py-1.5 text-center rounded-lg font-semibold transition-all min-h-[36px] flex items-center justify-center gap-1.5 ${
                 activeTab === 'ipo'
-                  ? 'bg-emerald-500 text-slate-950 shadow-sm font-bold'
-                  : 'text-slate-300 hover:text-white'
+                  ? 'bg-slate-100 text-slate-950 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <span>IPO</span>
               {openIpoCount > 0 && (
-                <span className={`text-[9px] px-1 py-0.2 rounded font-bold ${
-                  activeTab === 'ipo' ? 'bg-slate-950 text-emerald-400' : 'bg-emerald-500/20 text-emerald-400'
-                }`}>
+                <span className="text-[9px] px-1.5 py-0.2 rounded font-bold bg-[#fff8eb] text-[#b45309] border border-[#fef3c7]">
                   {openIpoCount}
                 </span>
               )}

@@ -166,10 +166,10 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
             <span className="text-xs text-slate-400 font-medium">Valuation Verdict:</span>
             <span className={`text-xs font-bold px-2.5 py-0.5 rounded-md ${
               valuation.verdict === 'BEST BUY'
-                ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-800/40'
+                ? 'bg-[#f0fdf4] text-[#047857] border border-[#d1fae5]'
                 : valuation.verdict === 'CURRENTLY EXPENSIVE'
-                ? 'bg-rose-950/40 text-rose-300 border border-rose-800/40'
-                : 'bg-amber-950/40 text-amber-300 border border-amber-800/40'
+                ? 'bg-[#fff1f3] text-[#be123c] border border-[#fecdd3]'
+                : 'bg-[#fff8eb] text-[#b45309] border border-[#fef3c7]'
             }`}>
               {valuation.verdict}
             </span>
@@ -228,10 +228,10 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
           <div className="flex items-center gap-2.5 shrink-0">
             <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${
               valuation.verdict === 'BEST BUY'
-                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                ? 'bg-[#f0fdf4] text-[#047857] border border-[#d1fae5]'
                 : valuation.verdict === 'CURRENTLY EXPENSIVE'
-                ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
-                : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                ? 'bg-[#fff1f3] text-[#be123c] border border-[#fecdd3]'
+                : 'bg-[#fff8eb] text-[#b45309] border border-[#fef3c7]'
             }`}>
               {valuation.verdict}
             </span>

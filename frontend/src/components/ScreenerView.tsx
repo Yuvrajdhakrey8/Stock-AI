@@ -150,18 +150,20 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({ onSelectStock }) => 
           </div>
 
           {/* Verdict Filter Buttons */}
-          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-2xl border border-slate-800 text-[11px] sm:text-xs overflow-x-auto scrollbar-none max-w-full">
+          <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-2xl border border-slate-800 text-[11px] sm:text-xs overflow-x-auto scrollbar-none max-w-full">
             {['ALL', 'BEST BUY', 'AT FAIR PRICE', 'CURRENTLY EXPENSIVE'].map((v) => (
               <button
                 key={v}
                 onClick={() => setVerdictFilter(v)}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-medium transition-all whitespace-nowrap shrink-0 ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-semibold transition-all whitespace-nowrap shrink-0 ${
                   verdictFilter === v
                     ? v === 'BEST BUY'
-                      ? 'bg-emerald-500 text-slate-950 font-bold'
+                      ? 'bg-[#f0fdf4] text-[#047857] border border-[#d1fae5]'
                       : v === 'CURRENTLY EXPENSIVE'
-                      ? 'bg-rose-500 text-white font-bold'
-                      : 'bg-amber-500 text-slate-950 font-bold'
+                      ? 'bg-[#fff1f3] text-[#be123c] border border-[#fecdd3]'
+                      : v === 'AT FAIR PRICE'
+                      ? 'bg-[#fff8eb] text-[#b45309] border border-[#fef3c7]'
+                      : 'bg-slate-100 text-slate-950'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
@@ -185,10 +187,10 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({ onSelectStock }) => 
             <button
               key={cat.id}
               onClick={() => setCategory(cat.id)}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-xl whitespace-nowrap transition-all font-medium text-[11px] sm:text-xs shrink-0 ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-xl whitespace-nowrap transition-all font-semibold text-[11px] sm:text-xs shrink-0 ${
                 category === cat.id
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 font-semibold'
-                  : 'bg-slate-800/60 text-slate-400 border border-slate-700/60 hover:text-white'
+                  ? 'bg-slate-100 text-slate-950 shadow-sm'
+                  : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-white'
               }`}
             >
               {cat.label}
@@ -402,10 +404,10 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({ onSelectStock }) => 
 
                         <td className="py-3.5 px-4">
                           <span
-                            className={`font-bold px-2 py-0.5 rounded text-xs ${
+                            className={`font-semibold px-2 py-0.5 rounded text-xs ${
                               isMoSPos
-                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                                : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                                ? 'bg-[#f0fdf4] text-[#047857] border border-[#d1fae5]'
+                                : 'bg-[#fff1f3] text-[#be123c] border border-[#fecdd3]'
                             }`}
                           >
                             {isMoSPos ? '+' : ''}{stock.margin_of_safety.toFixed(1)}%
@@ -414,12 +416,12 @@ export const ScreenerView: React.FC<ScreenerViewProps> = ({ onSelectStock }) => 
 
                         <td className="py-3.5 px-4">
                           <span
-                            className={`px-2.5 py-1 rounded-xl font-bold text-[11px] uppercase tracking-wider inline-block ${
+                            className={`px-2.5 py-1 rounded-lg font-semibold text-[11px] uppercase tracking-wider inline-block ${
                               stock.verdict === 'BEST BUY'
-                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                                ? 'bg-[#f0fdf4] text-[#047857] border border-[#d1fae5]'
                                 : stock.verdict === 'CURRENTLY EXPENSIVE'
-                                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
-                                : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                                ? 'bg-[#fff1f3] text-[#be123c] border border-[#fecdd3]'
+                                : 'bg-[#fff8eb] text-[#b45309] border border-[#fef3c7]'
                             }`}
                           >
                             {stock.verdict}

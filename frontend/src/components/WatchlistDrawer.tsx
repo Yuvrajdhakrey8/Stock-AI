@@ -89,12 +89,12 @@ export const WatchlistDrawer: React.FC<WatchlistDrawerProps> = ({
                       ₹{item.current_price?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </div>
                     <span
-                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                      className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
                         item.verdict === 'BEST BUY'
-                          ? 'bg-emerald-500/20 text-emerald-400'
+                          ? 'bg-[#f0fdf4] text-[#047857] border border-[#d1fae5]'
                           : item.verdict === 'CURRENTLY EXPENSIVE'
-                          ? 'bg-rose-500/20 text-rose-400'
-                          : 'bg-amber-500/20 text-amber-400'
+                          ? 'bg-[#fff1f3] text-[#be123c] border border-[#fecdd3]'
+                          : 'bg-[#fff8eb] text-[#b45309] border border-[#fef3c7]'
                       }`}
                     >
                       {item.verdict}
