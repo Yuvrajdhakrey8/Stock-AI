@@ -67,21 +67,21 @@ jobs:
 
       - name: Package Artifacts
         run: |
-          cp frontend/android/app/build/outputs/apk/release/app-release-unsigned.apk DhakreyStock-AI.apk 2>/dev/null || cp frontend/android/app/build/outputs/apk/release/app-release.apk DhakreyStock-AI.apk
-          cp frontend/android/app/build/outputs/bundle/release/app-release.aab DhakreyStock-AI.aab
+          cp frontend/android/app/build/outputs/apk/release/app-release-unsigned.apk Stockly.apk 2>/dev/null || cp frontend/android/app/build/outputs/apk/release/app-release.apk Stockly.apk
+          cp frontend/android/app/build/outputs/bundle/release/app-release.aab Stockly.aab
 
       - name: Upload APK as Workflow Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: DhakreyStock-AI-APK
-          path: DhakreyStock-AI.apk
+          name: Stockly-APK
+          path: Stockly.apk
           retention-days: 30
 
       - name: Upload AAB as Workflow Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: DhakreyStock-AI-AAB
-          path: DhakreyStock-AI.aab
+          name: Stockly-AAB
+          path: Stockly.aab
           retention-days: 30
 
       - name: Persist Release Keystore to Repository
@@ -99,15 +99,15 @@ jobs:
         if: startsWith(github.ref, 'refs/heads/main')
         with:
           tag_name: mobile-latest
-          name: "DhakreyStock AI Mobile APK & Play Store Bundle"
+          name: "Stockly Mobile APK & Play Store Bundle (v1.0.6)"
           body: |
-            Latest compiled mobile packages for DhakreyStock AI:
-            - **`DhakreyStock-AI.apk`**: Direct installable APK for Android phones (Testing).
-            - **`DhakreyStock-AI.aab`**: Official Release-Signed Android App Bundle for Google Play Console submission.
+            Latest compiled mobile packages for Stockly:
+            - **`Stockly.apk`**: Direct installable APK for Android phones (Testing).
+            - **`Stockly.aab`**: Official Release-Signed Android App Bundle for Google Play Console submission.
           draft: false
           prerelease: false
           files: |
-            DhakreyStock-AI.apk
-            DhakreyStock-AI.aab
+            Stockly.apk
+            Stockly.aab
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

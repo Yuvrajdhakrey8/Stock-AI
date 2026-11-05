@@ -49,7 +49,7 @@ public class EngagementNotificationReceiver extends BroadcastReceiver {
             "🚀 Live IPO Allotment & Grey Market Check"
         };
         String[] bodies = {
-            "Check live IPO GMP, subscription status and top breakout stocks now on DhakreyStock AI!",
+            "Check live IPO GMP, subscription status and top breakout stocks now on Stockly!",
             "Explore Fair Value & Graham Number for top Indian companies before market moves.",
             "Verify your IPO allotment status and see which sectors are trending today."
         };
