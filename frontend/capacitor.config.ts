@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.dhakreystock.ai',
-  appName: 'Stocks Suggestions - Dhakrey',
+  appName: 'Stockly',
   webDir: 'dist',
   server: {
     androidScheme: 'https',

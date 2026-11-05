@@ -57,20 +57,20 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <img
               src="/logo.png"
-              alt="Stocks Suggestions - Dhakrey"
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-contain shrink-0 shadow-lg shadow-blue-500/20 border border-slate-700/60 bg-white"
+              alt="Stockly"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-contain shrink-0 border border-slate-800 shadow-sm"
             />
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <span className="text-base sm:text-lg font-bold tracking-tight text-white truncate">
-                  Stocks Suggestions - <span className="text-slate-100">Dhakrey</span>
+                  Stockly
                 </span>
                 <span className="text-[9px] sm:text-[10px] bg-slate-800 text-slate-300 border border-slate-700/60 px-1.5 sm:px-2 py-0.2 rounded-full font-medium uppercase tracking-wider shrink-0">
                   NSE & BSE
                 </span>
               </div>
               <p className="text-[10px] sm:text-xs text-slate-400 hidden sm:block truncate">
-                DCF Intrinsic Valuation & Live IPO Tracker (NSE & BSE)
+                Stock Valuation & Live IPO Tracker
               </p>
             </div>
           </div>

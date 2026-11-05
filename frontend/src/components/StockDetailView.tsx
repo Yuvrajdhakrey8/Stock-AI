@@ -49,7 +49,7 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
   const handleShare = async () => {
     const verdict = valuation.verdict;
     const fairVal = valuation.dcf_intrinsic_value ?? valuation.graham_number ?? stock.current_price;
-    const shareText = `📊 *${stock.name} (${stock.display_symbol})* on Dhakrey Stocks:\n` +
+    const shareText = `📊 *${stock.name} (${stock.display_symbol})* on Stockly:\n` +
       `• CMP: ₹${stock.current_price.toFixed(2)}\n` +
       `• Fair Value: ₹${fairVal.toFixed(2)}\n` +
       `• Verdict: ${verdict} (${mos > 0 ? '+' : ''}${mos.toFixed(1)}%)\n\n` +

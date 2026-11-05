@@ -85,15 +85,15 @@ export const DownloadAppModal: React.FC<DownloadAppModalProps> = ({ forceOpen = 
         <div className="flex items-center gap-3.5 pr-8">
           <img
             src="/logo.png"
-            alt="Stocks Suggestions - Dhakrey"
-            className="w-12 h-12 rounded-full object-contain shrink-0 shadow-lg shadow-blue-500/20 border border-slate-700/60 bg-white"
+            alt="Stockly"
+            className="w-12 h-12 rounded-2xl object-contain shrink-0 border border-slate-800 shadow-sm"
           />
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-0.5">
-              <Smartphone className="w-3 h-3" /> Android App
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-[10px] font-semibold text-slate-300 uppercase tracking-wider mb-0.5">
+              <Smartphone className="w-3 h-3 text-teal-400" /> Android App
             </div>
             <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
-              Download Stocks Suggestions - Dhakrey App
+              Download Stockly App
             </h3>
           </div>
         </div>
