@@ -59,7 +59,7 @@ export const DownloadAppModal: React.FC<DownloadAppModalProps> = ({ forceOpen = 
 
   const handleAPKDownload = () => {
     // Link directly to the GitHub Actions compiled release APK
-    const apkUrl = 'https://github.com/Yuvrajdhakrey8/Stock-AI/releases/download/mobile-latest/DhakreyStock-AI.apk';
+    const apkUrl = 'https://github.com/Yuvrajdhakrey8/Stock-AI/releases/download/mobile-latest/Stockly.apk';
     window.location.href = apkUrl;
   };
 
