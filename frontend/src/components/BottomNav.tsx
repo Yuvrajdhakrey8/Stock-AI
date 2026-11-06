@@ -1,12 +1,13 @@
 import React from 'react';
 import { TrendingUp, SlidersHorizontal, Flame, Bookmark } from 'lucide-react';
 
+export type NavTabType = 'explore' | 'screener' | 'ipo' | 'watchlist';
+
 interface BottomNavProps {
-  activeTab: 'explore' | 'screener' | 'ipo';
-  setActiveTab: (tab: 'explore' | 'screener' | 'ipo') => void;
+  activeTab: NavTabType;
+  setActiveTab: (tab: NavTabType) => void;
   openIpoCount?: number;
   watchlistCount: number;
-  onOpenWatchlist: () => void;
   currentSymbol: string | null;
   onBackFromStock?: () => void;
 }
@@ -16,13 +17,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   setActiveTab,
   openIpoCount = 0,
   watchlistCount = 0,
-  onOpenWatchlist,
   currentSymbol,
   onBackFromStock,
 }) => {
-  const handleTabClick = (tab: 'explore' | 'screener' | 'ipo') => {
-    // If user is inside a stock detail and taps Explore, take them back to Explore home
-    if (tab === 'explore' && currentSymbol && onBackFromStock) {
+  const handleTabClick = (tab: NavTabType) => {
+    // If user is inside a stock detail and taps any tab, clear stock view
+    if (currentSymbol && onBackFromStock) {
       onBackFromStock();
     }
     setActiveTab(tab);
@@ -39,10 +39,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         <button
           onClick={() => handleTabClick('explore')}
           className={`flex flex-col items-center justify-center py-1 transition-colors select-none cursor-pointer ${
-            activeTab === 'explore' && !currentSymbol
+            activeTab === 'explore'
               ? 'text-teal-400 font-semibold'
-              : activeTab === 'explore' && currentSymbol
-              ? 'text-teal-400 font-medium'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -94,8 +92,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
         {/* Tab 4: Watchlist */}
         <button
-          onClick={onOpenWatchlist}
-          className="relative flex flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-200 transition-colors select-none cursor-pointer"
+          onClick={() => handleTabClick('watchlist')}
+          className={`relative flex flex-col items-center justify-center py-1 transition-colors select-none cursor-pointer ${
+            activeTab === 'watchlist'
+              ? 'text-teal-400 font-semibold'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
         >
           <div className="relative">
             <Bookmark className="w-5 h-5 transition-transform active:scale-90" />
@@ -106,6 +108,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             )}
           </div>
           <span className="text-[10px] mt-1 tracking-tight">Watchlist</span>
+          {activeTab === 'watchlist' && (
+            <span className="w-1 h-1 rounded-full bg-teal-400 mt-0.5" />
+          )}
         </button>
       </div>
     </nav>

@@ -6,7 +6,9 @@ import { SectorDetailView } from './components/SectorDetailView';
 import { StockDetailView } from './components/StockDetailView';
 import { ScreenerView } from './components/ScreenerView';
 import { IPODashboard } from './components/IPODashboard';
+import { WatchlistView } from './components/WatchlistView';
 import { BottomNav } from './components/BottomNav';
+import type { NavTabType } from './components/BottomNav';
 import { WatchlistDrawer } from './components/WatchlistDrawer';
 import { DownloadAppModal } from './components/DownloadAppModal';
 import { adService } from './services/adService';
@@ -20,19 +22,19 @@ import { Capacitor } from '@capacitor/core';
 
 // Helper to read initial state from URL parameters or localStorage
 // Defaults to Explore tab with NO stock selected by default
-const getInitialNavState = (): { activeTab: 'explore' | 'screener' | 'ipo'; currentSymbol: string | null } => {
+const getInitialNavState = (): { activeTab: NavTabType; currentSymbol: string | null } => {
   try {
     const params = new URLSearchParams(window.location.search);
-    const urlTab = params.get('tab') as 'explore' | 'screener' | 'ipo' | null;
+    const urlTab = params.get('tab') as NavTabType | null;
     const urlStock = params.get('stock');
 
-    const validTabs: ('explore' | 'screener' | 'ipo')[] = ['explore', 'screener', 'ipo'];
-    const savedTab = localStorage.getItem('dhakreystock_active_tab') as 'explore' | 'screener' | 'ipo' | null;
+    const validTabs: NavTabType[] = ['explore', 'screener', 'ipo', 'watchlist'];
+    const savedTab = localStorage.getItem('dhakreystock_active_tab') as NavTabType | null;
 
     // Do NOT select a stock by default unless explicitly specified in URL (?stock=...)
     const currentSymbol = urlStock && urlStock.trim() ? urlStock.trim().toUpperCase() : null;
 
-    const activeTab: 'explore' | 'screener' | 'ipo' = (urlTab && validTabs.includes(urlTab))
+    const activeTab: NavTabType = (urlTab && validTabs.includes(urlTab))
       ? urlTab
       : (savedTab && validTabs.includes(savedTab))
       ? savedTab
@@ -51,8 +53,8 @@ export function App() {
   const [stock, setStock] = useState<StockAnalysisResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'explore' | 'screener' | 'ipo'>(navState.activeTab);
-  const [previousTab, setPreviousTab] = useState<'explore' | 'screener' | 'ipo' | null>(null);
+  const [activeTab, setActiveTab] = useState<NavTabType>(navState.activeTab);
+  const [previousTab, setPreviousTab] = useState<NavTabType | null>(null);
   const [indices, setIndices] = useState<MarketIndex[]>([]);
   const [isWatchlistOpen, setIsWatchlistOpen] = useState<boolean>(false);
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState<boolean>(false);
@@ -286,11 +288,7 @@ export function App() {
   }, [currentSymbol, isOffline]);
 
   const handleSelectStock = (symbol: string) => {
-    if (activeTab === 'screener' || activeTab === 'ipo') {
-      setPreviousTab(activeTab);
-    } else {
-      setPreviousTab('explore');
-    }
+    setPreviousTab(activeTab);
     setCurrentSymbol(symbol);
     setActiveTab('explore');
     try {
@@ -328,9 +326,8 @@ export function App() {
     }
   };
 
-  const handleTabChange = (tab: 'explore' | 'screener' | 'ipo') => {
-    if (tab === 'explore') {
-      // Return directly to Explore home
+  const handleTabChange = (tab: NavTabType) => {
+    if (currentSymbol || selectedSector) {
       setCurrentSymbol(null);
       setSelectedSector(null);
       setStock(null);
@@ -488,6 +485,15 @@ export function App() {
           <IPODashboard />
         </div>
 
+        {/* Watchlist View - Full page dedicated view (Groww style, no popup) */}
+        <div className={activeTab === 'watchlist' ? 'block' : 'hidden'}>
+          <WatchlistView
+            watchlist={watchlist}
+            onSelectStock={handleSelectStock}
+            onRemoveFromWatchlist={handleRemoveFromWatchlist}
+          />
+        </div>
+
         {/* Dedicated mobile bottom buffer to ensure all content scrolls safely above the AdMob banner */}
         {Capacitor.isNativePlatform() && (
           <div className="h-28 w-full shrink-0 pointer-events-none" aria-hidden="true" />
@@ -500,7 +506,6 @@ export function App() {
         setActiveTab={handleTabChange}
         openIpoCount={openIpoCount}
         watchlistCount={watchlist.length}
-        onOpenWatchlist={() => setIsWatchlistOpen(true)}
         currentSymbol={currentSymbol}
         onBackFromStock={handleBackFromStock}
       />

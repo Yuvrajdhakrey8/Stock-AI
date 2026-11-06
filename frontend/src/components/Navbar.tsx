@@ -2,14 +2,16 @@ import React from 'react';
 import { TrendingUp, Bookmark, Search, ShieldCheck, Smartphone } from 'lucide-react';
 import type { MarketIndex } from '../types';
 
+export type NavbarTab = 'explore' | 'screener' | 'ipo' | 'watchlist';
+
 interface NavbarProps {
   indices: MarketIndex[];
   watchlistCount: number;
   openIpoCount?: number;
   onOpenWatchlist: () => void;
   onOpenDownloadApp?: () => void;
-  activeTab: 'explore' | 'analyzer' | 'screener' | 'ipo';
-  setActiveTab: (tab: 'explore' | 'screener' | 'ipo') => void;
+  activeTab: NavbarTab | 'analyzer';
+  setActiveTab: (tab: NavbarTab) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -114,6 +116,23 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               )}
             </button>
+            <button
+              onClick={() => setActiveTab('watchlist')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'watchlist'
+                  ? 'bg-slate-800 text-white font-semibold shadow-sm border border-slate-700/80'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <span>Watchlist</span>
+              {watchlistCount > 0 && (
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-medium ${
+                  activeTab === 'watchlist' ? 'bg-slate-700 text-slate-200' : 'bg-slate-850 text-slate-400 border border-slate-750'
+                }`}>
+                  {watchlistCount}
+                </span>
+              )}
+            </button>
           </div>
 
           {/* Action Buttons: Get App & Watchlist */}
@@ -130,8 +149,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
 
             <button
-              onClick={onOpenWatchlist}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-slate-700/80 bg-slate-850 hover:bg-slate-800 text-slate-200 text-xs font-medium transition-colors shrink-0 cursor-pointer"
+              onClick={() => setActiveTab('watchlist')}
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border transition-colors shrink-0 cursor-pointer ${
+                activeTab === 'watchlist'
+                  ? 'border-teal-700 bg-slate-800 text-teal-300 font-semibold'
+                  : 'border-slate-700/80 bg-slate-850 hover:bg-slate-800 text-slate-200 text-xs font-medium'
+              }`}
               title="Open Watchlist"
             >
               <Bookmark className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-300" />
