@@ -18,6 +18,7 @@ import { CompanyLogo } from './CompanyLogo';
 import { TechnicalChart } from './TechnicalChart';
 import { FundamentalGrid } from './FundamentalGrid';
 import { ValuationMeter } from './ValuationMeter';
+import { isIndianMarketOpen } from '../utils/marketHours';
 
 interface StockDetailViewProps {
   stock: StockAnalysisResponse;
@@ -147,8 +148,20 @@ export const StockDetailView: React.FC<StockDetailViewProps> = ({
 
           {/* Right: Live Price & 1D Change */}
           <div className="text-left md:text-right pt-2 md:pt-0 border-t md:border-t-0 border-slate-800/60">
-            <div className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-              ₹{stock.current_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            <div className="flex items-center gap-2 md:justify-end">
+              <span className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                ₹{stock.current_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              </span>
+              {isIndianMarketOpen() ? (
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  LIVE
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-800/80 text-slate-400 shrink-0">
+                  Market Closed
+                </span>
+              )}
             </div>
             <div className={`text-xs sm:text-sm font-semibold flex items-center gap-1.5 md:justify-end mt-0.5 ${
               isPos ? 'text-teal-400' : 'text-rose-400'

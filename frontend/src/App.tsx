@@ -6,6 +6,7 @@ import { SectorDetailView } from './components/SectorDetailView';
 import { StockDetailView } from './components/StockDetailView';
 import { ScreenerView } from './components/ScreenerView';
 import { IPODashboard } from './components/IPODashboard';
+import { BottomNav } from './components/BottomNav';
 import { WatchlistDrawer } from './components/WatchlistDrawer';
 import { DownloadAppModal } from './components/DownloadAppModal';
 import { adService } from './services/adService';
@@ -14,6 +15,7 @@ import type { StockAnalysisResponse, MarketIndex } from './types';
 import { Loader2, AlertCircle, RefreshCw, WifiOff } from 'lucide-react';
 import { API_BASE_URL } from './config';
 import { mobileService } from './services/mobileService';
+import { isIndianMarketOpen } from './utils/marketHours';
 import { Capacitor } from '@capacitor/core';
 
 // Helper to read initial state from URL parameters or localStorage
@@ -224,23 +226,64 @@ export function App() {
     }
   }, [currentSymbol]);
 
-  const fetchStockAnalysis = async (symbol: string) => {
-    setLoading(true);
-    setError(null);
+  const fetchStockAnalysis = async (symbol: string, isSilent = false) => {
+    if (!isSilent) {
+      setLoading(true);
+      setError(null);
+    }
     try {
       const res = await fetch(`${API_BASE_URL}/api/stock/${encodeURIComponent(symbol)}`);
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({ detail: 'Failed to fetch stock analysis.' }));
-        throw new Error(errData.detail || `Unable to load data for ${symbol}`);
+        if (!isSilent) {
+          const errData = await res.json().catch(() => ({ detail: 'Failed to fetch stock analysis.' }));
+          throw new Error(errData.detail || `Unable to load data for ${symbol}`);
+        }
+        return;
       }
       const data: StockAnalysisResponse = await res.json();
       setStock(data);
     } catch (err: any) {
-      setError(err.message || 'Error connecting to stock market data service.');
+      if (!isSilent) {
+        setError(err.message || 'Error connecting to stock market data service.');
+      }
     } finally {
-      setLoading(false);
+      if (!isSilent) {
+        setLoading(false);
+      }
     }
   };
+
+  // 30-Second Cost-Safe Live Refresh
+  // Guarded by:
+  // 1. isIndianMarketOpen() (Mon-Fri 9:08 AM - 3:35 PM IST)
+  // 2. document.visibilityState === 'visible' (Pauses when app minimized/locked)
+  // 3. !isOffline (Only when connected)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // 1. Inactivity guard
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+        return;
+      }
+      // 2. Offline guard
+      if (isOffline) {
+        return;
+      }
+      // 3. Market hours guard
+      if (!isIndianMarketOpen()) {
+        return;
+      }
+
+      // Execute silent refresh of live indices
+      fetchIndices();
+
+      // If viewing a stock, silently refresh its price and technicals
+      if (currentSymbol) {
+        fetchStockAnalysis(currentSymbol, true);
+      }
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [currentSymbol, isOffline]);
 
   const handleSelectStock = (symbol: string) => {
     if (activeTab === 'screener' || activeTab === 'ipo') {
@@ -342,7 +385,7 @@ export function App() {
       )}
 
       {/* Main Content Area */}
-      <main className={`flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6 ${
+      <main className={`flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6 pb-20 md:pb-6 ${
         Capacitor.isNativePlatform() ? 'pb-admob-buffer' : ''
       }`}>
         {/* Explore View (The 1st Tab - Default State: No stock selected by default) */}
@@ -450,6 +493,17 @@ export function App() {
           <div className="h-28 w-full shrink-0 pointer-events-none" aria-hidden="true" />
         )}
       </main>
+
+      {/* Mobile Bottom Navigation Bar (Modern Groww / Upstox Style) */}
+      <BottomNav
+        activeTab={activeTab}
+        setActiveTab={handleTabChange}
+        openIpoCount={openIpoCount}
+        watchlistCount={watchlist.length}
+        onOpenWatchlist={() => setIsWatchlistOpen(true)}
+        currentSymbol={currentSymbol}
+        onBackFromStock={handleBackFromStock}
+      />
 
       {/* Watchlist Side Drawer */}
       <WatchlistDrawer

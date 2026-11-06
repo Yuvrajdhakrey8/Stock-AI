@@ -144,49 +144,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </div>
         </div>
-
-        {/* Mobile Navigation Tabs: Cool Slate Pills */}
-        <div className="md:hidden pb-2.5 pt-0.5">
-          <div className="bg-slate-950 p-1 rounded-xl flex items-center border border-slate-800 w-full text-xs gap-1">
-            <button
-              onClick={() => setActiveTab('explore')}
-              className={`flex-1 py-2 text-center rounded-lg font-medium transition-all min-h-[38px] flex items-center justify-center cursor-pointer ${
-                activeTab === 'explore' || activeTab === 'analyzer'
-                  ? 'bg-slate-800 text-white font-semibold shadow-sm border border-slate-700/80'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Explore
-            </button>
-            <button
-              onClick={() => setActiveTab('screener')}
-              className={`flex-1 py-2 text-center rounded-lg font-medium transition-all min-h-[38px] flex items-center justify-center cursor-pointer ${
-                activeTab === 'screener'
-                  ? 'bg-slate-800 text-white font-semibold shadow-sm border border-slate-700/80'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Screener
-            </button>
-            <button
-              onClick={() => setActiveTab('ipo')}
-              className={`flex-1 py-2 text-center rounded-lg font-medium transition-all min-h-[38px] flex items-center justify-center gap-1 cursor-pointer ${
-                activeTab === 'ipo'
-                  ? 'bg-slate-800 text-white font-semibold shadow-sm border border-slate-700/80'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <span>IPO</span>
-              {openIpoCount > 0 && (
-                <span className={`text-[9px] px-1.5 py-0.2 rounded font-medium ${
-                  activeTab === 'ipo' ? 'bg-slate-700 text-slate-200' : 'bg-slate-850 text-slate-400 border border-slate-750'
-                }`}>
-                  {openIpoCount}
-                </span>
-              )}
-            </button>
-          </div>
-        </div>
       </div>
     </header>
   );
