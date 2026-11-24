@@ -166,17 +166,6 @@ export const IPODashboard: React.FC = () => {
     }
   };
 
-  // Filter & Search
-  const filteredIPOs = ipos.filter((ipo) => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      ipo.name.toLowerCase().includes(q) ||
-      ipo.sector.toLowerCase().includes(q) ||
-      ipo.symbol.toLowerCase().includes(q)
-    );
-  });
-
   const MONTH_MAP: Record<string, number> = {
     jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
     jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
@@ -202,6 +191,26 @@ export const IPODashboard: React.FC = () => {
     const t = new Date(s).getTime();
     return isNaN(t) ? 0 : t;
   };
+
+  // Filter & Search with date consistency safeguard
+  const filteredIPOs = ipos.filter((ipo) => {
+    // Client-side safeguard: If on the 'open' tab, ensure close_date has not already passed
+    if (statusFilter === 'open' && ipo.close_date) {
+      const closeTs = parseIPODateToTime(ipo.close_date);
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      if (closeTs > 0 && closeTs < todayStart) {
+        return false;
+      }
+    }
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      ipo.name.toLowerCase().includes(q) ||
+      ipo.sector.toLowerCase().includes(q) ||
+      ipo.symbol.toLowerCase().includes(q)
+    );
+  });
 
   // Sort: Latest one on top and then old ones
   const sortedIPOs = [...filteredIPOs].sort((a, b) => {
