@@ -125,15 +125,25 @@ def get_top_indices():
 
 
 @app.get("/api/market/explore")
-def get_market_explore():
+def get_market_explore(refresh: bool = False):
     """
-    Returns market explore data:
-    1. Most traded stocks (Top 10 + see more)
-    2. Top movers today (Gainers, Losers, Volume Shockers with 1D sparkline)
-    3. Sectors trending today (Gainers/Losers visual ratio and 1D price change)
+    Returns live market explore data:
+    1. Most traded stocks (Top 12 live volume ranking)
+    2. Top movers today (Live Gainers, Losers, Volume Shockers with 1D sparkline)
+    3. Sectors trending today (Live Gainers/Losers visual ratio and 1D price change)
+    4. Popular picks for first-time or clean state
     Following Groww design layout.
     """
-    return MarketExploreService.get_explore_data()
+    return MarketExploreService.get_explore_data(force_refresh=refresh)
+
+
+@app.get("/api/market/related")
+def get_market_related_stocks(symbol: str = Query(..., description="Stock symbol to find sector peers for")):
+    """
+    Returns peer stocks in the same sector for a given symbol,
+    with live or recent market prices and 1D changes.
+    """
+    return MarketExploreService.get_related_stocks(symbol)
 
 
 @app.get("/api/market/sector/{sector_name}")

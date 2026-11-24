@@ -3,6 +3,7 @@ import { Search, Building2, ChevronRight, Sparkles, Loader2, X } from 'lucide-re
 import type { StockSearchResult } from '../types';
 import { CompanyLogo } from './CompanyLogo';
 import { API_BASE_URL } from '../config';
+import { saveRecentSearch } from '../utils/recentSearches';
 
 interface SearchHeaderProps {
   onSelectStock: (symbol: string) => void;
@@ -70,7 +71,8 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSelect = (symbol: string) => {
+  const handleSelect = (symbol: string, name?: string) => {
+    saveRecentSearch({ symbol, name });
     onSelectStock(symbol);
     setIsOpen(false);
     setQuery('');
@@ -95,7 +97,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
     e.preventDefault();
     if (results.length > 0) {
       const chosen = selectedIndex >= 0 && selectedIndex < results.length ? results[selectedIndex] : results[0];
-      handleSelect(chosen.symbol);
+      handleSelect(chosen.symbol, chosen.name);
       return;
     }
 
@@ -109,7 +111,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
       if (res.ok) {
         const data = await res.json();
         if (data.results && data.results.length > 0) {
-          handleSelect(data.results[0].symbol);
+          handleSelect(data.results[0].symbol, data.results[0].name);
           return;
         }
       }
@@ -185,7 +187,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
               {results.map((item, idx) => (
                 <div
                   key={item.symbol}
-                  onClick={() => handleSelect(item.symbol)}
+                  onClick={() => handleSelect(item.symbol, item.name)}
                   className={`px-3.5 sm:px-4 py-2.5 sm:py-3 cursor-pointer flex items-center justify-between transition-colors group active:bg-slate-800 ${
                     selectedIndex === idx ? 'bg-slate-800' : 'hover:bg-slate-800/80'
                   }`}
@@ -241,7 +243,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({ onSelectStock, curre
           return (
             <button
               key={stock.symbol}
-              onClick={() => onSelectStock(stock.symbol)}
+              onClick={() => handleSelect(stock.symbol, stock.name)}
               className={`px-2.5 sm:px-3 py-1 rounded-lg border whitespace-nowrap transition-all font-medium text-[11px] sm:text-xs shrink-0 active:scale-95 cursor-pointer ${
                 isActive
                   ? 'bg-slate-800 text-white border-slate-700 font-semibold shadow-sm'

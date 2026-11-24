@@ -283,6 +283,18 @@ export interface MarketExploreData {
     volume_shockers: TopMoverStock[];
   };
   trending_sectors: TrendingSector[];
+  popular_picks?: MostTradedStock[];
+  last_updated?: string;
+  is_live?: boolean;
+}
+
+export interface RecentSearchItem {
+  symbol: string;
+  name: string;
+  sector?: string;
+  current_price?: number;
+  change_percent?: number;
+  timestamp: number;
 }
 
 export interface ListingRadarPrediction {

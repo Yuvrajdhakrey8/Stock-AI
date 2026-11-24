@@ -18,6 +18,7 @@ import { Loader2, AlertCircle, RefreshCw, WifiOff } from 'lucide-react';
 import { API_BASE_URL } from './config';
 import { mobileService } from './services/mobileService';
 import { isIndianMarketOpen } from './utils/marketHours';
+import { saveRecentSearch } from './utils/recentSearches';
 import { Capacitor } from '@capacitor/core';
 
 // Helper to read initial state from URL parameters or localStorage
@@ -244,6 +245,13 @@ export function App() {
       }
       const data: StockAnalysisResponse = await res.json();
       setStock(data);
+      saveRecentSearch({
+        symbol: data.symbol,
+        name: data.name,
+        sector: data.sector,
+        current_price: data.current_price,
+        change_percent: data.change_percent,
+      });
     } catch (err: any) {
       if (!isSilent) {
         setError(err.message || 'Error connecting to stock market data service.');
@@ -288,6 +296,7 @@ export function App() {
   }, [currentSymbol, isOffline]);
 
   const handleSelectStock = (symbol: string) => {
+    saveRecentSearch({ symbol });
     setPreviousTab(activeTab);
     setCurrentSymbol(symbol);
     setActiveTab('explore');
